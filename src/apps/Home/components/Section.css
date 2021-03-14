@@ -1,0 +1,180 @@
+.Section {
+  background-color: #2e3141;
+  margin: 2.5em 0;
+  position: relative;
+}
+
+.bubble {
+  position: absolute;
+  right: 8vw;
+  top: 50vh;
+  z-index: 0;
+}
+
+.SectionContent {
+  margin: 0 1em;
+  max-width: 55em;
+  padding: 2em 0;
+}
+
+/* Alt styles base */
+.Section[class*='style']::before,
+.Section[class*='style']::after {
+  content: '';
+  display: block;
+  height: 2.5em;
+  position: absolute;
+  width: 100%;
+}
+
+.Section[class*='style'].right::before,
+.Section[class*='style'].left::before {
+  top: -2.5em;
+}
+
+.Section[class*='style'].right::after,
+.Section[class*='style'].left::after {
+  bottom: -2.5em;
+}
+
+/* Style1 */
+.Section.style1 {
+  background-color: #4c5c96;
+}
+
+.Section.style1::before {
+  box-shadow: inset 0 -1px 0 0 #4c5c96, 0 10px 0 0 #4c5c96;
+}
+
+.Section.style1::after {
+  box-shadow: inset 0 -1px 0 0 #4c5c96, 0 10px 0 0 #4c5c96;
+}
+
+.Section.style1::before,
+.Section.style1::after {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,100 100,0 100,100' style='fill:%234c5c96%3B' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.Section.style1.right::after {
+  transform: scaleY(-1);
+}
+
+.Section.style1.left::before {
+  transform: scaleY(-1);
+}
+
+/* Style2 */
+.Section.style2 {
+  background-color: #45558d;
+}
+
+.Section.style2::before {
+  box-shadow: inset 0 -1px 0 0 #45558d, 0 10px 0 0 #45558d;
+}
+
+.Section.style2::after {
+  box-shadow: inset 0 -1px 0 0 #45558d, 0 10px 0 0 #45558d;
+}
+
+.Section.style2::before,
+.Section.style2::after {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,100 100,0 100,100' style='fill:%2345558d%3B' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.Section.style2.left::before {
+  transform: scaleX(-1);
+}
+
+.Section.style2.left::after {
+  transform: scaleX(-1) scaleY(-1);
+}
+
+.Section.style2.right::before {
+  transform: scaleX(-1) scaleY(-1);
+}
+
+.Section.style2.right::after {
+  transform: scaleX(-1);
+}
+
+/* Style3 */
+.Section.style3 {
+  background-color: #3f4e85;
+}
+
+.Section.style3::before {
+  box-shadow: inset 0 -1px 0 0 #3f4e85, 0 10px 0 0 #3f4e85;
+}
+
+.Section.style3::after {
+  box-shadow: inset 0 -1px 0 0 #3f4e85, 0 10px 0 0 #3f4e85;
+}
+
+.Section.style3::before,
+.Section.style3::after {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='0,100 100,0 100,100' style='fill:%233f4e85%3B' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.Section.style3.right::after {
+  transform: scaleY(-1);
+}
+
+.Section.style3.left::before {
+  transform: scaleY(-1);
+}
+
+@media screen and (min-width: 736px) {
+  .Section {
+    margin: 4.75em 0;
+  }
+
+  .Section[class*='style']::before,
+  .Section[class*='style']::after {
+    height: 4.75em;
+  }
+
+  .Section[class*='style'].right::before,
+  .Section[class*='style'].left::before {
+    top: -4.75em;
+  }
+
+  .Section[class*='style'].right::after,
+  .Section[class*='style'].left::after {
+    bottom: -4.75em;
+  }
+
+  .SectionContent {
+    padding: 3em 0;
+  }
+}
+
+@media screen and (min-width: 980px) {
+  .Section {
+    margin: 6.5em 0;
+  }
+
+  .Section[class*='style']::before,
+  .Section[class*='style']::after {
+    height: 6.5em;
+  }
+
+  .Section[class*='style'].right::before,
+  .Section[class*='style'].left::before {
+    top: -6.5em;
+  }
+
+  .Section[class*='style'].right::after,
+  .Section[class*='style'].left::after {
+    bottom: -6.5em;
+  }
+
+  .SectionContent {
+    margin: 0 auto;
+  }
+}
