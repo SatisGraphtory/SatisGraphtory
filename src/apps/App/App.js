@@ -9,6 +9,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { withLocalize } from 'react-localize-redux';
 
 import en from '../../translations/en.json';
+import enGenerated from '.DataWarehouse/translations/en.json';
 import discord from '../../translations/discord.json';
 
 import { HelmetProvider } from 'react-helmet-async';
@@ -142,7 +143,7 @@ function App(props) {
         },
       });
 
-      addTranslationForLanguage(en, 'en');
+      addTranslationForLanguage(Object.assign({}, enGenerated, en), 'en');
       addTranslationForLanguage(discord, 'discord');
     }
   }, [addTranslationForLanguage, initialize]);

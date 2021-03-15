@@ -1,6 +1,6 @@
 import React from 'react';
 import Colors from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Colors';
-import { EResourceForm } from '.data-landing/interfaces/enums';
+import { EResourceForm } from '.DataLanding/interfaces/enums';
 
 // import { Store } from 'pullstate';
 //

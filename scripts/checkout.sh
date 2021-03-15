@@ -8,7 +8,7 @@ DESTINATION=./src/.${REPOSITORY}
 
 if [[ ! -d "${DESTINATION}" ]]; then
   git clone \
-    https://github.com/ficsit/${REPOSITORY} \
+    https://github.com/SatisGraphtory/${REPOSITORY} \
     --quiet \
     --reference-if-able ../${REPOSITORY} \
     -n \

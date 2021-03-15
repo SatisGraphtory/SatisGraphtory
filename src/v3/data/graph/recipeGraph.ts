@@ -17,16 +17,21 @@ const getRecipeGraphFn = () => {
   const nodeMap = new Map<string, Node>();
 
   getMachineCraftableRecipeDefinitionList().forEach((recipe) => {
-    const { ingredients, products, slug: recipeSlug } = recipe;
-    [...ingredients, ...products].forEach(({ slug }) => {
-      if (!nodeMap.has(slug)) {
-        nodeMap.set(slug, new Node(slug));
+    const { mIngredients, mProduct, slug: recipeSlug } = recipe;
+    [...mProduct].forEach(({ ItemClass }) => {
+      if (!nodeMap.has(ItemClass.slug)) {
+        nodeMap.set(ItemClass.slug, new Node(ItemClass.slug));
       }
     });
-    ingredients.forEach(({ slug: ingredientSlug }) => {
-      products.forEach(({ slug: productSlug }) => {
-        const ingredientNode = nodeMap.get(ingredientSlug)!;
-        const productNode = nodeMap.get(productSlug)!;
+    [...mIngredients].forEach(({ ItemClass }) => {
+      if (!nodeMap.has(ItemClass.slug)) {
+        nodeMap.set(ItemClass.slug, new Node(ItemClass.slug));
+      }
+    });
+    mIngredients.forEach(({ ItemClass: ingredientItemClass }) => {
+      mProduct.forEach(({ ItemClass: productItemClass }) => {
+        const ingredientNode = nodeMap.get(ingredientItemClass.slug)!;
+        const productNode = nodeMap.get(productItemClass.slug)!;
         if (!outgoingEdges.has(ingredientNode)) {
           outgoingEdges.set(ingredientNode, []);
         }

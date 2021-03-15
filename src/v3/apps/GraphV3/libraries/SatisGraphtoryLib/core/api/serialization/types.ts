@@ -1,6 +1,6 @@
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
-import { buildingEnums, recipeEnums } from 'data/protobuf/protobufEnums';
+import { buildingEnums, recipeEnums } from '.DataWarehouse/enums/dataEnums';
 
 // const serializeNode = (node: NodeTemplate) => {
 //

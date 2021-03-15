@@ -1,48 +1,33 @@
-import ItemJson from 'data/Items.json';
+import ItemJson from '.DataWarehouse/main/Items.json';
+import ItemClassJson from '.DataWarehouse/main/ItemClasses.json';
 import memoize from 'fast-memoize';
 import { getBuildingImageName } from 'v3/data/loaders/buildings';
 import { getMachineCraftableRecipeDefinitionList } from 'v3/data/loaders/recipes';
-import produce from 'immer';
-import SGImageRepo from 'v3/data/loaders/sgImageRepo';
+
+import { getImageFileFromSlug } from './images';
 
 export const getItemDefinition = (itemSlug: string) => {
   return (ItemJson as any)[itemSlug];
 };
 
-const getItemByTypeFn = (type: string) => {
-  return Object.entries(ItemJson)
-    .filter(([key, value]) => {
-      return value.itemType === type;
-    })
-    .map(([key]) => key);
-};
-
 const getResourcesFn = () => {
-  return Object.entries(ItemJson)
-    .filter(([key, value]) => {
-      return value.itemType === 'UFGResourceDescriptor';
+  return Object.entries(ItemClassJson)
+    .filter(([, value]) => {
+      return value === 'FGResourceDescriptor';
     })
     .map(([key]) => key);
 };
 
 const getResourcesByFormFn = (resourceForm: number) => {
   return Object.entries(ItemJson)
-    .filter(([, value]) => {
+    .filter(([key, value]) => {
       return (
-        value.itemType === 'UFGResourceDescriptor' &&
-        value.form === resourceForm
+        (ItemClassJson as any)[key] === 'FGResourceDescriptor' &&
+        (value as any).mForm === resourceForm
       );
     })
     .map(([key]) => key);
 };
-
-// const getItemsFn = () => {
-//   return Object.keys(ItemJson);
-// };
-//
-// const getItemMapFn = () => {
-//   return ItemJson;
-// };
 
 const getItemListFn = () => {
   return Object.entries(ItemJson).map(([slug, value]) => {
@@ -53,36 +38,21 @@ const getItemListFn = () => {
   });
 };
 
-// const imageMap = new Map<string, any>();
-//
-// const preloadAllIcons = () => {
-//   Object.entries(imageRepo).forEach(([name, src]) => {
-//     const img = document.createElement('img');
-//     img.src = src; // Assigning the img src immediately requests the image.
-//     imageMap.set(name, img);
-//   });
-// };
-//
-// // Preload all icons here
-// preloadAllIcons();
-
 export const getItemIcon = (itemSlug: string, size: number = 256) => {
-  const itemImageSlug = `${getBuildingImageName(itemSlug)}.${256}.png`;
+  const itemImageSlug = getBuildingImageName(itemSlug);
 
-  const image = SGImageRepo.get(itemImageSlug);
-
-  if (!image) {
-    throw new Error('No image found: ' + itemImageSlug);
-  }
-  return image;
+  return getImageFileFromSlug(itemImageSlug, size);
 };
 
+//TODO: REVISIT
 const getMachineCraftableItemsFn = () => {
   return [
     ...new Set(
       getMachineCraftableRecipeDefinitionList()
         .map((item) => {
-          return [...item.products.map((subItem: any) => subItem.slug)];
+          return [
+            ...item.mProduct.map((subItem: any) => subItem.ItemClass.slug),
+          ];
         })
         .flat()
     ),
@@ -90,24 +60,14 @@ const getMachineCraftableItemsFn = () => {
 };
 
 const getAllItemsFn = () => {
-  return produce(ItemJson, (draftState) => {
-    Object.entries(ItemJson).forEach(([slug, item]) => {
-      (draftState as any)[slug] = item;
-    });
-  });
+  return ItemJson;
 };
 
 export const getItemResourceForm = (itemSlug: string) => {
-  return (getAllItemsFn() as Record<string, any>)[itemSlug].form;
+  return (getAllItemsFn() as Record<string, any>)[itemSlug].mForm;
 };
 
-export const getItemName = (itemSlug: string) => {
-  return (getAllItemsFn() as Record<string, any>)[itemSlug].name;
-};
-
-export const getAllItems = memoize(getAllItemsFn);
 export const getMachineCraftableItems = memoize(getMachineCraftableItemsFn);
-export const getItemByType = memoize(getItemByTypeFn);
 export const getResources = memoize(getResourcesFn);
 export const getResourcesByForm = memoize(getResourcesByFormFn);
 export const getItemList = memoize(getItemListFn);

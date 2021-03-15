@@ -3,7 +3,6 @@ import React from 'react';
 // import ResourceExtractor
 //   from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/ResourceExtractor";
 // import {getExtractorRecipes, getRecipesByMachineType} from "v3/data/loaders/recipes";
-import { getExtractorRecipes } from 'v3/data/loaders/recipes';
 // import Manufacturer from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/Manufacturer";
 import SimulationManager from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/manager/SimulationManager';
 // import DebugSink from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/DebugSink";
@@ -25,9 +24,6 @@ function SimulationApp() {
     // const possibleRecipes = getRecipesByMachineType('EXTRACTOR');
     // const usedRecipe = possibleRecipes[4];
     // const building = usedRecipe.producedIn[0];
-
-    const rec = getExtractorRecipes();
-    console.log(rec);
 
     // const resourceExtractor = new ResourceExtractor(usedRecipe.slug, building);
     //

@@ -23,7 +23,7 @@ import {
   Strength,
 } from 'kiwi.js';
 import { getItemList, getResources } from 'v3/data/loaders/items';
-import { getExtractorRecipes, getRecipeList } from 'v3/data/loaders/recipes';
+import { getRecipeList } from 'v3/data/loaders/recipes';
 import { getPossibleRecipesFromSinkItem } from 'v3/data/graph/recipeGraph';
 
 export interface SolverOptions {
@@ -373,11 +373,12 @@ export const wizardSolver = (
     }
   });
 
-  getExtractorRecipes()
-    .map(({ slug }) => slug)
-    .forEach((extractorSlug) => {
-      whitelistedRecipes.delete(extractorSlug);
-    });
+  //TODO: FIX THIS BECAUSE ITS GUNNA TRY AND SOLVE
+  // getExtractorRecipes()
+  //   .map(({ slug }) => slug)
+  //   .forEach((extractorSlug) => {
+  //     whitelistedRecipes.delete(extractorSlug);
+  //   });
 
   // TODO: find a better way
   const alternates = [...whitelistedRecipes].filter(

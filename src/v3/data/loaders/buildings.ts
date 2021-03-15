@@ -1,306 +1,238 @@
 import lazyFunc from 'v3/utils/lazyFunc';
-import ConnectionsJson from 'data/Connections.json';
-import BuildingJson from 'data/Buildings.json';
-import ItemJson from 'data/Items.json';
-import RecipeJson from 'data/Recipes.json';
 import memoize from 'fast-memoize';
-import { EResourceForm } from '.data-landing/interfaces/enums';
+import {
+  EFactoryConnectionDirection,
+  EPipeConnectionType,
+  EResourceForm,
+} from '.DataLanding/interfaces/enums';
 import uuidGen from 'v3/utils/stringUtils';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
-import SGImageRepo from 'v3/data/loaders/sgImageRepo';
 import ExternalInteractionManager from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/ExternalInteractionManager';
 import { SatisGraphtoryEdgeProps } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/types';
 
-const slugToCustomMachineGroup = (slug: string) => {
-  switch (slug) {
-    case 'building-conveyor-attachment-merger':
-    case 'building-conveyor-attachment-splitter':
-    case 'building-pipeline-junction-cross':
-      return 'machine-group-logistics';
-    case 'building-pipe-storage-tank':
-    case 'building-industrial-tank':
-      return 'machine-group-liquid-storage';
-    case 'building-storage-container':
-      return 'machine-group-item-storage';
+import ItemJson from '.DataWarehouse/main/Items.json';
+import BuildingJson from '.DataWarehouse/main/Buildings.json';
+import BuildingClasses from '.DataWarehouse/main/BuildingClasses.json';
+import BuildingClassMap from '.DataWarehouse/main/BuildingClassMap.json';
+import RecipeJson from '.DataWarehouse/main/Recipes.json';
+import ConnectionsJson from '.DataWarehouse/main/Connections.json';
+import { getImageFileFromSlug } from './images';
+
+const getAllSubclasses = (baseClass: string) => {
+  const allClasses = new Set<string>();
+  allClasses.add(baseClass);
+  for (const claz of (BuildingClassMap as any)[baseClass] || []) {
+    for (const subclass of getAllSubclasses(claz)) {
+      allClasses.add(subclass);
+    }
   }
 
-  return slug;
+  return allClasses;
 };
 
-const getBuildableMachinesFn = () => {
-  const buildables = new Set(Object.keys(ConnectionsJson));
+function generateClassMap(allMachines: Set<string>) {
+  const machineClassMap = new Map<string, string[]>();
+  const reverseMachineClassMap = new Map<string, string>();
 
-  const machineByType = new Map<string, any[]>();
+  for (const machine of allMachines) {
+    let machineBaseName = machine;
+    if (/^(.*)-mk[0-9]+$/.test(machine)) {
+      const markRegex = /^(.*)-mk[0-9]+$/;
+      machineBaseName = markRegex.exec(machine)![1]!;
+    }
 
-  Object.entries(BuildingJson)
-    .filter(([key]) => {
-      return buildables.has(key);
-    })
-    .forEach(([slug, value]) => {
-      if (!machineByType.get(value.buildingType)) {
-        machineByType.set(value.buildingType, []);
-      }
+    if (!machineClassMap.has(machineBaseName)) {
+      machineClassMap.set(machineBaseName, []);
+    }
+    machineClassMap.get(machineBaseName)!.push(machine);
 
-      machineByType.get(value.buildingType)!.push(slug);
-    });
-
-  for (const value of machineByType.values()) {
-    value.sort();
+    reverseMachineClassMap.set(machine, machineBaseName);
   }
 
-  machineByType.delete('ITEMPASSTHROUGH');
-  machineByType.delete('FLUIDPASSTHROUGH');
-  machineByType.delete('TRUCKSTATION');
-  machineByType.delete('TRAINSTATION');
-  machineByType.delete('GENERATOR');
-  machineByType.delete('SINK');
+  for (const entry of machineClassMap.values()) {
+    entry.sort();
+  }
 
-  // Stub the FLOWMANIPULATOR CLASS for now
-  machineByType.set('ITEMFLOWMANIPULATOR', [
-    'building-conveyor-attachment-merger',
-    'building-conveyor-attachment-splitter',
+  const imageMap = new Map<string, string>();
+
+  for (const [key, entry] of machineClassMap.entries()) {
+    imageMap.set(key, entry[0]);
+  }
+
+  return { machineClassMap, reverseMachineClassMap, imageMap };
+}
+
+const getBuildableMachinesFnV2 = () => {
+  // Technically we should be using the connections from this?
+  // const buildables = new Set(Object.keys(ConnectionsJsonV2));
+
+  const blacklistedMachines = new Set([
+    'building-equipment-descriptor-build-gun',
+    'building-work-bench-integrated',
+    'building-automated-work-bench',
+    'building-workshop',
+    'building-converter',
   ]);
 
-  const allMachines: string[] = [...machineByType.values()].flat(1);
-  const machineClassMap = new Map<string, string[]>();
-  const machineClassImageMap = new Map<string, string>();
-  const upgradePathMap = new Map<string, string[]>();
-  const reverseUpgradePathMap = new Map<string, string>();
+  const whitelistedSinkMachines = new Set(['AFGBuildableSpaceElevator']);
 
-  allMachines.forEach((machine) => {
-    const markRegex = /^(.*)-mk[0-9]+(-.*)?$/;
-    if (markRegex.test(machine)) {
-      const regexResult = markRegex.exec(machine);
-      const slug = `${regexResult![1] + (regexResult![2] || '')}`;
+  const resourceExtractorSubclasses = getAllSubclasses(
+    'AFGBuildableResourceExtractor'
+  );
 
-      const resolvedSlug = slugToCustomMachineGroup(slug);
+  const producerMachines = Object.entries(BuildingClasses)
+    .filter(([, entry]) => {
+      return resourceExtractorSubclasses.has('A' + entry);
+    })
+    .map((item) => item[0]);
 
-      if (!machineClassMap.get(resolvedSlug)) {
-        machineClassMap.set(resolvedSlug, []);
-      }
+  const processingMachines = [
+    ...new Set(
+      Object.values(RecipeJson)
+        .map((recipe) => recipe?.mProducedIn)
+        .flat()
+        .map((producedIn) => producedIn?.slug)
+        .filter((item) => item)
+    ),
+  ];
 
-      if (!upgradePathMap.get(slug)) {
-        upgradePathMap.set(slug, []);
-      }
-      machineClassMap.get(resolvedSlug)!.push(machine);
-      upgradePathMap.get(slug)!.push(machine);
-      upgradePathMap.get(slug)!.sort();
-      reverseUpgradePathMap.set(machine, slug);
-    } else {
-      const resolvedSlug = slugToCustomMachineGroup(machine);
-      if (!machineClassMap.get(resolvedSlug)) {
-        machineClassMap.set(resolvedSlug, []);
-      }
-      machineClassMap.get(resolvedSlug)!.push(machine);
-    }
-  });
+  const sinkMachines = Object.entries(BuildingClasses)
+    .filter(([, entry]) => {
+      return whitelistedSinkMachines.has('A' + entry);
+    })
+    .map((item) => item[0]);
 
-  const machineClassReverseMap = new Map<string, string>();
+  const allMachines = new Set([
+    ...producerMachines,
+    ...processingMachines,
+    ...sinkMachines,
+  ]);
 
-  for (const entry of machineClassMap.entries()) {
-    const [key, value] = entry;
-    value.sort();
-    machineClassImageMap.set(key, value[0]);
-    value.forEach((className) => {
-      machineClassReverseMap.set(className, key);
-    });
+  for (const machine of blacklistedMachines) {
+    allMachines.delete(machine);
   }
 
-  //TODO: make this into a better system to allow for placing machines easier. The above is mostly cruft to remove
-  // the buildables we don't want to show.
+  const {
+    machineClassMap,
+    reverseMachineClassMap,
+    imageMap,
+  } = generateClassMap(allMachines);
+
   return {
     machineClassMap,
-    machineClassImageMap,
-    machineClassReverseMap,
-    upgradePathMap,
-    reverseUpgradePathMap,
+    reverseMachineClassMap,
+    imageMap,
   };
 };
 
-const getBuildableMachinesByClass = memoize(getBuildableMachinesFn);
+const getBuildableConnectionsFnV2 = () => {
+  const beltSubclasses = getAllSubclasses('AFGBuildableConveyorBelt');
 
-const getBuildableConnectionsFn = () => {
-  const buildables = new Set(Object.keys(ConnectionsJson));
-
-  const machineByType = new Map<string, any[]>();
-
-  Object.entries(BuildingJson)
-    .filter(([key]) => {
-      return buildables.has(key);
+  const belts = Object.entries(BuildingClasses)
+    .filter(([, entry]) => {
+      return beltSubclasses.has('A' + entry);
     })
-    .forEach(([slug, value]) => {
-      if (!machineByType.get(value.buildingType)) {
-        machineByType.set(value.buildingType, []);
-      }
+    .map((item) => item[0]);
 
-      machineByType.get(value.buildingType)!.push(slug);
-    });
+  const pipeSubclasses = getAllSubclasses('AFGBuildablePipeline');
 
-  for (const value of machineByType.values()) {
-    value.sort();
-  }
+  const pipes = Object.entries(BuildingClasses)
+    .filter(([, entry]) => {
+      return pipeSubclasses.has('A' + entry);
+    })
+    .map((item) => item[0]);
 
-  for (const key of machineByType.keys()) {
-    if (key !== 'ITEMPASSTHROUGH' && key !== 'FLUIDPASSTHROUGH') {
-      machineByType.delete(key);
-    }
-  }
+  const allMachines = new Set([...belts, ...pipes]);
 
-  const allMachines: string[] = [...machineByType.values()].flat(1);
-  const connectionClassMap = new Map<string, string[]>();
-  const connectionClassImageMap = new Map<string, string>();
-  const upgradePathMap = new Map<string, string[]>();
-  const reverseUpgradePathMap = new Map<string, string>();
-
-  allMachines.forEach((machine) => {
-    const markRegex = /^(.*)-mk[0-9]+(-.*)?$/;
-    if (markRegex.test(machine)) {
-      const regexResult = markRegex.exec(machine);
-      const slug = `${regexResult![1] + (regexResult![2] || '')}`;
-
-      const resolvedSlug = slugToCustomMachineGroup(slug);
-
-      if (!connectionClassMap.get(resolvedSlug)) {
-        connectionClassMap.set(resolvedSlug, []);
-      }
-
-      if (!upgradePathMap.get(slug)) {
-        upgradePathMap.set(slug, []);
-      }
-      connectionClassMap.get(resolvedSlug)!.push(machine);
-      upgradePathMap.get(slug)!.push(machine);
-      upgradePathMap.get(slug)!.sort();
-      reverseUpgradePathMap.set(machine, slug);
-    } else {
-      const resolvedSlug = slugToCustomMachineGroup(machine);
-      // console.log(resolvedSlug);
-      if (!connectionClassMap.get(resolvedSlug)) {
-        connectionClassMap.set(resolvedSlug, []);
-      }
-
-      if (!upgradePathMap.get(resolvedSlug)) {
-        upgradePathMap.set(resolvedSlug, []);
-      }
-      connectionClassMap.get(resolvedSlug)!.push(machine);
-      upgradePathMap.get(resolvedSlug)!.push(machine);
-      upgradePathMap.get(resolvedSlug)!.sort();
-      reverseUpgradePathMap.set(machine, resolvedSlug);
-    }
-  });
-
-  const connectionClassReverseMap = new Map<string, string>();
-
-  for (const entry of connectionClassMap.entries()) {
-    const [key, value] = entry;
-    value.sort();
-    connectionClassImageMap.set(key, value[0]);
-    value.forEach((className) => {
-      connectionClassReverseMap.set(className, key);
-    });
-  }
+  const {
+    machineClassMap,
+    reverseMachineClassMap,
+    imageMap,
+  } = generateClassMap(allMachines);
 
   return {
-    connectionClassMap,
-    connectionClassImageMap,
-    connectionClassReverseMap,
-    upgradePathMap,
-    reverseUpgradePathMap,
+    machineClassMap,
+    reverseMachineClassMap,
+    imageMap,
   };
 };
 
-export const getBuildableConnections = memoize(getBuildableConnectionsFn);
+export const getBuildableConnections = memoize(getBuildableConnectionsFnV2);
 
 const getBuildableConnectionClassesFn = () => {
-  return [...getBuildableConnections().connectionClassMap.keys()];
+  return [...getBuildableConnections().machineClassMap.keys()];
 };
 
 export const getBuildableConnectionClasses = memoize(
   getBuildableConnectionClassesFn
 );
 
-export const getUpgradesForConnectionClass = (connectionClass: string) => {
-  return getBuildableConnections().upgradePathMap.get(connectionClass);
+export const getTiersForConnectionClass = (connectionClass: string) => {
+  return getBuildableConnections().machineClassMap.get(connectionClass);
 };
 
+export const getBuildableMachines = memoize(getBuildableMachinesFnV2);
+
 export const getBuildableMachineClassNames = lazyFunc(() => {
-  return [...getBuildableMachinesByClass().machineClassMap.keys()];
+  return [...getBuildableMachines().machineClassMap.keys()];
 });
 
 const getBuildableMachinesFromClassNameFn = (name: string) => {
-  return getBuildableMachinesByClass().machineClassMap.get(name);
+  return getBuildableMachines().machineClassMap.get(name);
 };
 
 export const getBuildableMachinesFromClassName = memoize(
   getBuildableMachinesFromClassNameFn
 );
 
-export const getClassNameFromBuildableMachines = (() => {
-  const reverseClassListMap = getBuildableMachinesByClass()
-    .machineClassReverseMap;
+export const getClassNameForBuildableMachine = (() => {
+  const reverseClassListMap = getBuildableMachines().reverseMachineClassMap;
   return (name: string) => {
     return reverseClassListMap.get(name);
   };
 })();
 
 const getAllBuildableMachinesFn = () => {
-  const classListMap = getBuildableMachinesByClass().machineClassMap;
+  const classListMap = getBuildableMachines().machineClassMap;
   return [...classListMap.values()].flat();
 };
 
 export const getAllBuildableMachines = memoize(getAllBuildableMachinesFn);
 
 export const getBuildableMachineClassIcon = (() => {
-  const classImageMap = getBuildableMachinesByClass().machineClassImageMap;
+  const classImageMap = getBuildableMachines().imageMap;
   return (name: string) => {
     return classImageMap.get(name);
   };
 })();
 
+//TODO:LOCALIZE
 export const getBuildingName = (slug: string) => {
-  return (BuildingJson as any)[slug].name;
+  return (
+    (BuildingJson as any)[slug]?.mDisplayName?.sourceString ||
+    `Missing building name: ${slug}`
+  );
 };
 
 export const getBuildingImageName = (slug: string) => {
   const itemSlug = slug.replace(/^building/g, 'item');
 
-  return (ItemJson as any)[itemSlug].icon;
+  return (ItemJson as any)[itemSlug]?.mSmallIcon?.slug;
 };
 
 export const getBuildingIcon = (slug: string, size: number) => {
   const itemSlug = slug.replace(/^building/g, 'item');
 
-  const itemImageSlug = `${getBuildingImageName(itemSlug)}.${256}.png`;
+  const itemImageSlug = getBuildingImageName(itemSlug);
 
-  const image = SGImageRepo.get(itemImageSlug);
+  return getImageFileFromSlug(itemImageSlug, size);
 
-  if (!image) {
-    throw new Error('No image found: ' + itemImageSlug);
-  }
-  return image;
-};
-
-export const getRecipesByMachineClass = (machineClass: string) => {
-  const machineClasses = new Set(
-    getBuildableMachinesFromClassName(machineClass) || []
-  );
-  const entries = Object.entries(RecipeJson).filter(([slug, recipe]) => {
-    return recipe.producedIn.some((element) => machineClasses.has(element));
-  });
-
-  const obj = {} as any;
-  Object.keys(RecipeJson).forEach((key: string) => {
-    obj[key] = (RecipeJson as any)[key].name;
-  });
-  // console.log(JSON.stringify(obj, null, 2));
-  return entries;
-};
-
-export const getBuildingsByType = (type: string) => {
-  return Object.entries(BuildingJson)
-    .filter(([key, value]) => {
-      return value.buildingType === type;
-    })
-    .map(([key]) => key);
+  // const tinyImage =
+  // 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
+  // if (!image) {
+  //   throw new Error('No image found: ' + itemImageSlug);
+  // }
+  // return image;
 };
 
 export const getBuildingDefinition = (buildingSlug: string) => {
@@ -308,18 +240,18 @@ export const getBuildingDefinition = (buildingSlug: string) => {
 };
 
 export const getTier = (buildingSlug: string) => {
-  const base = getBuildableMachinesByClass();
-  const map = base.reverseUpgradePathMap;
+  const base = getBuildableMachines();
+  const map = base.reverseMachineClassMap;
   if (map.get(buildingSlug)) {
     const mainClass = map.get(buildingSlug)!;
-    return base.upgradePathMap.get(mainClass)!.indexOf(buildingSlug) + 1;
+    return base.machineClassMap.get(mainClass)!.indexOf(buildingSlug) + 1;
   } else {
     const connectionBase = getBuildableConnections();
-    const connectionBaseMap = connectionBase.reverseUpgradePathMap;
+    const connectionBaseMap = connectionBase.reverseMachineClassMap;
     if (connectionBaseMap.get(buildingSlug)) {
       const mainClass = connectionBaseMap.get(buildingSlug)!;
       return (
-        connectionBase.upgradePathMap.get(mainClass)!.indexOf(buildingSlug) + 1
+        connectionBase.machineClassMap.get(mainClass)!.indexOf(buildingSlug) + 1
       );
     } else {
       return 0;
@@ -358,20 +290,26 @@ export const getInputsForBuilding = (
 ) => {
   const building = (ConnectionsJson as any)[buildingSlug];
   const outputObject: SatisGraphtoryEdgeProps[] = [];
-  for (let i = 0; i < building.inputBelts || 0; i++) {
-    outputObject.push({
-      resourceForm: EResourceForm.RF_SOLID,
-      id: uuidGen(),
-      externalInteractionManager,
-    });
+  for (const type of building.resourceFormMap[`${EResourceForm.RF_SOLID}`] ||
+    []) {
+    if (type === EFactoryConnectionDirection.FCD_INPUT) {
+      outputObject.push({
+        resourceForm: EResourceForm.RF_SOLID,
+        id: uuidGen(),
+        externalInteractionManager,
+      });
+    }
   }
 
-  for (let i = 0; i < building.inputPipes || 0; i++) {
-    outputObject.push({
-      resourceForm: EResourceForm.RF_LIQUID,
-      id: uuidGen(),
-      externalInteractionManager,
-    });
+  for (const type of building.resourceFormMap[`${EResourceForm.RF_LIQUID}`] ||
+    []) {
+    if (type === EPipeConnectionType.PCT_CONSUMER) {
+      outputObject.push({
+        resourceForm: EResourceForm.RF_LIQUID,
+        id: uuidGen(),
+        externalInteractionManager,
+      });
+    }
   }
 
   return outputObject;
@@ -409,26 +347,36 @@ export const getAnyConnectionsForBuilding = (
       sides.push(EdgeAttachmentSide.LEFT);
       break;
     default:
-      for (let i = 0; i < building.anyPipes || 0; i++) {
-        outputObject.push({
-          resourceForm: EResourceForm.RF_LIQUID,
-          id: uuidGen(),
-          biDirectional: true,
-          externalInteractionManager,
-        });
+      for (const type of building.resourceFormMap[
+        `${EResourceForm.RF_LIQUID}`
+      ] || []) {
+        if (type === EPipeConnectionType.PCT_ANY) {
+          outputObject.push({
+            resourceForm: EResourceForm.RF_LIQUID,
+            id: uuidGen(),
+            biDirectional: true,
+            externalInteractionManager,
+          });
+        }
       }
+
       return outputObject;
   }
 
-  for (let i = 0; i < building.anyPipes || 0; i++) {
-    outputObject.push({
-      resourceForm: EResourceForm.RF_LIQUID,
-      id: uuidGen(),
-      biDirectional: true,
-      targetNodeAttachmentSide: sides[i],
-      sourceNodeAttachmentSide: sides[i],
-      externalInteractionManager,
-    });
+  let i = 0;
+  for (const type of building.resourceFormMap[`${EResourceForm.RF_LIQUID}`] ||
+    []) {
+    if (type === EPipeConnectionType.PCT_ANY) {
+      outputObject.push({
+        resourceForm: EResourceForm.RF_LIQUID,
+        id: uuidGen(),
+        biDirectional: true,
+        targetNodeAttachmentSide: sides[i],
+        sourceNodeAttachmentSide: sides[i],
+        externalInteractionManager,
+      });
+      i++;
+    }
   }
 
   return outputObject;
@@ -441,13 +389,13 @@ export const getSupportedResourceForm = (
 
   const building = (BuildingJson as any)[buildingSlug];
 
-  if (!building.supportedResourceForms) {
+  if (!building.mAllowedResourceForms) {
     throw new Error(
       'Building ' + buildingSlug + ' does not support resourceForms'
     );
   }
 
-  return building.supportedResourceForms;
+  return building.mAllowedResourceForms;
 };
 
 export const getConnectionsByResourceForm = (
@@ -456,12 +404,12 @@ export const getConnectionsByResourceForm = (
   const supportedBuildings = [];
 
   const whitelistedConnections = [
-    ...getBuildableConnections().connectionClassReverseMap.keys(),
+    ...getBuildableConnections().reverseMachineClassMap.keys(),
   ];
   for (const connection of whitelistedConnections) {
     const building = (BuildingJson as any)[connection];
 
-    if (new Set(building.supportedResourceForms).has(resourceForm)) {
+    if (new Set(building.mAllowedResourceForms || []).has(resourceForm)) {
       supportedBuildings.push(connection);
     }
   }

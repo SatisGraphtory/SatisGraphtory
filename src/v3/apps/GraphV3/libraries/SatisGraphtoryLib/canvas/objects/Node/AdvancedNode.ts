@@ -15,7 +15,7 @@ import { createImageIcon } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/can
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
 import { createNodeHighlight } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeHighlight';
 
-import { getClassNameFromBuildableMachines } from 'v3/data/loaders/buildings';
+import { getClassNameForBuildableMachine } from 'v3/data/loaders/buildings';
 // import { createBadge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/Badge';
 import {
   EFFICIENCY_OFFSET_X,
@@ -47,7 +47,7 @@ import EdgeTemplate, {
   EdgeType,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { GraphObject } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
-import { EResourceForm } from '.data-landing/interfaces/enums';
+import { EResourceForm } from '.DataLanding/interfaces/enums';
 import {
   optimizeSidesFunction,
   rearrangeEdgesFunction,
@@ -77,7 +77,7 @@ export default class AdvancedNode extends NodeTemplate {
     this.container.addChild(this.container.getHighLight());
     this.container.setHighLightOn(false);
 
-    const machineType = getClassNameFromBuildableMachines(machineName)!;
+    const machineType = getClassNameForBuildableMachine(machineName)!;
 
     container.boundCalculator = createBackboard(0, 0, machineType);
     container.addChild(container.boundCalculator);

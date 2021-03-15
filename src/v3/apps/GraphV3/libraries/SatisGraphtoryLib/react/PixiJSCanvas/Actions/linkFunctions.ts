@@ -7,7 +7,7 @@ import {
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
 import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EmptyEdge';
-import { EResourceForm } from '.data-landing/interfaces/enums';
+import { EResourceForm } from '.DataLanding/interfaces/enums';
 import { getSupportedResourceForm } from 'v3/data/loaders/buildings';
 import populateNewEdgeData from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/satisgraphtory/populateNewEdgeData';
 import { GlobalGraphAppStore } from '../../../stores/GlobalGraphAppStore';
