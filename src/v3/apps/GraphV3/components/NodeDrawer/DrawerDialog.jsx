@@ -148,9 +148,11 @@ function RecipeSelector(props) {
 }
 
 function resolveSelectedChoice(machineTypes, translate, selectedMachine) {
-  const choices = machineTypes.map((slug) => {
-    return { value: slug, label: translate(slug) };
-  });
+  const choices = machineTypes
+    .map((slug) => {
+      return { value: slug, label: translate(slug) };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   const filteredChoices =
     choices.length === 1
