@@ -41,3 +41,5 @@ it("Doesn't do anything", () => {});
 //     belt.simulate(50, dt)
 //   }
 // });
+
+export {};

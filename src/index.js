@@ -1,3 +1,5 @@
+import 'utils/immerSetup';
+
 import 'development/wdyr';
 
 import 'react-app-polyfill/ie9';
@@ -8,7 +10,6 @@ import 'core-js/features/array/flat';
 import './index.css';
 
 import 'reflect-metadata';
-import { enableMapSet } from 'immer';
 import React from 'react';
 import { render } from 'react-dom';
 import { LocalizeProvider } from 'react-localize-redux';
@@ -28,7 +29,6 @@ import 'fontsource-roboto-condensed/latin-400.css';
 import 'fontsource-roboto-mono/400-normal.css';
 import 'fontsource-roboto-slab/400-normal.css';
 
-enableMapSet();
 PIXI.utils.skipHello();
 
 const store = getStore();
