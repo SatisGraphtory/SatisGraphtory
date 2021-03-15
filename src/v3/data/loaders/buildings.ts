@@ -265,20 +265,33 @@ export const getOutputsForBuilding = (
 ) => {
   const building = (ConnectionsJson as any)[buildingSlug];
   const outputObject: SatisGraphtoryEdgeProps[] = [];
-  for (let i = 0; i < building.outputBelts || 0; i++) {
-    outputObject.push({
-      resourceForm: EResourceForm.RF_SOLID,
-      id: uuidGen(),
-      externalInteractionManager,
-    });
+
+  for (const [type, numEntries] of Object.entries(
+    building?.resourceFormMap[`${EResourceForm.RF_SOLID}`] || {}
+  )) {
+    if (type === `${EFactoryConnectionDirection.FCD_OUTPUT}`) {
+      for (let i = 0; i < (numEntries as number); i++) {
+        outputObject.push({
+          resourceForm: EResourceForm.RF_SOLID,
+          id: uuidGen(),
+          externalInteractionManager,
+        });
+      }
+    }
   }
 
-  for (let i = 0; i < building.outputPipes || 0; i++) {
-    outputObject.push({
-      resourceForm: EResourceForm.RF_LIQUID,
-      id: uuidGen(),
-      externalInteractionManager,
-    });
+  for (const [type, numEntries] of Object.entries(
+    building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
+  )) {
+    if (type === `${EPipeConnectionType.PCT_PRODUCER}`) {
+      for (let i = 0; i < (numEntries as number); i++) {
+        outputObject.push({
+          resourceForm: EResourceForm.RF_LIQUID,
+          id: uuidGen(),
+          externalInteractionManager,
+        });
+      }
+    }
   }
 
   return outputObject;
@@ -290,25 +303,32 @@ export const getInputsForBuilding = (
 ) => {
   const building = (ConnectionsJson as any)[buildingSlug];
   const outputObject: SatisGraphtoryEdgeProps[] = [];
-  for (const type of building.resourceFormMap[`${EResourceForm.RF_SOLID}`] ||
-    []) {
-    if (type === EFactoryConnectionDirection.FCD_INPUT) {
-      outputObject.push({
-        resourceForm: EResourceForm.RF_SOLID,
-        id: uuidGen(),
-        externalInteractionManager,
-      });
+
+  for (const [type, numEntries] of Object.entries(
+    building?.resourceFormMap[`${EResourceForm.RF_SOLID}`] || {}
+  )) {
+    if (type === `${EFactoryConnectionDirection.FCD_INPUT}`) {
+      for (let i = 0; i < (numEntries as number); i++) {
+        outputObject.push({
+          resourceForm: EResourceForm.RF_SOLID,
+          id: uuidGen(),
+          externalInteractionManager,
+        });
+      }
     }
   }
 
-  for (const type of building.resourceFormMap[`${EResourceForm.RF_LIQUID}`] ||
-    []) {
-    if (type === EPipeConnectionType.PCT_CONSUMER) {
-      outputObject.push({
-        resourceForm: EResourceForm.RF_LIQUID,
-        id: uuidGen(),
-        externalInteractionManager,
-      });
+  for (const [type, numEntries] of Object.entries(
+    building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
+  )) {
+    if (type === `${EPipeConnectionType.PCT_CONSUMER}`) {
+      for (let i = 0; i < (numEntries as number); i++) {
+        outputObject.push({
+          resourceForm: EResourceForm.RF_LIQUID,
+          id: uuidGen(),
+          externalInteractionManager,
+        });
+      }
     }
   }
 
@@ -347,35 +367,38 @@ export const getAnyConnectionsForBuilding = (
       sides.push(EdgeAttachmentSide.LEFT);
       break;
     default:
-      for (const type of building.resourceFormMap[
-        `${EResourceForm.RF_LIQUID}`
-      ] || []) {
-        if (type === EPipeConnectionType.PCT_ANY) {
-          outputObject.push({
-            resourceForm: EResourceForm.RF_LIQUID,
-            id: uuidGen(),
-            biDirectional: true,
-            externalInteractionManager,
-          });
+      for (const [type, numEntries] of Object.entries(
+        building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
+      )) {
+        if (type === `${EPipeConnectionType.PCT_ANY}`) {
+          for (let i = 0; i < (numEntries as number); i++) {
+            outputObject.push({
+              resourceForm: EResourceForm.RF_LIQUID,
+              id: uuidGen(),
+              biDirectional: true,
+              externalInteractionManager,
+            });
+          }
         }
       }
 
       return outputObject;
   }
 
-  let i = 0;
-  for (const type of building.resourceFormMap[`${EResourceForm.RF_LIQUID}`] ||
-    []) {
-    if (type === EPipeConnectionType.PCT_ANY) {
-      outputObject.push({
-        resourceForm: EResourceForm.RF_LIQUID,
-        id: uuidGen(),
-        biDirectional: true,
-        targetNodeAttachmentSide: sides[i],
-        sourceNodeAttachmentSide: sides[i],
-        externalInteractionManager,
-      });
-      i++;
+  for (const [type, numEntries] of Object.entries(
+    building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
+  )) {
+    if (type === `${EPipeConnectionType.PCT_ANY}`) {
+      for (let i = 0; i < (numEntries as number); i++) {
+        outputObject.push({
+          resourceForm: EResourceForm.RF_LIQUID,
+          id: uuidGen(),
+          biDirectional: true,
+          targetNodeAttachmentSide: sides[i],
+          sourceNodeAttachmentSide: sides[i],
+          externalInteractionManager,
+        });
+      }
     }
   }
 
