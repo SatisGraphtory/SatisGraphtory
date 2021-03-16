@@ -16,7 +16,7 @@ import {
 
 export const initialGraphAppStateId = uuidGen();
 
-const generateNewCanvasStore = (theme: any, id: string) => {
+const generateNewCanvasStore = (id: string) => {
   return {
     application: (null as unknown) as PIXI.Application,
     pixiViewport: (null as unknown) as Viewport,
@@ -30,6 +30,7 @@ const generateNewCanvasStore = (theme: any, id: string) => {
     selectedObjects: [] as GraphObject[],
     aliasCanvasObjects: new Set() as Set<any>,
     triggerUpdate: 1,
+    selectedMachineAdditionalProps: (null as unknown) as string,
     selectedMachine: (null as unknown) as string,
     selectedRecipe: (null as unknown) as string,
     selectedEdge: (null as unknown) as string,
@@ -37,7 +38,6 @@ const generateNewCanvasStore = (theme: any, id: string) => {
     sourceNodeId: '',
     externalInteractionManager: new ExternalInteractionManager(
       new EventEmitter(),
-      theme,
       id
     ),
     snapToGrid: false,
@@ -52,10 +52,7 @@ const generateNewCanvasStore = (theme: any, id: string) => {
 };
 
 export const GlobalGraphAppStore = new Store({
-  [initialGraphAppStateId]: generateNewCanvasStore(
-    null,
-    initialGraphAppStateId
-  ),
+  [initialGraphAppStateId]: generateNewCanvasStore(initialGraphAppStateId),
 });
 
 export const populateCanvasStore = (
@@ -87,6 +84,8 @@ export const populateCanvasStore = (
       resolution: sgDevicePixelRatio,
       antialias: true,
     });
+
+    newApplication.renderer.plugins.interaction.interactionFrequency = 1;
 
     const viewport = new Viewport({
       screenWidth: width,

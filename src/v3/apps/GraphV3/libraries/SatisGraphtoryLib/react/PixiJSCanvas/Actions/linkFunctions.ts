@@ -163,6 +163,7 @@ export const onEndLink = (
 
       // TODO: Fix this resource form resolution, maybe from the interface?
       // TODO: items?
+
       const edge = populateNewEdgeData(
         null,
         possibleResourceForms[0],
@@ -171,7 +172,11 @@ export const onEndLink = (
         targetNode
       );
 
-      addGraphChildrenFromWithinStateUpdate([edge], pixiCanvasStateId, true);
+      addGraphChildrenFromWithinStateUpdate(
+        [edge],
+        pixiCanvasStateId,
+        true
+      )(sParent);
     },
     resetNodes(pixiCanvasStateId),
     setUpLinkInitialState(

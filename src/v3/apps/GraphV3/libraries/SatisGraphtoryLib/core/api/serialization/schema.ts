@@ -5,7 +5,7 @@ import {
   buildingEnums,
   itemEnums,
   recipeEnums,
-} from 'data/protobuf/protobufEnums';
+} from '.DataWarehouse/enums/dataEnums';
 
 const createEnumMap = (enumSource: any) => {
   const baseEnums: Record<string, number> = {};
@@ -50,6 +50,7 @@ export const getSchemaForVersion = (version: string) => {
     8: ['machineTypeId', 'BuildingEnum'],
     9: ['x', 'double'],
     10: ['y', 'double'],
+    11: ['additionalData', 'string'],
     // TODO: Group?
   };
 

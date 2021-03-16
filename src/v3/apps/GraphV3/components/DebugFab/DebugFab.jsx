@@ -80,7 +80,8 @@ export const makeComplexChain = (
     -1 * depth * 300,
     300,
     translate,
-    externalInteractionManager
+    externalInteractionManager,
+    null
   );
 
   const allNodes = [nodeData];
@@ -157,7 +158,8 @@ export const makeComplexChain = (
             (depth + 1) * -300,
             300 * (index + 1),
             translate,
-            externalInteractionManager
+            externalInteractionManager,
+            null
           );
 
           // console.log('Created node', nodeData);

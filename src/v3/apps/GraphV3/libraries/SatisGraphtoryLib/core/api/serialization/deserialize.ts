@@ -92,6 +92,7 @@ const deserializeGraphObjects = (
       y,
       machineTypeId: buildingSlug,
       overclock,
+      additionalData,
     } = node;
 
     const populatedNode = new AdvancedNode({
@@ -122,6 +123,7 @@ const deserializeGraphObjects = (
         return edgeNumberToInstance.get(num)!;
       }),
       externalInteractionManager,
+      additionalData,
     });
 
     nodeNumberToInstance.set(node.id, populatedNode);

@@ -40,6 +40,7 @@ export abstract class NodeTemplate extends GraphObject {
   connectionsOffsetMap: Map<EdgeAttachmentSide, number[]> = new Map();
   connectionsIndexMap: Map<EdgeTemplate, number> = new Map();
   connectionsSideMap: Map<EdgeTemplate, EdgeAttachmentSide> = new Map();
+  additionalData: Map<string, any> = new Map();
 
   protected constructor(props: SatisGraphtoryNodeProps) {
     super(props);
@@ -54,6 +55,7 @@ export abstract class NodeTemplate extends GraphObject {
       overclock,
       machineName,
       tier,
+      additionalData,
     } = props;
 
     this.recipe = recipeName;
@@ -67,6 +69,12 @@ export abstract class NodeTemplate extends GraphObject {
 
     this.id = id;
     this.container.id = id;
+
+    if (additionalData) {
+      for (const [key, value] of Object.entries(JSON.parse(additionalData))) {
+        this.additionalData.set(key, value);
+      }
+    }
 
     // Sorting here is mostly useless.
     // TODO: figure out if we should just kill this if we don't do any weird operations when
@@ -91,6 +99,20 @@ export abstract class NodeTemplate extends GraphObject {
         return a.getAttachmentSide(this) - b.getAttachmentSide(this);
       });
     }
+  }
+
+  getAdditionalData() {
+    if (!this.additionalData.size) {
+      return '';
+    }
+
+    function mapToObj(map: any) {
+      const obj = {};
+      for (let [k, v] of map) (obj as any)[k] = v;
+      return obj;
+    }
+
+    return JSON.stringify(this.additionalData, mapToObj);
   }
 
   setPosition(x: number, y: number) {

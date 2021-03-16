@@ -16,6 +16,7 @@ export interface SatisGraphtoryNodeProps extends GraphObjectProps {
   machineLabel: string;
   tier: number;
   position: SatisGraphtoryCoordinate;
+  additionalData: string | null;
 }
 
 export interface SatisGraphtoryEdgeProps extends GraphObjectProps {

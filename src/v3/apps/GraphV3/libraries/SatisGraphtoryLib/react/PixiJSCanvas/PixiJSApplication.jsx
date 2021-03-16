@@ -58,6 +58,7 @@ function PixiJSApplication(props) {
     openModals,
     selectedRecipe,
     selectedMachine,
+    selectedMachineAdditionalProps,
     selectedEdge,
     externalInteractionManager,
     triggerUpdate,
@@ -398,7 +399,8 @@ function PixiJSApplication(props) {
           newPos.x,
           newPos.y,
           translate,
-          externalInteractionManager
+          externalInteractionManager,
+          selectedMachineAdditionalProps
         );
 
         addGraphChildren([nodeData], pixiCanvasStateId);
@@ -450,6 +452,7 @@ function PixiJSApplication(props) {
     triggerUpdate,
     snapToGrid,
     autoShuffleEdge,
+    selectedMachineAdditionalProps,
   ]);
 
   React.useEffect(() => {

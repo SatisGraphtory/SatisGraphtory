@@ -21,7 +21,8 @@ const populateNewNodeData = (
   x: number,
   y: number,
   translateFunction: (arg0: string) => string,
-  externalInteractionManager: ExternalInteractionManager
+  externalInteractionManager: ExternalInteractionManager,
+  additionalBuildingProps: string | null
 ) => {
   return new AdvancedNode({
     position: {
@@ -48,6 +49,7 @@ const populateNewNodeData = (
       externalInteractionManager
     ).map((props) => new EmptyEdge(props)),
     externalInteractionManager,
+    additionalData: additionalBuildingProps || '',
   });
 };
 

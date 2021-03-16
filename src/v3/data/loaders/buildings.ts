@@ -226,13 +226,6 @@ export const getBuildingIcon = (slug: string, size: number) => {
   const itemImageSlug = getBuildingImageName(itemSlug);
 
   return getImageFileFromSlug(itemImageSlug, size);
-
-  // const tinyImage =
-  // 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D';
-  // if (!image) {
-  //   throw new Error('No image found: ' + itemImageSlug);
-  // }
-  // return image;
 };
 
 export const getBuildingDefinition = (buildingSlug: string) => {
@@ -259,6 +252,25 @@ export const getTier = (buildingSlug: string) => {
   }
 };
 
+function getEdgeConnections(
+  building: any,
+  resourceForm: EResourceForm,
+  subTypeEnum: any
+) {
+  const outputObject = [] as EResourceForm[];
+  for (const [type, numEntries] of Object.entries(
+    building?.resourceFormMap[`${resourceForm}`] || {}
+  )) {
+    if (type === `${subTypeEnum}`) {
+      for (let i = 0; i < (numEntries as number); i++) {
+        outputObject.push(resourceForm);
+      }
+    }
+  }
+
+  return outputObject;
+}
+
 export const getOutputsForBuilding = (
   buildingSlug: string,
   externalInteractionManager: ExternalInteractionManager
@@ -266,33 +278,29 @@ export const getOutputsForBuilding = (
   const building = (ConnectionsJson as any)[buildingSlug];
   const outputObject: SatisGraphtoryEdgeProps[] = [];
 
-  for (const [type, numEntries] of Object.entries(
-    building?.resourceFormMap[`${EResourceForm.RF_SOLID}`] || {}
-  )) {
-    if (type === `${EFactoryConnectionDirection.FCD_OUTPUT}`) {
-      for (let i = 0; i < (numEntries as number); i++) {
-        outputObject.push({
-          resourceForm: EResourceForm.RF_SOLID,
-          id: uuidGen(),
-          externalInteractionManager,
-        });
-      }
-    }
-  }
+  getEdgeConnections(
+    building,
+    EResourceForm.RF_SOLID,
+    EFactoryConnectionDirection.FCD_OUTPUT
+  ).forEach((rf) => {
+    outputObject.push({
+      resourceForm: rf,
+      id: uuidGen(),
+      externalInteractionManager,
+    });
+  });
 
-  for (const [type, numEntries] of Object.entries(
-    building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
-  )) {
-    if (type === `${EPipeConnectionType.PCT_PRODUCER}`) {
-      for (let i = 0; i < (numEntries as number); i++) {
-        outputObject.push({
-          resourceForm: EResourceForm.RF_LIQUID,
-          id: uuidGen(),
-          externalInteractionManager,
-        });
-      }
-    }
-  }
+  getEdgeConnections(
+    building,
+    EResourceForm.RF_LIQUID,
+    EPipeConnectionType.PCT_PRODUCER
+  ).forEach((rf) => {
+    outputObject.push({
+      resourceForm: rf,
+      id: uuidGen(),
+      externalInteractionManager,
+    });
+  });
 
   return outputObject;
 };
@@ -304,33 +312,29 @@ export const getInputsForBuilding = (
   const building = (ConnectionsJson as any)[buildingSlug];
   const outputObject: SatisGraphtoryEdgeProps[] = [];
 
-  for (const [type, numEntries] of Object.entries(
-    building?.resourceFormMap[`${EResourceForm.RF_SOLID}`] || {}
-  )) {
-    if (type === `${EFactoryConnectionDirection.FCD_INPUT}`) {
-      for (let i = 0; i < (numEntries as number); i++) {
-        outputObject.push({
-          resourceForm: EResourceForm.RF_SOLID,
-          id: uuidGen(),
-          externalInteractionManager,
-        });
-      }
-    }
-  }
+  getEdgeConnections(
+    building,
+    EResourceForm.RF_SOLID,
+    EFactoryConnectionDirection.FCD_INPUT
+  ).forEach((rf) => {
+    outputObject.push({
+      resourceForm: rf,
+      id: uuidGen(),
+      externalInteractionManager,
+    });
+  });
 
-  for (const [type, numEntries] of Object.entries(
-    building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
-  )) {
-    if (type === `${EPipeConnectionType.PCT_CONSUMER}`) {
-      for (let i = 0; i < (numEntries as number); i++) {
-        outputObject.push({
-          resourceForm: EResourceForm.RF_LIQUID,
-          id: uuidGen(),
-          externalInteractionManager,
-        });
-      }
-    }
-  }
+  getEdgeConnections(
+    building,
+    EResourceForm.RF_LIQUID,
+    EPipeConnectionType.PCT_CONSUMER
+  ).forEach((rf) => {
+    outputObject.push({
+      resourceForm: rf,
+      id: uuidGen(),
+      externalInteractionManager,
+    });
+  });
 
   return outputObject;
 };
@@ -367,40 +371,36 @@ export const getAnyConnectionsForBuilding = (
       sides.push(EdgeAttachmentSide.LEFT);
       break;
     default:
-      for (const [type, numEntries] of Object.entries(
-        building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
-      )) {
-        if (type === `${EPipeConnectionType.PCT_ANY}`) {
-          for (let i = 0; i < (numEntries as number); i++) {
-            outputObject.push({
-              resourceForm: EResourceForm.RF_LIQUID,
-              id: uuidGen(),
-              biDirectional: true,
-              externalInteractionManager,
-            });
-          }
-        }
-      }
+      getEdgeConnections(
+        building,
+        EResourceForm.RF_LIQUID,
+        EPipeConnectionType.PCT_ANY
+      ).forEach((rf) => {
+        outputObject.push({
+          biDirectional: true,
+          resourceForm: rf,
+          id: uuidGen(),
+          externalInteractionManager,
+        });
+      });
 
       return outputObject;
   }
 
-  for (const [type, numEntries] of Object.entries(
-    building?.resourceFormMap[`${EResourceForm.RF_LIQUID}`] || {}
-  )) {
-    if (type === `${EPipeConnectionType.PCT_ANY}`) {
-      for (let i = 0; i < (numEntries as number); i++) {
-        outputObject.push({
-          resourceForm: EResourceForm.RF_LIQUID,
-          id: uuidGen(),
-          biDirectional: true,
-          targetNodeAttachmentSide: sides[i],
-          sourceNodeAttachmentSide: sides[i],
-          externalInteractionManager,
-        });
-      }
-    }
-  }
+  getEdgeConnections(
+    building,
+    EResourceForm.RF_LIQUID,
+    EPipeConnectionType.PCT_ANY
+  ).forEach((rf, index) => {
+    outputObject.push({
+      resourceForm: rf,
+      id: uuidGen(),
+      biDirectional: true,
+      targetNodeAttachmentSide: sides[index],
+      sourceNodeAttachmentSide: sides[index],
+      externalInteractionManager,
+    });
+  });
 
   return outputObject;
 };
@@ -412,15 +412,27 @@ export const getSupportedResourceForm = (
 
   const building = (BuildingJson as any)[buildingSlug];
 
-  if (!building.mAllowedResourceForms) {
-    throw new Error(
-      'Building ' + buildingSlug + ' does not support resourceForms'
+  if (!building)
+    throw new Error('Could not find entry for building slug ' + buildingSlug);
+
+  if (building.mAllowedResourceForms) {
+    return building.mAllowedResourceForms;
+  }
+
+  const buildingConnections = (ConnectionsJson as any)[buildingSlug];
+
+  if (buildingConnections) {
+    return Object.keys(buildingConnections.resourceFormMap).map((item) =>
+      parseInt(item, 10)
     );
   }
 
-  return building.mAllowedResourceForms;
+  throw new Error(
+    'Building ' + buildingSlug + ' does not support resourceForms'
+  );
 };
 
+//@BROKEN
 export const getConnectionsByResourceForm = (
   resourceForm: EResourceForm
 ): string[] => {
