@@ -85,7 +85,7 @@ export const populateCanvasStore = (
       antialias: true,
     });
 
-    newApplication.renderer.plugins.interaction.interactionFrequency = 1;
+    newApplication.renderer.plugins.interaction.interactionFrequency = 5;
 
     const viewport = new Viewport({
       screenWidth: width,
