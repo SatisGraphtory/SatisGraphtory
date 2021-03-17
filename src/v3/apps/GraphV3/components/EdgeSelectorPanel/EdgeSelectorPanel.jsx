@@ -98,7 +98,10 @@ function EdgeSelectorPanel() {
   React.useEffect(() => {
     if (!canvasReady) return;
     GlobalGraphAppStore.update((s) => {
-      s[pixiCanvasStateId].selectedEdge = initialVal;
+      const instance = s[pixiCanvasStateId];
+      instance.stampOptions = Object.assign({}, instance.stampOptions || null, {
+        edge: initialVal,
+      });
     });
   }, [canvasReady, initialVal, pixiCanvasStateId]);
 

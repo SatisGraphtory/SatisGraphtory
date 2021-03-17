@@ -7,10 +7,10 @@ import {
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
 import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EmptyEdge';
-import { EResourceForm } from '.DataLanding/interfaces/enums';
-import { getSupportedResourceForm } from 'v3/data/loaders/buildings';
+import { getSupportedConnectionTypes } from 'v3/data/loaders/buildings';
 import populateNewEdgeData from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/satisgraphtory/populateNewEdgeData';
 import { GlobalGraphAppStore } from '../../../stores/GlobalGraphAppStore';
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export const setHighLightInStateChildren = (
   state: any,
@@ -24,13 +24,13 @@ export const setHighLightInStateChildren = (
 
 export const hasEmptyEdgesWithSelectedResource = (
   edges: EdgeTemplate[],
-  supportedResourceForms: Set<EResourceForm>
+  supportedConnectionTypes: Set<ConnectionTypeEnum>
 ) => {
   let found = false;
 
   for (const edge of edges) {
     if (edge instanceof EmptyEdge) {
-      if (supportedResourceForms.has(edge.resourceForm)) {
+      if (supportedConnectionTypes.has(edge.connectionType)) {
         found = true;
         break;
       }
@@ -45,7 +45,7 @@ export const resetState = () => () => {};
 export const onCancelLink = (
   pixiCanvasStateId: string,
   eventEmitter: any,
-  supportedResourceForms: Set<EResourceForm>,
+  supportedConnectionTypes: Set<ConnectionTypeEnum>,
   selectedEdge: any
 ) => () => {
   GlobalGraphAppStore.update([
@@ -53,7 +53,7 @@ export const onCancelLink = (
     setUpLinkInitialState(
       eventEmitter,
       pixiCanvasStateId,
-      supportedResourceForms,
+      supportedConnectionTypes,
       selectedEdge
     ),
   ]);
@@ -75,7 +75,6 @@ export const resetNodes = (pixiCanvasStateId: string) => (sParent: any) => {
 export const onStartLink = (pixiCanvasStateId: string, selectedEdge: any) => (
   startLinkId: string
 ) => {
-  console.log('Starting link func');
   GlobalGraphAppStore.update((sParent) => {
     const s = sParent[pixiCanvasStateId];
 
@@ -89,13 +88,13 @@ export const onStartLink = (pixiCanvasStateId: string, selectedEdge: any) => (
       retrievedNode.container.setHighLightOn(true);
     }
 
-    const supportedResourceForms = new Set(
-      getSupportedResourceForm(selectedEdge)
+    const supportedConnectionTypes = new Set(
+      getSupportedConnectionTypes(selectedEdge)
     );
 
     let hasOutputAvailable = hasEmptyEdgesWithSelectedResource(
       [...retrievedNode.outputConnections, ...retrievedNode.anyConnections],
-      supportedResourceForms
+      supportedConnectionTypes
     );
 
     if (hasOutputAvailable) {
@@ -105,7 +104,7 @@ export const onStartLink = (pixiCanvasStateId: string, selectedEdge: any) => (
 
         let found = hasEmptyEdgesWithSelectedResource(
           [...child.inputConnections, ...child.anyConnections],
-          supportedResourceForms
+          supportedConnectionTypes
         );
 
         child.container.alpha = 1;
@@ -132,7 +131,7 @@ export const onStartLink = (pixiCanvasStateId: string, selectedEdge: any) => (
 export const onEndLink = (
   pixiCanvasStateId: string,
   eventEmitter: any,
-  supportedResourceForms: Set<EResourceForm>,
+  supportedConnectionTypes: Set<ConnectionTypeEnum>,
   selectedEdge: any
 ) => (endLinkId: string) => {
   GlobalGraphAppStore.update([
@@ -159,7 +158,7 @@ export const onEndLink = (
         throw new Error('source or target not found');
       }
 
-      const possibleResourceForms = getSupportedResourceForm(selectedEdge);
+      const possibleResourceForms = getSupportedConnectionTypes(selectedEdge);
 
       // TODO: Fix this resource form resolution, maybe from the interface?
       // TODO: items?
@@ -182,7 +181,7 @@ export const onEndLink = (
     setUpLinkInitialState(
       eventEmitter,
       pixiCanvasStateId,
-      supportedResourceForms,
+      supportedConnectionTypes,
       selectedEdge
     ),
   ]);
@@ -191,7 +190,7 @@ export const onEndLink = (
 export const setUpLinkInitialState = (
   eventEmitter: any,
   pixiCanvasStateId: string,
-  supportedResourceForms: Set<EResourceForm>,
+  supportedConnectionTypes: Set<ConnectionTypeEnum>,
   selectedEdge: any
 ) => (t: any) => {
   const s = t[pixiCanvasStateId];
@@ -199,7 +198,7 @@ export const setUpLinkInitialState = (
     if (child instanceof NodeTemplate) {
       let selected = hasEmptyEdgesWithSelectedResource(
         [...child.outputConnections, ...child.anyConnections],
-        supportedResourceForms
+        supportedConnectionTypes
       );
       if (selected) {
         child.container.alpha = 1;
@@ -209,13 +208,13 @@ export const setUpLinkInitialState = (
           onEndLink(
             pixiCanvasStateId,
             eventEmitter,
-            supportedResourceForms,
+            supportedConnectionTypes,
             selectedEdge
           ),
           onCancelLink(
             pixiCanvasStateId,
             eventEmitter,
-            supportedResourceForms,
+            supportedConnectionTypes,
             selectedEdge
           )
         );
@@ -226,13 +225,13 @@ export const setUpLinkInitialState = (
           onEndLink(
             pixiCanvasStateId,
             eventEmitter,
-            supportedResourceForms,
+            supportedConnectionTypes,
             selectedEdge
           ),
           onCancelLink(
             pixiCanvasStateId,
             eventEmitter,
-            supportedResourceForms,
+            supportedConnectionTypes,
             selectedEdge
           )
         );

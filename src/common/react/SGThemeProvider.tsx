@@ -1,6 +1,6 @@
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import React from 'react';
 import Colors from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Colors';
-import { EResourceForm } from '.DataLanding/interfaces/enums';
 
 // import { Store } from 'pullstate';
 //
@@ -65,8 +65,8 @@ const graphTheme = {
     any: Colors.RED,
   },
   edges: {
-    [EResourceForm.RF_SOLID]: Colors.BELT_ORANGE,
-    [EResourceForm.RF_LIQUID]: Colors.BLUE,
+    [ConnectionTypeEnum.AFGBuildableConveyorBelt]: Colors.BELT_ORANGE,
+    [ConnectionTypeEnum.AFGBuildablePipeline]: Colors.BLUE,
     default: Colors.ORANGE,
     highlight: Colors.DARK_ORANGE,
     text: {

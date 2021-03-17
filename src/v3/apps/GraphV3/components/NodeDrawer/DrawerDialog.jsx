@@ -171,11 +171,17 @@ function DrawerDialog(props) {
 
   const { translate } = React.useContext(LocaleContext);
 
-  const {
-    selectedMachine,
-    selectedRecipe,
-    pixiCanvasStateId,
-  } = React.useContext(PixiJSCanvasContext);
+  const { pixiCanvasStateId, stampOptions } = React.useContext(
+    PixiJSCanvasContext
+  );
+
+  let selectedMachine = null;
+  let selectedRecipe = null;
+
+  if (stampOptions) {
+    selectedMachine = stampOptions.machine;
+    selectedRecipe = stampOptions.recipe;
+  }
 
   let resolvedSelectedMachine = null;
   let machineChoices;
@@ -223,9 +229,10 @@ function DrawerDialog(props) {
   const setSelectedDataButton = () => {
     GlobalGraphAppStore.update((s) => {
       const instance = s[pixiCanvasStateId];
-
-      instance.selectedMachine = building;
-      instance.selectedRecipe = recipe;
+      instance.stampOptions = Object.assign({}, instance.stampOptions || null, {
+        machine: building,
+        recipe: recipe,
+      });
     });
     setOpenDialog(false);
     closeDrawerFunction(false);

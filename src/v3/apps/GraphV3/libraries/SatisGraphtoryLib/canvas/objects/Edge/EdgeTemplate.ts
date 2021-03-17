@@ -4,8 +4,8 @@ import {
   GraphObjectContainer,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
 import { SatisGraphtoryEdgeProps } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/types';
-import { EResourceForm } from '.DataLanding/interfaces/enums';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export enum EdgeType {
   INVALID,
@@ -24,7 +24,8 @@ export default abstract class EdgeTemplate extends GraphObject {
   id: string;
   targetNode: NodeTemplate | null;
   sourceNode: NodeTemplate | null;
-  resourceForm: EResourceForm = EResourceForm.RF_SOLID;
+  connectionType: ConnectionTypeEnum =
+    ConnectionTypeEnum.AFGBuildableConveyorBelt;
   container: EdgeContainer;
   // The left node usually
   sourceNodeAttachmentSide: EdgeAttachmentSide = EdgeAttachmentSide.RIGHT;
@@ -46,7 +47,7 @@ export default abstract class EdgeTemplate extends GraphObject {
       sourceNode,
       targetNode,
       id,
-      resourceForm,
+      connectionType,
       sourceNodeAttachmentSide,
       targetNodeAttachmentSide,
       connectorName,
@@ -63,8 +64,8 @@ export default abstract class EdgeTemplate extends GraphObject {
 
     this.connectorName = connectorName || null;
 
-    if (resourceForm != null) {
-      this.resourceForm = resourceForm;
+    if (connectionType != null) {
+      this.connectionType = connectionType;
     }
 
     if (sourceNodeAttachmentSide !== undefined) {

@@ -17,6 +17,7 @@ import BuildingClassMap from '.DataWarehouse/main/BuildingClassMap.json';
 import RecipeJson from '.DataWarehouse/main/Recipes.json';
 import ConnectionsJson from '.DataWarehouse/main/Connections.json';
 import { getImageFileFromSlug } from './images';
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 const getAllSubclasses = (baseClass: string) => {
   const allClasses = new Set<string>();
@@ -254,16 +255,16 @@ export const getTier = (buildingSlug: string) => {
 
 function getEdgeConnections(
   building: any,
-  resourceForm: EResourceForm,
+  connectionType: ConnectionTypeEnum,
   subTypeEnum: any
 ) {
-  const outputObject = [] as EResourceForm[];
+  const outputObject = [] as ConnectionTypeEnum[];
   for (const [type, numEntries] of Object.entries(
-    building?.resourceFormMap[`${resourceForm}`] || {}
+    building?.connectionMap[`${connectionType}`] || {}
   )) {
     if (type === `${subTypeEnum}`) {
       for (let i = 0; i < (numEntries as number); i++) {
-        outputObject.push(resourceForm);
+        outputObject.push(connectionType);
       }
     }
   }
@@ -280,11 +281,11 @@ export const getOutputsForBuilding = (
 
   getEdgeConnections(
     building,
-    EResourceForm.RF_SOLID,
+    ConnectionTypeEnum.AFGBuildableConveyorBelt,
     EFactoryConnectionDirection.FCD_OUTPUT
-  ).forEach((rf) => {
+  ).forEach((ct) => {
     outputObject.push({
-      resourceForm: rf,
+      connectionType: ct,
       id: uuidGen(),
       externalInteractionManager,
     });
@@ -292,11 +293,11 @@ export const getOutputsForBuilding = (
 
   getEdgeConnections(
     building,
-    EResourceForm.RF_LIQUID,
+    ConnectionTypeEnum.AFGBuildablePipeline,
     EPipeConnectionType.PCT_PRODUCER
-  ).forEach((rf) => {
+  ).forEach((ct) => {
     outputObject.push({
-      resourceForm: rf,
+      connectionType: ct,
       id: uuidGen(),
       externalInteractionManager,
     });
@@ -314,11 +315,11 @@ export const getInputsForBuilding = (
 
   getEdgeConnections(
     building,
-    EResourceForm.RF_SOLID,
+    ConnectionTypeEnum.AFGBuildableConveyorBelt,
     EFactoryConnectionDirection.FCD_INPUT
-  ).forEach((rf) => {
+  ).forEach((ct) => {
     outputObject.push({
-      resourceForm: rf,
+      connectionType: ct,
       id: uuidGen(),
       externalInteractionManager,
     });
@@ -326,11 +327,11 @@ export const getInputsForBuilding = (
 
   getEdgeConnections(
     building,
-    EResourceForm.RF_LIQUID,
+    ConnectionTypeEnum.AFGBuildablePipeline,
     EPipeConnectionType.PCT_CONSUMER
-  ).forEach((rf) => {
+  ).forEach((ct) => {
     outputObject.push({
-      resourceForm: rf,
+      connectionType: ct,
       id: uuidGen(),
       externalInteractionManager,
     });
@@ -373,12 +374,12 @@ export const getAnyConnectionsForBuilding = (
     default:
       getEdgeConnections(
         building,
-        EResourceForm.RF_LIQUID,
+        ConnectionTypeEnum.AFGBuildablePipeline,
         EPipeConnectionType.PCT_ANY
-      ).forEach((rf) => {
+      ).forEach((ct) => {
         outputObject.push({
           biDirectional: true,
-          resourceForm: rf,
+          connectionType: ct,
           id: uuidGen(),
           externalInteractionManager,
         });
@@ -389,11 +390,11 @@ export const getAnyConnectionsForBuilding = (
 
   getEdgeConnections(
     building,
-    EResourceForm.RF_LIQUID,
+    ConnectionTypeEnum.AFGBuildablePipeline,
     EPipeConnectionType.PCT_ANY
-  ).forEach((rf, index) => {
+  ).forEach((ct, index) => {
     outputObject.push({
-      resourceForm: rf,
+      connectionType: ct,
       id: uuidGen(),
       biDirectional: true,
       targetNodeAttachmentSide: sides[index],
@@ -405,9 +406,9 @@ export const getAnyConnectionsForBuilding = (
   return outputObject;
 };
 
-export const getSupportedResourceForm = (
+export const getSupportedConnectionTypes = (
   buildingSlug: string
-): EResourceForm[] => {
+): ConnectionTypeEnum[] => {
   if (!buildingSlug) return [];
 
   const building = (BuildingJson as any)[buildingSlug];
@@ -415,14 +416,10 @@ export const getSupportedResourceForm = (
   if (!building)
     throw new Error('Could not find entry for building slug ' + buildingSlug);
 
-  if (building.mAllowedResourceForms) {
-    return building.mAllowedResourceForms;
-  }
-
   const buildingConnections = (ConnectionsJson as any)[buildingSlug];
 
   if (buildingConnections) {
-    return Object.keys(buildingConnections.resourceFormMap).map((item) =>
+    return Object.keys(buildingConnections.connectionMap).map((item) =>
       parseInt(item, 10)
     );
   }
@@ -433,7 +430,7 @@ export const getSupportedResourceForm = (
 };
 
 //@BROKEN
-export const getConnectionsByResourceForm = (
+export const getConnectionsByConnectionType = (
   resourceForm: EResourceForm
 ): string[] => {
   const supportedBuildings = [];

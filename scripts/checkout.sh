@@ -9,7 +9,7 @@ DESTINATION=./src/.${REPOSITORY}
 if [[ ! -d "${DESTINATION}" ]]; then
   if [[ -z "${CLONE_TOKEN}" ]]; then
     git clone \
-      https://github.com/SatisGraphtory/${REPOSITORY} \
+      git@github.com:SatisGraphtory/${REPOSITORY}.git \
       --quiet \
       --reference-if-able ../${REPOSITORY} \
       -n \

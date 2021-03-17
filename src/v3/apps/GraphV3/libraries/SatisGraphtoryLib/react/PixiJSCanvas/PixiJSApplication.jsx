@@ -28,7 +28,7 @@ import {
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStore';
 import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
 import { LocaleContext } from 'v3/components/LocaleProvider';
-import { getSupportedResourceForm } from 'v3/data/loaders/buildings';
+import { getSupportedConnectionTypes } from 'v3/data/loaders/buildings';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -56,10 +56,8 @@ function PixiJSApplication(props) {
     canvasReady,
     aliasCanvasObjects,
     openModals,
-    selectedRecipe,
-    selectedMachine,
     selectedMachineAdditionalProps,
-    selectedEdge,
+    stampOptions,
     externalInteractionManager,
     triggerUpdate,
     snapToGrid,
@@ -69,13 +67,21 @@ function PixiJSApplication(props) {
   const styles = useStyles();
 
   const canvasRef = React.useRef();
-  const originalCanvasRef = React.useRef(null);
-
-  const lasTargetIsCanvas = React.useRef(false);
   const lastMode = React.useRef();
+  const originalCanvasRef = React.useRef(null);
+  const lasTargetIsCanvas = React.useRef(false);
   const keypressHandled = React.useRef(false);
-
   const lastMouseStateRef = React.useRef(MouseState.INVALID);
+
+  let selectedRecipe = null;
+  let selectedMachine = null;
+  let selectedEdge = null;
+
+  if (stampOptions) {
+    selectedRecipe = stampOptions.recipe;
+    selectedMachine = stampOptions.machine;
+    selectedEdge = stampOptions.edge;
+  }
 
   const { translate } = React.useContext(LocaleContext);
 
@@ -422,7 +428,7 @@ function PixiJSApplication(props) {
       onSelectObjects([]);
 
       const supportedResourceForms = new Set(
-        getSupportedResourceForm(selectedEdge)
+        getSupportedConnectionTypes(selectedEdge)
       );
 
       GlobalGraphAppStore.update([

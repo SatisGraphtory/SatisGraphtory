@@ -1,8 +1,8 @@
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
-import { EResourceForm } from '.DataLanding/interfaces/enums';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { GraphObjectProps } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export interface SatisGraphtoryNodeProps extends GraphObjectProps {
   id: string;
@@ -21,7 +21,7 @@ export interface SatisGraphtoryNodeProps extends GraphObjectProps {
 
 export interface SatisGraphtoryEdgeProps extends GraphObjectProps {
   id: string;
-  resourceForm?: EResourceForm;
+  connectionType?: ConnectionTypeEnum;
   sourceNode?: NodeTemplate;
   targetNode?: NodeTemplate;
   sourceNodeAttachmentSide?: EdgeAttachmentSide;

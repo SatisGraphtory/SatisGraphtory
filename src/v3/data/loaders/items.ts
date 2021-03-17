@@ -1,5 +1,6 @@
 import ItemJson from '.DataWarehouse/main/Items.json';
 import ItemClassJson from '.DataWarehouse/main/ItemClasses.json';
+import ConnectionResourceFormsJson from '.DataWarehouse/main/ConnectionResourceForms.json';
 import memoize from 'fast-memoize';
 import { getBuildingImageName } from 'v3/data/loaders/buildings';
 import { getMachineCraftableRecipeDefinitionList } from 'v3/data/loaders/recipes';
@@ -65,6 +66,19 @@ const getAllItemsFn = () => {
 
 export const getItemResourceForm = (itemSlug: string) => {
   return (getAllItemsFn() as Record<string, any>)[itemSlug].mForm;
+};
+
+const resourceFormToConnectionTypeMap = new Map<number, number>();
+
+for (const [key, values] of Object.entries(ConnectionResourceFormsJson)) {
+  for (const value of values) {
+    resourceFormToConnectionTypeMap.set(value, parseInt(key, 10));
+  }
+}
+
+export const getConnectionTypeNeededForItem = (itemSlug: string) => {
+  const form = (getAllItemsFn() as Record<string, any>)[itemSlug].mForm;
+  return resourceFormToConnectionTypeMap.get(form)!;
 };
 
 export const getMachineCraftableItems = memoize(getMachineCraftableItemsFn);

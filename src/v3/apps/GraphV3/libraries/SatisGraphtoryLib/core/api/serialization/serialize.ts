@@ -236,7 +236,7 @@ export const serializeEdge = (
     id: getOrCreateId(edge.id, edgeIdToNumberMap, edgeNumberId),
     sourceNodeId,
     targetNodeId,
-    resourceForm: edge.resourceForm,
+    connectionType: edge.connectionType,
     biDirectional: edge.biDirectional,
     sourceNodeAttachmentSide: edge.sourceNodeAttachmentSide,
     targetNodeAttachmentSide: edge.targetNodeAttachmentSide,

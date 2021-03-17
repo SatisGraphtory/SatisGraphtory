@@ -47,7 +47,6 @@ import EdgeTemplate, {
   EdgeType,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { GraphObject } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
-import { EResourceForm } from '.DataLanding/interfaces/enums';
 import {
   optimizeSidesFunction,
   rearrangeEdgesFunction,
@@ -58,6 +57,7 @@ import {
   GlobalGraphAppStore,
   triggerCanvasUpdateFunction,
 } from '../../../stores/GlobalGraphAppStore';
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export default class AdvancedNode extends NodeTemplate {
   connectionsMap: Map<EdgeAttachmentSide, EdgeTemplate[]> = new Map();
@@ -368,8 +368,8 @@ export default class AdvancedNode extends NodeTemplate {
 
       let dotTexture;
 
-      switch (edge.resourceForm) {
-        case EResourceForm.RF_LIQUID:
+      switch (edge.connectionType) {
+        case ConnectionTypeEnum.AFGBuildablePipeline:
           if (direction === EdgeType.INPUT) {
             dotTexture = PIXI.utils.TextureCache['inRectangle'];
           } else if (direction === EdgeType.OUTPUT) {
@@ -378,7 +378,7 @@ export default class AdvancedNode extends NodeTemplate {
             dotTexture = PIXI.utils.TextureCache['anyRectangle'];
           }
           break;
-        case EResourceForm.RF_SOLID:
+        case ConnectionTypeEnum.AFGBuildableConveyorBelt:
         default:
           if (direction === EdgeType.INPUT) {
             dotTexture = PIXI.utils.TextureCache['inCircle'];

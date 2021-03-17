@@ -14,7 +14,7 @@ import { getTierText } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/ap
 import { EDGE_TIER_STYLE } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/style/textStyles';
 import { getTier } from 'v3/data/loaders/buildings';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
-import { EResourceForm } from '.DataLanding/interfaces/enums';
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export default class SimpleEdge extends EdgeTemplate {
   graphicsObject: PIXI.Graphics;
@@ -144,13 +144,13 @@ export default class SimpleEdge extends EdgeTemplate {
     const theme = this.getInteractionManager().getTheme();
 
     let style = theme.edges.default;
-    switch (this.resourceForm) {
-      case EResourceForm.RF_LIQUID:
-      case EResourceForm.RF_SOLID:
-        style = theme.edges[this.resourceForm];
+    switch (this.connectionType) {
+      case ConnectionTypeEnum.AFGBuildableConveyorBelt:
+      case ConnectionTypeEnum.AFGBuildablePipeline:
+        style = theme.edges[this.connectionType];
         break;
       default:
-        console.error(`Unsupported resource form: ${this.resourceForm}`);
+        console.error(`Unsupported connection type: ${this.connectionType}`);
     }
 
     this.graphicsObject.lineStyle(LINE_THICKNESS, style, 1);

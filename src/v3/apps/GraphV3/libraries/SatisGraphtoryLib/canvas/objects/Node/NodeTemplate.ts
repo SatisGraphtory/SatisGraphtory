@@ -16,6 +16,7 @@ import {
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Sizes';
 import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EmptyEdge';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
+import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export class NodeContainer extends GraphObjectContainer {
   public boundCalculator: any = null;
@@ -129,7 +130,7 @@ export abstract class NodeTemplate extends GraphObject {
     for (let i = 0; i < this.inputConnections.length; i++) {
       if (this.inputConnections[i] === edge) {
         this.inputConnections[i] = new EmptyEdge({
-          resourceForm: edge.resourceForm,
+          connectionType: edge.connectionType,
           id: edge.id,
           externalInteractionManager: this.getInteractionManager(),
         });
@@ -139,7 +140,7 @@ export abstract class NodeTemplate extends GraphObject {
     for (let i = 0; i < this.outputConnections.length; i++) {
       if (this.outputConnections[i] === edge) {
         this.outputConnections[i] = new EmptyEdge({
-          resourceForm: edge.resourceForm,
+          connectionType: edge.connectionType,
           id: edge.id,
           externalInteractionManager: this.getInteractionManager(),
         });
@@ -149,7 +150,7 @@ export abstract class NodeTemplate extends GraphObject {
     for (let i = 0; i < this.anyConnections.length; i++) {
       if (this.anyConnections[i] === edge) {
         this.anyConnections[i] = new EmptyEdge({
-          resourceForm: edge.resourceForm,
+          connectionType: edge.connectionType,
           id: edge.id,
           biDirectional: true,
           externalInteractionManager: this.getInteractionManager(),
@@ -193,7 +194,11 @@ export abstract class NodeTemplate extends GraphObject {
   //   throw new Error('No empty index found');
   // }
 
-  public findClosestEmpty(arr: EdgeTemplate[], otherNode: NodeTemplate) {
+  public findClosestEmpty(
+    arr: EdgeTemplate[],
+    otherNode: NodeTemplate,
+    edgeType: ConnectionTypeEnum
+  ) {
     const otherCoordinateX = otherNode.container.position.x + NODE_WIDTH / 2;
     const otherCoordinateY = otherNode.container.position.y + NODE_HEIGHT / 2;
 
@@ -201,15 +206,17 @@ export abstract class NodeTemplate extends GraphObject {
     let side = -1;
 
     for (let i = 0; i < arr.length; i++) {
-      if (arr[i].sourceNode == null || arr[i].targetNode == null) {
-        const { x, y } = this.getConnectionCoordinate(arr[i]);
-        const a = x - otherCoordinateX;
-        const b = y - otherCoordinateY;
+      if (arr[i].connectionType === edgeType) {
+        if (arr[i].sourceNode == null || arr[i].targetNode == null) {
+          const { x, y } = this.getConnectionCoordinate(arr[i]);
+          const a = x - otherCoordinateX;
+          const b = y - otherCoordinateY;
 
-        const dist = Math.sqrt(a * a + b * b);
-        if (dist < min) {
-          min = dist;
-          side = i;
+          const dist = Math.sqrt(a * a + b * b);
+          if (dist < min) {
+            min = dist;
+            side = i;
+          }
         }
       }
     }
@@ -234,7 +241,11 @@ export abstract class NodeTemplate extends GraphObject {
     if (!otherNode) throw new Error('Other node is null');
 
     if (edge.biDirectional) {
-      const firstNull = this.findClosestEmpty(this.anyConnections, otherNode);
+      const firstNull = this.findClosestEmpty(
+        this.anyConnections,
+        otherNode,
+        edge.connectionType
+      );
       const foundEdge = this.anyConnections[firstNull];
       this.anyConnections[firstNull] = foundEdge.replaceEdge(
         edge,
@@ -244,7 +255,11 @@ export abstract class NodeTemplate extends GraphObject {
     } else if (this.anyConnections.length) {
       // This is the special case where we have anyConnections but the pipe is NOT bidirectinal.
       // TODO: Fix this somehow
-      const firstNull = this.findClosestEmpty(this.anyConnections, otherNode);
+      const firstNull = this.findClosestEmpty(
+        this.anyConnections,
+        otherNode,
+        edge.connectionType
+      );
 
       const foundEdge = this.anyConnections[firstNull];
       this.anyConnections[firstNull] = foundEdge.replaceEdge(
@@ -253,7 +268,11 @@ export abstract class NodeTemplate extends GraphObject {
         useProvidedAttachmentSides
       );
     } else if (edgeType === EdgeType.INPUT) {
-      const firstNull = this.findClosestEmpty(this.inputConnections, otherNode);
+      const firstNull = this.findClosestEmpty(
+        this.inputConnections,
+        otherNode,
+        edge.connectionType
+      );
       const foundEdge = this.inputConnections[firstNull];
       this.inputConnections[firstNull] = foundEdge.replaceEdge(
         edge,
@@ -263,7 +282,8 @@ export abstract class NodeTemplate extends GraphObject {
     } else if (edgeType === EdgeType.OUTPUT) {
       const firstNull = this.findClosestEmpty(
         this.outputConnections,
-        otherNode
+        otherNode,
+        edge.connectionType
       );
       const foundEdge = this.outputConnections[firstNull];
       this.outputConnections[firstNull] = foundEdge.replaceEdge(

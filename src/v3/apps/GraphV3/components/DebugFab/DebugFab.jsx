@@ -20,7 +20,7 @@ import {
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStore';
 import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
 import { LocaleContext } from 'v3/components/LocaleProvider';
-import { getConnectionsByResourceForm } from 'v3/data/loaders/buildings';
+import { getConnectionsByConnectionType } from 'v3/data/loaders/buildings';
 import { getItemResourceForm } from 'v3/data/loaders/items';
 import {
   getMachinesFromMachineCraftableRecipe,
@@ -181,7 +181,7 @@ export const makeComplexChain = (
             recipe: selectedRecipe,
           });
 
-          const possibleConnections = getConnectionsByResourceForm(
+          const possibleConnections = getConnectionsByConnectionType(
             getItemResourceForm(item)
           );
           const possibleConnectionsIndex = Math.floor(

@@ -61,7 +61,7 @@ const deserializeGraphObjects = (
         sourceNodeAttachmentSide: edge.sourceNodeAttachmentSide,
         targetNodeAttachmentSide: edge.targetNodeAttachmentSide,
         biDirectional: edge.biDirectional,
-        resourceForm: edge.resourceForm,
+        connectionType: edge.connectionType,
         externalInteractionManager,
       });
       edgeNumberToInstance.set(edge.id, emptyEdge);
@@ -71,7 +71,7 @@ const deserializeGraphObjects = (
         sourceNodeAttachmentSide: edge.sourceNodeAttachmentSide,
         targetNodeAttachmentSide: edge.targetNodeAttachmentSide,
         biDirectional: edge.biDirectional,
-        resourceForm: edge.resourceForm,
+        connectionType: edge.connectionType,
         ignoreLinking: true,
         connectorName: edge.connectorTypeId,
         externalInteractionManager,

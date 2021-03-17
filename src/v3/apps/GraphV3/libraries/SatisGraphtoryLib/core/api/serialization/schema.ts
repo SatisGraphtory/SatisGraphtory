@@ -65,7 +65,7 @@ export const getSchemaForVersion = (version: string) => {
 
   const baseEdgeSchema = {
     1: ['id', 'uint32'],
-    2: ['resourceForm', 'uint32'],
+    2: ['connectionType', 'uint32'],
     3: ['sourceNodeId', 'uint32'],
     4: ['targetNodeId', 'uint32'],
     5: ['biDirectional', 'bool'],

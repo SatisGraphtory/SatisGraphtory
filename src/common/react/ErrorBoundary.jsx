@@ -32,6 +32,16 @@ if (process.env.NODE_ENV === 'production') {
   Sentry.init({
     dsn:
       'https://a1b8cacbf80d4d16afce2fb9cd39db2f@o416463.ingest.sentry.io/5311573',
+    beforeSend(event) {
+      const ua = window.navigator.userAgent;
+      const msie = ua?.indexOf('MSIE ');
+
+      if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv:11\./)) {
+        return null;
+      }
+
+      return event;
+    },
   });
 }
 
