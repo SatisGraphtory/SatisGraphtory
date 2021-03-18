@@ -7,7 +7,7 @@ import {
   getBuildableMachineClassIcon,
   getBuildingIcon,
 } from 'v3/data/loaders/buildings';
-import DrawerDialog from './DrawerDialog';
+import NodeCreationDialog from 'v3/apps/GraphV3/components/NodeDrawer/NodeCreationDialog';
 
 const useStyles = makeStyles((theme) => ({
   default: {
@@ -60,7 +60,6 @@ function DrawerButton(props) {
 
   if (props.type === 'building') {
     image = getBuildingIcon(getBuildableMachineClassIcon(nodeClass), 256);
-  } else {
   }
 
   return (
@@ -82,7 +81,7 @@ function DrawerButton(props) {
           </div>
         </Button>
         <LazyEvaluationWrapper evaluate={openDialog}>
-          <DrawerDialog
+          <NodeCreationDialog
             type={props.type}
             label={props.label}
             nodeClass={nodeClass}

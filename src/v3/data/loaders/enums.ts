@@ -12,6 +12,18 @@ const getEnumNamesFn = (enm: any) => {
   return names;
 };
 
+const getEnumValuesFn = (enm: any) => {
+  const names = [];
+  for (const enumMember in enm) {
+    const isValueProperty = parseInt(enumMember, 10) >= 0;
+    if (isValueProperty) {
+      names.push(enumMember);
+    }
+  }
+
+  return names;
+};
+
 const getEnumDisplayNamesFn = (enm: any, enumDisplayNameKey: any) => {
   const names = [];
   for (const enumMember in enm) {
@@ -23,6 +35,6 @@ const getEnumDisplayNamesFn = (enm: any, enumDisplayNameKey: any) => {
 
   return names;
 };
-
+export const getEnumValues = memoize(getEnumValuesFn);
 export const getEnumNames = memoize(getEnumNamesFn);
 export const getEnumDisplayNames = memoize(getEnumDisplayNamesFn);

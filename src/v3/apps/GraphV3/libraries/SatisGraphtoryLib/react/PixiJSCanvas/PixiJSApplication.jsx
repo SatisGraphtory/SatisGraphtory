@@ -57,7 +57,8 @@ function PixiJSApplication(props) {
     aliasCanvasObjects,
     openModals,
     selectedMachineAdditionalProps,
-    stampOptions,
+    nodeStampOptions,
+    edgeStampOptions,
     externalInteractionManager,
     triggerUpdate,
     snapToGrid,
@@ -77,10 +78,13 @@ function PixiJSApplication(props) {
   let selectedMachine = null;
   let selectedEdge = null;
 
-  if (stampOptions) {
-    selectedRecipe = stampOptions.recipe;
-    selectedMachine = stampOptions.machine;
-    selectedEdge = stampOptions.edge;
+  if (nodeStampOptions) {
+    selectedRecipe = nodeStampOptions.recipe;
+    selectedMachine = nodeStampOptions.machine;
+  }
+
+  if (edgeStampOptions) {
+    selectedEdge = edgeStampOptions.edge;
   }
 
   const { translate } = React.useContext(LocaleContext);

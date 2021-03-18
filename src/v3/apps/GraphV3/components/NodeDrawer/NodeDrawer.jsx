@@ -79,14 +79,16 @@ function NodeDrawer(props) {
   const { classes } = props;
   const [value, setValue] = React.useState(0);
 
-  const { stampOptions, mouseState } = React.useContext(PixiJSCanvasContext);
+  const { nodeStampOptions, mouseState } = React.useContext(
+    PixiJSCanvasContext
+  );
 
   let selectedMachine = null;
   let selectedRecipe = null;
 
-  if (stampOptions) {
-    selectedMachine = stampOptions.machine;
-    selectedRecipe = stampOptions.recipe;
+  if (nodeStampOptions) {
+    selectedMachine = nodeStampOptions.machine;
+    selectedRecipe = nodeStampOptions.recipe;
   }
 
   const { translate } = React.useContext(LocaleContext);

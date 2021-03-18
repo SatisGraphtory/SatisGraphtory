@@ -1,5 +1,6 @@
 import RecipeJson from '.DataWarehouse/main/Recipes.json';
 import memoize from 'fast-memoize';
+import { getBuildableMachinesFromClassName } from './buildings';
 
 const getAllRecipesFn = () => {
   return RecipeJson;
@@ -44,6 +45,23 @@ const getRecipesByMachineFn = (machineSlug: string) => {
 };
 
 export const getRecipesByMachine = memoize(getRecipesByMachineFn);
+
+const getRecipesByMachineClassFn = (machineClass: string) => {
+  const buildings = getBuildableMachinesFromClassName(machineClass)!;
+
+  const allRecipes = new Set<string>();
+
+  //TODO: Maybe some kind of check?
+  for (const building of buildings) {
+    for (const recipe of getRecipesByMachine(building)) {
+      allRecipes.add(recipe);
+    }
+  }
+
+  return [...allRecipes];
+};
+
+export const getRecipesByMachineClass = memoize(getRecipesByMachineClassFn);
 
 const getRecipesByItemProductFn = (itemSlug: string) => {
   return getRecipeList()

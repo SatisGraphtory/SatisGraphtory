@@ -16,12 +16,6 @@ import {
 
 export const initialGraphAppStateId = uuidGen();
 
-type StampOptions = {
-  machine: string | null;
-  recipe: string | null;
-  edge: string | null;
-};
-
 const generateNewCanvasStore = (id: string) => {
   return {
     application: (null as unknown) as PIXI.Application,
@@ -40,7 +34,8 @@ const generateNewCanvasStore = (id: string) => {
     selectedMachine: (null as unknown) as string,
     selectedRecipe: (null as unknown) as string,
     selectedEdge: (null as unknown) as string,
-    stampOptions: null as StampOptions | null,
+    edgeStampOptions: null as Record<string, string> | null,
+    nodeStampOptions: null as Record<string, string> | null,
     openModals: 0,
     sourceNodeId: '',
     externalInteractionManager: new ExternalInteractionManager(

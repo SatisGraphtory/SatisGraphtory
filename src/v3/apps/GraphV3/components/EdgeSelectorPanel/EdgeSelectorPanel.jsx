@@ -99,9 +99,13 @@ function EdgeSelectorPanel() {
     if (!canvasReady) return;
     GlobalGraphAppStore.update((s) => {
       const instance = s[pixiCanvasStateId];
-      instance.stampOptions = Object.assign({}, instance.stampOptions || null, {
-        edge: initialVal,
-      });
+      instance.edgeStampOptions = Object.assign(
+        {},
+        instance.edgeStampOptions || null,
+        {
+          edge: initialVal,
+        }
+      );
     });
   }, [canvasReady, initialVal, pixiCanvasStateId]);
 

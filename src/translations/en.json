@@ -45,5 +45,9 @@
   "building-smelter": "Smelter",
   "building-assembler": "Assembler",
   "building-constructor": "Constructor",
-  "building-manufacturer": "Manufacturer"
+  "building-manufacturer": "Manufacturer",
+  "config-selector-recipes": "Recipe",
+  "config-selector-machineTypes": "Machine Type",
+  "config-selector-nodePurity": "Node Purity",
+  "config-selector-extractedItem": "Node Resource"
 }

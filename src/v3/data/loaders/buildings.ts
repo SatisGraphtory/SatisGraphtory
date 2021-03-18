@@ -4,6 +4,7 @@ import {
   EFactoryConnectionDirection,
   EPipeConnectionType,
   EResourceForm,
+  EResourcePurity,
 } from '.DataLanding/interfaces/enums';
 import uuidGen from 'v3/utils/stringUtils';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
@@ -18,8 +19,13 @@ import RecipeJson from '.DataWarehouse/main/Recipes.json';
 import ConnectionsJson from '.DataWarehouse/main/Connections.json';
 import { getImageFileFromSlug } from './images';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
+import { getRecipesByMachineClass } from './recipes';
+import { getEnumDisplayNames, getEnumValues } from './enums';
 
-const getAllSubclasses = (baseClass: string) => {
+import { EResourcePurityDisplayName } from '.DataLanding/interfaces/enums/EResourcePurity';
+import { getResourcesByForm } from './items';
+
+const getAllSubclassesFn = (baseClass: string) => {
   const allClasses = new Set<string>();
   allClasses.add(baseClass);
   for (const claz of (BuildingClassMap as any)[baseClass] || []) {
@@ -30,6 +36,8 @@ const getAllSubclasses = (baseClass: string) => {
 
   return allClasses;
 };
+
+const getAllSubclasses = memoize(getAllSubclassesFn);
 
 function generateClassMap(allMachines: Set<string>) {
   const machineClassMap = new Map<string, string[]>();
@@ -63,6 +71,14 @@ function generateClassMap(allMachines: Set<string>) {
   return { machineClassMap, reverseMachineClassMap, imageMap };
 }
 
+const resourceExtractorSubclasses = getAllSubclasses(
+  'AFGBuildableResourceExtractor'
+);
+
+const toUnrealClassName = (classSlug: string) => {
+  return 'A' + classSlug;
+};
+
 const getBuildableMachinesFnV2 = () => {
   // Technically we should be using the connections from this?
   // const buildables = new Set(Object.keys(ConnectionsJsonV2));
@@ -77,13 +93,9 @@ const getBuildableMachinesFnV2 = () => {
 
   const whitelistedSinkMachines = new Set(['AFGBuildableSpaceElevator']);
 
-  const resourceExtractorSubclasses = getAllSubclasses(
-    'AFGBuildableResourceExtractor'
-  );
-
   const producerMachines = Object.entries(BuildingClasses)
     .filter(([, entry]) => {
-      return resourceExtractorSubclasses.has('A' + entry);
+      return resourceExtractorSubclasses.has(toUnrealClassName(entry));
     })
     .map((item) => item[0]);
 
@@ -427,6 +439,69 @@ export const getSupportedConnectionTypes = (
   throw new Error(
     'Building ' + buildingSlug + ' does not support resourceForms'
   );
+};
+
+const waterPumpSubclasses = getAllSubclasses('AFGBuildableWaterPump');
+
+export const getConfigurableOptionsByMachine = (classSlug: string) => {
+  const machineTypes = getBuildableMachinesFromClassName(classSlug)!;
+  const recipes = getRecipesByMachineClass(classSlug)!;
+  const baseTypes = {
+    machineTypes: {
+      options: machineTypes,
+    },
+    recipes: {
+      options: recipes,
+    },
+  } as Record<string, any>;
+
+  const sampleMachine = machineTypes[0]!;
+  const classType = toUnrealClassName(
+    (BuildingClasses as any)[sampleMachine as string]
+  );
+
+  if (resourceExtractorSubclasses.has(classType)) {
+    if (waterPumpSubclasses.has(classType)) {
+      baseTypes.nodePurity = {
+        options: [EResourcePurity.RP_Normal],
+        translations: [EResourcePurityDisplayName[EResourcePurity.RP_Normal]],
+      };
+    } else {
+      const purityNames = getEnumDisplayNames(
+        EResourcePurity,
+        EResourcePurityDisplayName
+      );
+      const purityValues = getEnumValues(EResourcePurity).slice(
+        0,
+        purityNames.length
+      );
+      baseTypes.nodePurity = {
+        options: purityValues,
+        translations: purityNames,
+      };
+    }
+
+    const buildingDefinition = getBuildingDefinition(sampleMachine);
+
+    if (buildingDefinition.mOnlyAllowCertainResources) {
+      baseTypes.extractedItem = {
+        options: (buildingDefinition.mAllowedResources || []).map(
+          (item: any) => item.slug
+        ),
+      };
+    } else {
+      const allowedResources = (buildingDefinition.mAllowedResourceForms || [])
+        .map((rf: number) => {
+          return getResourcesByForm(rf);
+        })
+        .flat();
+      baseTypes.extractedItem = {
+        options: allowedResources,
+      };
+    }
+  }
+
+  return baseTypes;
 };
 
 //@BROKEN
