@@ -100,7 +100,7 @@
     "react-scripts": "^4.0.3",
     "react-scroll-horizontal": "^1.6.4",
     "react-scrollbars-custom": "^4.0.25",
-    "react-select": "^3.0.8",
+    "react-select": "^4.2.1",
     "react-sortable-hoc": "^1.11.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",

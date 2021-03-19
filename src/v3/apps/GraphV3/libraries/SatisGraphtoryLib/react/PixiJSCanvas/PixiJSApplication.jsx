@@ -56,7 +56,6 @@ function PixiJSApplication(props) {
     canvasReady,
     aliasCanvasObjects,
     openModals,
-    selectedMachineAdditionalProps,
     nodeStampOptions,
     edgeStampOptions,
     externalInteractionManager,
@@ -74,18 +73,13 @@ function PixiJSApplication(props) {
   const keypressHandled = React.useRef(false);
   const lastMouseStateRef = React.useRef(MouseState.INVALID);
 
-  let selectedRecipe = null;
-  let selectedMachine = null;
   let selectedEdge = null;
-
-  if (nodeStampOptions) {
-    selectedRecipe = nodeStampOptions.recipe;
-    selectedMachine = nodeStampOptions.machine;
-  }
 
   if (edgeStampOptions) {
     selectedEdge = edgeStampOptions.edge;
   }
+
+  console.log(nodeStampOptions, edgeStampOptions);
 
   const { translate } = React.useContext(LocaleContext);
 
@@ -400,17 +394,15 @@ function PixiJSApplication(props) {
 
         const newPos = event.data.getLocalPosition(this.parent);
 
-        if (!selectedMachine) return;
+        if (!Object.keys(nodeStampOptions).length) return;
 
         const nodeData = populateNewNodeData(
-          selectedMachine,
-          selectedRecipe,
           100,
           newPos.x,
           newPos.y,
           translate,
           externalInteractionManager,
-          selectedMachineAdditionalProps
+          nodeStampOptions
         );
 
         addGraphChildren([nodeData], pixiCanvasStateId);
@@ -454,15 +446,13 @@ function PixiJSApplication(props) {
     pixiCanvasStateId,
     pixiViewport,
     selectedEdge,
-    selectedMachine,
-    selectedRecipe,
     theme,
     translate,
     viewportChildContainer,
     triggerUpdate,
     snapToGrid,
     autoShuffleEdge,
-    selectedMachineAdditionalProps,
+    nodeStampOptions,
   ]);
 
   React.useEffect(() => {

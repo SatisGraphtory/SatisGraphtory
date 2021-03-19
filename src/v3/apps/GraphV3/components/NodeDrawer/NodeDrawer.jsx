@@ -83,14 +83,6 @@ function NodeDrawer(props) {
     PixiJSCanvasContext
   );
 
-  let selectedMachine = null;
-  let selectedRecipe = null;
-
-  if (nodeStampOptions) {
-    selectedMachine = nodeStampOptions.machine;
-    selectedRecipe = nodeStampOptions.recipe;
-  }
-
   const { translate } = React.useContext(LocaleContext);
 
   const drawerOpen = mouseState === MouseState.ADD;
@@ -109,15 +101,35 @@ function NodeDrawer(props) {
 
   const usedClass = drawerOpen ? classes.drawer : classes.noDisplay;
 
-  let selectedMachineText = selectedMachine ? translate(selectedMachine) : '';
-  let selectedRecipeText = selectedRecipe
-    ? translate(selectedRecipe)
-    : 'No Recipe';
+  let selectedText;
 
-  const selectedText =
-    selectedMachine || selectedRecipe
-      ? `${selectedMachineText} - ${selectedRecipeText}`
-      : translate('selected_none');
+  if (nodeStampOptions && Object.keys(nodeStampOptions).length > 0) {
+    // Handling extractors
+    let newSelectedTextParts = [];
+    if (nodeStampOptions.nodePurity) {
+      newSelectedTextParts.push(nodeStampOptions.nodePurity.label);
+      if (nodeStampOptions.machineType) {
+        newSelectedTextParts.push(nodeStampOptions.machineType.label);
+      }
+      if (nodeStampOptions.extractedItem) {
+        newSelectedTextParts.push(
+          '(' + nodeStampOptions.extractedItem.label + ')'
+        );
+      }
+      selectedText = newSelectedTextParts.join(' ');
+    } else {
+      if (nodeStampOptions.machineType) {
+        newSelectedTextParts.push(nodeStampOptions.machineType.label);
+      }
+      if (nodeStampOptions.recipe) {
+        newSelectedTextParts.push(nodeStampOptions.recipe.label);
+      }
+
+      selectedText = newSelectedTextParts.join(' - ');
+    }
+  } else {
+    selectedText = translate('selected_none');
+  }
 
   return (
     <Drawer
@@ -175,7 +187,7 @@ function NodeDrawer(props) {
             textColor="primary"
           >
             <Tab label="By Machine" icon={<DomainIcon />} />
-            <Tab label="By Resource" icon={<CategoryIcon />} />
+            <Tab disabled label="By Resource" icon={<CategoryIcon />} />
           </Tabs>
         </AccordionDetails>
       </Accordion>

@@ -46,8 +46,10 @@
   "building-assembler": "Assembler",
   "building-constructor": "Constructor",
   "building-manufacturer": "Manufacturer",
-  "config-selector-recipes": "Recipe",
-  "config-selector-machineTypes": "Machine Type",
+  "config-selector-recipe": "Recipe",
+  "config-selector-machineType": "Machine Type",
   "config-selector-nodePurity": "Node Purity",
-  "config-selector-extractedItem": "Node Resource"
+  "config-selector-extractedItem": "Node Resource",
+  "label-selector-alternate-recipes": "Alternate Recipes",
+  "label-selector-normal-recipes": "Progression Recipes"
 }

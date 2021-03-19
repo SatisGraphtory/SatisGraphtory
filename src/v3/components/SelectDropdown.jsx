@@ -1,4 +1,5 @@
 import React from 'react';
+import { Scrollbars } from 'react-custom-scrollbars';
 import Select from 'react-select';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -12,6 +13,8 @@ const useStyles = makeStyles((theme) => ({
   mainSelect: {
     margin: 3,
     flex: 1,
+    marginTop: 10,
+    marginBottom: 10,
   },
   input: {
     display: 'flex',
@@ -55,9 +58,28 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1),
     left: 0,
     right: 0,
+    boxShadow: '-5px 5px 10px #272727',
   },
   select: {
     margin: 0,
+  },
+  classProp: {},
+  groupStyle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  groupBadge: {
+    backgroundColor: '#EBECF0',
+    borderRadius: '2em',
+    color: '#172B4D',
+    display: 'inline-block',
+    fontSize: 12,
+    fontWeight: 'normal',
+    lineHeight: '1',
+    minWidth: 1,
+    padding: '0.16666666666667em 0.5em',
+    textAlign: 'center',
   },
 }));
 
@@ -222,19 +244,11 @@ Menu.propTypes = {
   selectProps: PropTypes.object,
 };
 
-const components = {
-  Control,
-  Menu,
-  NoOptionsMessage,
-  Option,
-  Placeholder,
-  SingleValue,
-  ValueContainer,
-};
-
 function SelectDropdown(props) {
   const classes = useStyles();
   const theme = useTheme();
+
+  const scrollRef = React.useRef();
 
   const selectStyles = {
     input: (base) => ({
@@ -256,6 +270,34 @@ function SelectDropdown(props) {
     };
   };
 
+  const customMenu = (props, scrollBarRef) => {
+    return (
+      <Scrollbars ref={scrollBarRef} autoHeight>
+        {props.children}
+      </Scrollbars>
+    );
+  };
+
+  const components = {
+    Control,
+    Menu,
+    NoOptionsMessage,
+    Option,
+    Placeholder,
+    SingleValue,
+    ValueContainer,
+    MenuList: (props) => {
+      return customMenu(props, scrollRef);
+    },
+  };
+
+  const formatGroupLabel = (data) => (
+    <div className={classes.groupStyle}>
+      <span>{data.label}</span>
+      <span className={classes.groupBadge}>{data.options.length}</span>
+    </div>
+  );
+
   return (
     <div className={classes.mainSelect}>
       <Select
@@ -263,6 +305,7 @@ function SelectDropdown(props) {
         isDisabled={props.disabled || false}
         classes={classes}
         className={props.classProp}
+        formatGroupLabel={formatGroupLabel}
         menuPortalTarget={document.body}
         styles={selectStyles}
         inputId={props.id}

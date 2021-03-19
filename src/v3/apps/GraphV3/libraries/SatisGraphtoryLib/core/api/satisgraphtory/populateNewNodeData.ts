@@ -13,17 +13,30 @@ import {
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Sizes';
 import ExternalInteractionManager from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/ExternalInteractionManager';
 import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EmptyEdge';
+import produce from 'immer';
 
 const populateNewNodeData = (
-  buildingSlug: string,
-  recipe: string | null,
   overclock: number,
   x: number,
   y: number,
   translateFunction: (arg0: string) => string,
   externalInteractionManager: ExternalInteractionManager,
-  additionalBuildingProps: string | null
+  nodeStampOptions: any
 ) => {
+  const recipe = nodeStampOptions?.recipe?.value;
+  const buildingSlug = nodeStampOptions?.machineType?.value;
+
+  const additionalBuildingProps = produce(
+    nodeStampOptions,
+    (draftState: any) => {
+      delete draftState['recipe'];
+      delete draftState['machineType'];
+      for (const remainingKey of Object.keys(draftState)) {
+        draftState[remainingKey] = draftState[remainingKey].value;
+      }
+    }
+  );
+
   return new AdvancedNode({
     position: {
       x: x - Math.floor(NODE_WIDTH / 2),
@@ -49,7 +62,7 @@ const populateNewNodeData = (
       externalInteractionManager
     ).map((props) => new EmptyEdge(props)),
     externalInteractionManager,
-    additionalData: additionalBuildingProps || '',
+    additionalData: JSON.stringify(additionalBuildingProps),
   });
 };
 

@@ -30,7 +30,6 @@ const generateNewCanvasStore = (id: string) => {
     selectedObjects: [] as GraphObject[],
     aliasCanvasObjects: new Set() as Set<any>,
     triggerUpdate: 1,
-    selectedMachineAdditionalProps: (null as unknown) as string,
     selectedMachine: (null as unknown) as string,
     selectedRecipe: (null as unknown) as string,
     selectedEdge: (null as unknown) as string,

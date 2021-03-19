@@ -11,7 +11,11 @@ import ModalOpenTrigger from 'v3/apps/GraphV3/components/ModalOpenTrigger/ModalO
 import { GlobalGraphAppStore } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStore';
 import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
 import { LocaleContext } from 'v3/components/LocaleProvider';
-import { getConfigurableOptionsByMachine } from 'v3/data/loaders/buildings';
+import {
+  getBuildableMachineClassIcon,
+  getBuildingIcon,
+  getConfigurableOptionsByMachine,
+} from 'v3/data/loaders/buildings';
 import SelectDropdown from '../../../../components/SelectDropdown';
 
 const useStyles = makeStyles((theme) => ({
@@ -27,6 +31,12 @@ const useStyles = makeStyles((theme) => ({
   },
   select: {
     marginBottom: 10,
+  },
+  machineImage: {
+    width: 30,
+    height: 30,
+    marginRight: 10,
+    verticalAlign: 'middle',
   },
 }));
 
@@ -63,39 +73,77 @@ function DropDownWrapper(props) {
   );
 }
 
-function resolveSelectedChoiceV2(
+function resolveSelectedChoice(
   configEntry,
   translate,
   currentlySelectedOption
 ) {
   const valueSlugMap = new Map();
 
-  const choices = configEntry.options
-    .map((slug, index) => {
-      valueSlugMap.set(slug, index);
-      return {
-        value: slug,
-        label: configEntry.translations
-          ? configEntry.translations[index]
-          : translate(slug),
-      };
-    })
-    .sort((a, b) => a.label.localeCompare(b.label));
-
-  const filteredChoices = choices.filter(
-    (item) => item.value === currentlySelectedOption?.value
-  );
-
+  let choices;
   let selectedChoice = null;
-  if (filteredChoices.length) {
-    selectedChoice = filteredChoices[0].value;
+
+  if (configEntry.grouped) {
+    choices = configEntry.options.map((entry) => {
+      const allOptions = entry.options
+        .map((slug, index) => {
+          valueSlugMap.set(slug, index);
+          return {
+            value: slug,
+            label: configEntry.translations
+              ? configEntry.translations[index]
+              : translate(slug),
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
+
+      const filteredChoices = allOptions.filter(
+        (item) => item.value === currentlySelectedOption?.value
+      );
+
+      if (filteredChoices.length) {
+        selectedChoice = filteredChoices[0].value;
+      }
+
+      return {
+        label: translate(entry.label),
+        options: allOptions,
+      };
+    });
+  } else {
+    choices = configEntry.options
+      .map((slug, index) => {
+        valueSlugMap.set(slug, index);
+        return {
+          value: slug,
+          label: configEntry.translations
+            ? configEntry.translations[index]
+            : translate(slug),
+        };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    const filteredChoices = choices.filter(
+      (item) => item.value === currentlySelectedOption?.value
+    );
+
+    if (filteredChoices.length) {
+      selectedChoice = filteredChoices[0].value;
+    }
   }
 
   return { choices, selectedChoice };
 }
 
 function GenericSelectorComponent(props) {
-  const { value, choices, configKey, setDraftFunction, currentDraft } = props;
+  const {
+    value,
+    choices,
+    configKey,
+    setDraftFunction,
+    currentDraft,
+    isGrouped,
+  } = props;
 
   const choiceValue = choices.filter((option) => option.value === value);
 
@@ -105,7 +153,19 @@ function GenericSelectorComponent(props) {
   const { translate } = React.useContext(LocaleContext);
 
   const changeFunction = (newValue) => {
-    const newChoice = choices.filter((option) => option.value === newValue)[0];
+    let newChoice;
+    if (isGrouped) {
+      choices.forEach((item) => {
+        const possibleChoices = item.options.filter(
+          (option) => option.value === newValue
+        );
+        if (possibleChoices.length) {
+          newChoice = possibleChoices[0];
+        }
+      });
+    } else {
+      newChoice = choices.filter((option) => option.value === newValue)[0];
+    }
     setInternalChoice(newChoice);
     setDraftFunction(
       produce(currentDraft, (draftObject) => {
@@ -128,20 +188,6 @@ function GenericSelectorComponent(props) {
 
   if (choices.length <= 1) {
     return null;
-    // } else if (choices.length === 1) {
-    // return (
-    //   <div className={classes.textfieldMargin}>
-    //     <TextField
-    //       id={configKey + '-selector'}
-    //       label={translate('config-selector-' + configKey)}
-    //       fullWidth
-    //       InputProps={{
-    //         readOnly: true,
-    //       }}
-    //       value={valueName || ''}
-    //     />
-    //   </div>
-    // );
   } else {
     return (
       <DropDownWrapper
@@ -175,7 +221,7 @@ function NodeCreationDialog(props) {
   const childElements = [];
 
   for (const [configKey, configEntry] of Object.entries(configurableOptions)) {
-    const { choices, selectedChoice } = resolveSelectedChoiceV2(
+    const { choices, selectedChoice } = resolveSelectedChoice(
       configEntry,
       translate,
       draftSelection[configKey]
@@ -189,6 +235,7 @@ function NodeCreationDialog(props) {
         configKey={configKey}
         setDraftFunction={setDraftSelection}
         currentDraft={draftSelection}
+        isGrouped={configEntry.grouped || false}
       />
     );
     if (choices.length > 1) {
@@ -230,7 +277,14 @@ function NodeCreationDialog(props) {
         setOpenDialog(false);
       }}
     >
-      <DialogTitle>{props.label} Settings</DialogTitle>
+      <DialogTitle>
+        <img
+          src={getBuildingIcon(getBuildableMachineClassIcon(nodeClass), 64)}
+          className={classes.machineImage}
+          alt={props.label}
+        />
+        {props.label} Settings
+      </DialogTitle>
       <DialogContent className={classes.openDialog}>
         <ModalOpenTrigger />
         <BrowserView>{childElements}</BrowserView>
@@ -247,121 +301,6 @@ function NodeCreationDialog(props) {
       </DialogActions>
     </Dialog>
   );
-
-  //
-  //
-  //
-  // const [openDialogFlash] = React.useState(() => {
-  //   if (totalUserChoices === 0) {
-  //     setTimeout(setSelectedDataButton, 0);
-  //     return false;
-  //   } else {
-  //     return openDialog;
-  //   }
-  // });
-  //
-  //
-  // let selectedMachine = null;
-  // let selectedRecipe = null;
-  //
-  // if (nodeStampOptions) {
-  //   selectedMachine = nodeStampOptions.machine;
-  //   selectedRecipe = nodeStampOptions.recipe;
-  // }
-  //
-  // let resolvedSelectedMachine = null;
-  // let machineChoices;
-  //
-  // let recipeChoices = [];
-  // let resolvedSelectedRecipe = null;
-  //
-  // if (props.type === 'building') {
-  //   const machineTypes = getBuildableMachinesFromClassName(nodeClass);
-  //   const resolvedMachineOptions = resolveSelectedChoice(
-  //     machineTypes,
-  //     translate,
-  //     selectedMachine
-  //   );
-  //   machineChoices = resolvedMachineOptions.choices;
-  //   resolvedSelectedMachine = resolvedMachineOptions.resolvedSelectedChoice;
-  // }
-  //
-  // const [building, setBuilding] = React.useState(resolvedSelectedMachine);
-  //
-  // if (props.type === 'building') {
-  //   if (building) {
-  //     const recipes = getRecipesByMachine(building);
-  //
-  //     const resolvedRecipeOptions = resolveSelectedChoice(
-  //       recipes,
-  //       translate,
-  //       selectedRecipe
-  //     );
-  //     recipeChoices = resolvedRecipeOptions.choices;
-  //     resolvedSelectedRecipe = resolvedRecipeOptions.resolvedSelectedChoice;
-  //   }
-  // }
-  //
-  // const [recipe, setRecipe] = React.useState(resolvedSelectedRecipe);
-  //
-  // let setButtonEnabled = false;
-  //
-  // if (props.type === 'building') {
-  //   if (building && (recipe || recipeChoices.length === 0)) {
-  //     setButtonEnabled = true;
-  //   }
-  // }
-  //
-  // const setSelectedDataButton = () => {
-  //   GlobalGraphAppStore.update((s) => {
-  //     const instance = s[pixiCanvasStateId];
-  //     instance.nodeStampOptions = Object.assign({}, instance.nodeStampOptions || null, {
-  //       machine: building,
-  //       recipe: recipe,
-  //     });
-  //   });
-  //   setOpenDialog(false);
-  //   closeDrawerFunction(false);
-  // };
-  //
-  //
-  // return (
-  //   <Dialog
-  //     open={openDialogFlash}
-  //     fullScreen={isMobile}
-  //     onClose={() => {
-  //       setOpenDialog(false);
-  //     }}
-  //   >
-  //     <DialogTitle>{props.label} Settings</DialogTitle>
-  //     <DialogContent className={classes.openDialog}>
-  //       <ModalOpenTrigger/>
-  //       <BrowserView>
-  //         <MachineTypeSelector
-  //           building={building}
-  //           setBuilding={setBuilding}
-  //           choices={machineChoices}
-  //         />
-  //         <RecipeSelector
-  //           disabled={!building}
-  //           recipe={recipe}
-  //           setRecipe={setRecipe}
-  //           choices={recipeChoices}
-  //         />
-  //       </BrowserView>
-  //     </DialogContent>
-  //     <DialogActions>
-  //       <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-  //       <Button
-  //         disabled={!setButtonEnabled}
-  //         color="primary"
-  //         onClick={setSelectedDataButton}
-  //       >
-  //         Set
-  //       </Button>
-  //     </DialogActions>
-  //   </Dialog>
-  // );
 }
 
 export default NodeCreationDialog;

@@ -24,6 +24,7 @@ import { getEnumDisplayNames, getEnumValues } from './enums';
 
 import { EResourcePurityDisplayName } from '.DataLanding/interfaces/enums/EResourcePurity';
 import { getResourcesByForm } from './items';
+import { getAlternateRecipes } from './schematics';
 
 const getAllSubclassesFn = (baseClass: string) => {
   const allClasses = new Set<string>();
@@ -446,12 +447,52 @@ const waterPumpSubclasses = getAllSubclasses('AFGBuildableWaterPump');
 export const getConfigurableOptionsByMachine = (classSlug: string) => {
   const machineTypes = getBuildableMachinesFromClassName(classSlug)!;
   const recipes = getRecipesByMachineClass(classSlug)!;
+
+  const alternateRecipes = getAlternateRecipes();
+
+  let hasAlternateRecipe = false;
+
+  for (const recipe of recipes) {
+    if (alternateRecipes.has(recipe)) {
+      hasAlternateRecipe = true;
+      break;
+    }
+  }
+
+  let recipesOption = recipes as any;
+  let recipesGrouped = false;
+
+  if (hasAlternateRecipe) {
+    const alternatives = new Set();
+    const regular = new Set();
+    recipesGrouped = true;
+    for (const recipe of recipes) {
+      if (alternateRecipes.has(recipe)) {
+        alternatives.add(recipe);
+      } else {
+        regular.add(recipe);
+      }
+    }
+
+    recipesOption = [
+      {
+        label: 'label-selector-alternate-recipes',
+        options: [...alternatives],
+      },
+      {
+        label: 'label-selector-normal-recipes',
+        options: [...regular],
+      },
+    ];
+  }
+
   const baseTypes = {
-    machineTypes: {
+    machineType: {
       options: machineTypes,
     },
-    recipes: {
-      options: recipes,
+    recipe: {
+      options: recipesOption,
+      grouped: recipesGrouped,
     },
   } as Record<string, any>;
 
