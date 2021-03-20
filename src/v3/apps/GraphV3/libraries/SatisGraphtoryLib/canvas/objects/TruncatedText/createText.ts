@@ -6,17 +6,39 @@ const createText = (
   style: PIXI.TextStyle,
   x: number,
   y: number,
-  horizontalAlign = 'left'
+  horizontalAlign = 'left',
+  verticalAlign = 'center'
 ) => {
   const nameStr = new PIXI.Text(text, style);
 
-  if (horizontalAlign === 'left') {
-    nameStr.anchor.set(0, 0.5);
-  } else if (horizontalAlign === 'right') {
-    nameStr.anchor.set(1, 0.5);
-  } else if (horizontalAlign === 'center') {
-    nameStr.anchor.set(0.5, 0.5);
+  let alignY = -1;
+  if (verticalAlign === 'top') {
+    alignY = 0;
+  } else if (verticalAlign === 'bottom') {
+    alignY = 1;
+  } else if (verticalAlign === 'center') {
+    alignY = 0.5;
   }
+
+  if (horizontalAlign === 'left') {
+    nameStr.anchor.set(0, alignY);
+  } else if (horizontalAlign === 'right') {
+    nameStr.anchor.set(1, alignY);
+  } else if (horizontalAlign === 'center') {
+    nameStr.anchor.set(0.5, alignY);
+  }
+
+  //
+  // let alignX = -1;
+  // if (verticalAlign === 'top') {
+  //   alignX = 0;
+  // } else if (verticalAlign === 'bottom') {
+  //   alignX = 1
+  // } else if (verticalAlign === 'center') {
+  //   alignX = 0.5
+  // }
+  //
+  // nameStr.anchor.set(alignX, alignY);
 
   nameStr.position.x = x;
   nameStr.position.y = y;

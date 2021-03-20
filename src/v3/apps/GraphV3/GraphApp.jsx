@@ -93,13 +93,13 @@ export default function GraphApp(props) {
       };
     } else {
       // TODO:LOADDATA
+
       data = {
-        d: 'AIACA===',
+        d:
+          'CgBgCGAACIADAUlIBgBAkDgAOAUgcgD0BpgMWQEgAkALgDrIAJAQDAElIAyAdADjUms5WAHhYAZCYAf4QEOAAgSYAcyAAgAIGADAAAiawukAPKQAGEwBETANWqAoDuCVIARQAlAZ4CTAJQDjADqU6gBBABoAYGAAsAABwpAA/JAAmrEAfQDEACKwEbEA2AAHAJRyAOKQAFoWAFkACZAAygBeDAApAAUAIQBjAB+qkLQANJAAYQB3AFgwkACPkADU9ACskAAnkACNkDKQALyQjQCBAFdVkADQLUVykEA=',
         c: 0,
         v: '0.1.0',
-        h: -393418234,
-        q: 'Lizard Doggo Approved',
-        n: 'My Awesome Design',
+        h: -1699319487,
       };
       // data = {
       //   d:

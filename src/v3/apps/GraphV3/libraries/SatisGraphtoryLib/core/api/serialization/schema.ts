@@ -39,18 +39,35 @@ export const getSchemaForVersion = (version: string) => {
     allow_alias: true,
   });
 
+  // 2: ['recipeId', 'RecipeEnum'],
+  const nodeAdditionalOptionsSchema: Record<number, any[]> = {
+    1: ['recipe', 'RecipeEnum'],
+    2: ['extractedItem', 'ItemEnum'],
+    3: ['nodePurity', 'uint32'],
+  };
+
+  const NodeAdditionalSettingsMessage = new Type(
+    'NodeAdditionalSettingsMessage'
+  );
+
+  for (const [id, entry] of Object.entries(nodeAdditionalOptionsSchema)) {
+    const [fieldName, fieldType, fieldRule] = entry;
+    NodeAdditionalSettingsMessage.add(
+      new Field(fieldName, parseInt(id, 10), fieldType, fieldRule || {})
+    );
+  }
+
+  // 2: ['recipeId', 'RecipeEnum'],
   const baseNodeSchema: Record<number, any[]> = {
     1: ['id', 'uint32'],
-    2: ['recipeId', 'RecipeEnum'],
-    3: ['overclock', 'uint32'],
-    4: ['tier', 'uint32'],
-    5: ['inputs', 'uint32', 'repeated'],
-    6: ['outputs', 'uint32', 'repeated'],
-    7: ['any', 'uint32', 'repeated'],
-    8: ['machineTypeId', 'BuildingEnum'],
-    9: ['x', 'double'],
-    10: ['y', 'double'],
-    11: ['additionalData', 'string'],
+    2: ['overclock', 'uint32'],
+    3: ['inputs', 'uint32', 'repeated'],
+    4: ['outputs', 'uint32', 'repeated'],
+    5: ['any', 'uint32', 'repeated'],
+    6: ['machineTypeId', 'BuildingEnum'],
+    7: ['x', 'double'],
+    8: ['y', 'double'],
+    9: ['additionalData', 'NodeAdditionalSettingsMessage'],
     // TODO: Group?
   };
 
@@ -88,6 +105,7 @@ export const getSchemaForVersion = (version: string) => {
     .add(ItemEnums)
     .add(RecipeEnums)
     .add(BuildingEnums)
+    .add(NodeAdditionalSettingsMessage)
     .add(NodeMessage)
     .add(EdgeMessage)
     .add(SerializedDataMessage);

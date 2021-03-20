@@ -16,6 +16,7 @@ export const RECIPE_STYLE = memoize((width: number, theme) => {
     // breakWords: true,
     wordWrapWidth: width - RECIPE_FONT_OFFSET,
     wordWrap: true,
+    leading: 2,
   });
 });
 

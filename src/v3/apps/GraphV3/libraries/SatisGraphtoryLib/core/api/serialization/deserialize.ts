@@ -87,7 +87,6 @@ const deserializeGraphObjects = (
     nodeNumberToId.set(node.id, thisUuid);
 
     const {
-      recipeId: recipe,
       x,
       y,
       machineTypeId: buildingSlug,
@@ -101,8 +100,6 @@ const deserializeGraphObjects = (
         y,
       },
       id: thisUuid,
-      recipeLabel: recipe ? translateFunction(recipe) : '',
-      recipeName: recipe ? recipe : '',
       tier: getTier(buildingSlug),
       overclock,
       machineName: buildingSlug,
@@ -123,7 +120,8 @@ const deserializeGraphObjects = (
         return edgeNumberToInstance.get(num)!;
       }),
       externalInteractionManager,
-      additionalData,
+      translateFunction,
+      additionalData: additionalData,
     });
 
     nodeNumberToInstance.set(node.id, populatedNode);

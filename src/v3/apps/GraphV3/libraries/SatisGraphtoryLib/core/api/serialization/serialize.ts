@@ -5,7 +5,30 @@ import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/obj
 import { deflateRaw } from 'pako';
 import * as LZ from 'lz-string';
 import { buffer2str } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/serialization/stringEncode';
-import { buildingEnums, recipeEnums } from '.DataWarehouse/enums/dataEnums';
+import { buildingEnums } from '.DataWarehouse/enums/dataEnums';
+import produce from 'immer';
+import translateEnums from './translateEnums';
+
+const getNumberFromEnum = (
+  key: string,
+  enumStore: Record<string | number, string | number>
+) => {
+  if (key === '') return 0;
+
+  const enumNumber = enumStore[key];
+
+  if (enumNumber === undefined) {
+    throw new Error('No enum defined for key ' + key);
+  }
+
+  if (typeof enumNumber !== 'number') {
+    throw new Error(
+      'Key ' + key + ' was used to retrieve non-number value ' + enumNumber
+    );
+  }
+
+  return enumNumber;
+};
 
 const serializeGraphObjects = (objects: GraphObject[]) => {
   let checksumGraph = getSerializedGraph(
@@ -78,6 +101,8 @@ const getSerializedGraph = (objects: GraphObject[]) => {
         edgeNumberId,
         NodeType
       );
+
+      console.log(serializedNode);
 
       nodes.push(serializedNode);
 
@@ -172,9 +197,23 @@ const serializeNode = (
   edgeNumberId: number[],
   nodeSerializer: any
 ) => {
+  function replacer(key: string, value: any) {
+    if (value instanceof Map) {
+      return Object.fromEntries(value);
+    } else {
+      return value;
+    }
+  }
+
+  const additionalData = produce(
+    JSON.parse(JSON.stringify(node.getAdditionalData(), replacer)),
+    (draftState: any) => {
+      translateEnums(draftState);
+    }
+  );
+
   const baseObject = {
     id: getOrCreateId(node.id, nodeIdToNumberMap, nodeNumberId),
-    recipeId: getNumberFromEnum(node.recipe, recipeEnums),
     overclock: node.overclock,
     inputs: node.inputConnections.map((connection) =>
       getOrCreateId(connection.id, edgeIdToNumberMap, edgeNumberId)
@@ -188,8 +227,7 @@ const serializeNode = (
     machineTypeId: getNumberFromEnum(node.machineName, buildingEnums),
     x: node.container.x,
     y: node.container.y,
-    tier: node.tier,
-    additionalData: node.getAdditionalData(),
+    additionalData: additionalData,
   };
 
   nodeSerializer.verify(baseObject);
@@ -261,27 +299,6 @@ const getOrCreateId = (
   }
 
   return map.get(id)!;
-};
-
-const getNumberFromEnum = (
-  key: string,
-  enumStore: Record<string | number, string | number>
-) => {
-  if (key === '') return 0;
-
-  const enumNumber = enumStore[key];
-
-  if (enumNumber === undefined) {
-    throw new Error('No enum defined for key ' + key);
-  }
-
-  if (typeof enumNumber !== 'number') {
-    throw new Error(
-      'Key ' + key + ' was used to retrieve non-number value ' + enumNumber
-    );
-  }
-
-  return enumNumber;
 };
 
 export default serializeGraphObjects;

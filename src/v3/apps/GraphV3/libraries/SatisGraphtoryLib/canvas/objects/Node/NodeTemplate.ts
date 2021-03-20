@@ -28,7 +28,6 @@ export class NodeContainer extends GraphObjectContainer {
 
 export abstract class NodeTemplate extends GraphObject {
   id: string;
-  recipe: string;
   overclock: number;
   machineName: string;
   tier: number;
@@ -42,6 +41,7 @@ export abstract class NodeTemplate extends GraphObject {
   connectionsIndexMap: Map<EdgeTemplate, number> = new Map();
   connectionsSideMap: Map<EdgeTemplate, EdgeAttachmentSide> = new Map();
   additionalData: Map<string, any> = new Map();
+  translateFunction = (arg: string) => arg;
 
   protected constructor(props: SatisGraphtoryNodeProps) {
     super(props);
@@ -52,14 +52,14 @@ export abstract class NodeTemplate extends GraphObject {
       inputConnections,
       outputConnections,
       anyConnections,
-      recipeName,
       overclock,
       machineName,
       tier,
       additionalData,
+      translateFunction,
     } = props;
 
-    this.recipe = recipeName;
+    this.translateFunction = translateFunction;
     this.overclock = overclock;
     this.machineName = machineName;
     this.tier = tier;
@@ -72,7 +72,7 @@ export abstract class NodeTemplate extends GraphObject {
     this.container.id = id;
 
     if (additionalData) {
-      for (const [key, value] of Object.entries(JSON.parse(additionalData))) {
+      for (const [key, value] of Object.entries(additionalData)) {
         this.additionalData.set(key, value);
       }
     }
@@ -103,17 +103,7 @@ export abstract class NodeTemplate extends GraphObject {
   }
 
   getAdditionalData() {
-    if (!this.additionalData.size) {
-      return '';
-    }
-
-    function mapToObj(map: any) {
-      const obj = {};
-      for (let [k, v] of map) (obj as any)[k] = v;
-      return obj;
-    }
-
-    return JSON.stringify(this.additionalData, mapToObj);
+    return this.additionalData;
   }
 
   setPosition(x: number, y: number) {

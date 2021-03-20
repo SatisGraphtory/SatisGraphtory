@@ -14,6 +14,7 @@ import createText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objec
 import { createImageIcon } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/ImageIcon';
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
 import { createNodeHighlight } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeHighlight';
+import { EResourcePurity } from '.DataLanding/interfaces/enums';
 
 import { getClassNameForBuildableMachine } from 'v3/data/loaders/buildings';
 // import { createBadge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/Badge';
@@ -58,6 +59,7 @@ import {
   triggerCanvasUpdateFunction,
 } from '../../../stores/GlobalGraphAppStore';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
+import { getEnumValue } from '../../../../../../../data/loaders/enums';
 
 export default class AdvancedNode extends NodeTemplate {
   connectionsMap: Map<EdgeAttachmentSide, EdgeTemplate[]> = new Map();
@@ -67,7 +69,7 @@ export default class AdvancedNode extends NodeTemplate {
   constructor(props: SatisGraphtoryNodeProps) {
     super(props);
 
-    const { recipeLabel, tier, overclock, machineName, machineLabel } = props;
+    const { tier, overclock, machineName, machineLabel } = props;
 
     const container = this.container;
 
@@ -84,15 +86,6 @@ export default class AdvancedNode extends NodeTemplate {
 
     const theme = this.getInteractionManager().getTheme();
 
-    const recipeText = createTruncatedText(
-      recipeLabel,
-      NODE_WIDTH,
-      RECIPE_STYLE(NODE_WIDTH, theme),
-      RECIPE_OFFSET_X,
-      RECIPE_OFFSET_Y,
-      'center'
-    );
-
     const machineText = createText(
       machineLabel,
       MACHINE_STYLE(theme),
@@ -102,7 +95,43 @@ export default class AdvancedNode extends NodeTemplate {
     );
 
     container.addChild(machineText);
-    container.addChild(recipeText);
+
+    if (this.additionalData.has('recipe')) {
+      const recipeText = createTruncatedText(
+        this.translateFunction(this.additionalData.get('recipe')!),
+        NODE_WIDTH,
+        RECIPE_STYLE(NODE_WIDTH, theme),
+        RECIPE_OFFSET_X,
+        RECIPE_OFFSET_Y,
+        'center',
+        'top'
+      );
+
+      container.addChild(recipeText);
+    } else if (this.additionalData.has('extractedItem')) {
+      let purity = '';
+      if (this.additionalData.has('nodePurity')) {
+        purity = this.translateFunction(
+          getEnumValue(this.additionalData.get('nodePurity'), EResourcePurity)
+        );
+      }
+
+      const item = this.translateFunction(
+        this.additionalData.get('extractedItem')!
+      );
+      const stringParts = [purity, item];
+      const recipeText = createTruncatedText(
+        stringParts.join(' '),
+        NODE_WIDTH,
+        RECIPE_STYLE(NODE_WIDTH, theme),
+        RECIPE_OFFSET_X,
+        RECIPE_OFFSET_Y,
+        'center',
+        'top'
+      );
+
+      container.addChild(recipeText);
+    }
 
     const machineTexture = PIXI.utils.TextureCache[machineName];
     const machineImage = createImageIcon(

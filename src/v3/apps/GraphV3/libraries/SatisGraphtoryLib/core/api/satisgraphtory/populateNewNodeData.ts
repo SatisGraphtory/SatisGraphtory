@@ -23,13 +23,11 @@ const populateNewNodeData = (
   externalInteractionManager: ExternalInteractionManager,
   nodeStampOptions: any
 ) => {
-  const recipe = nodeStampOptions?.recipe?.value;
   const buildingSlug = nodeStampOptions?.machineType?.value;
 
   const additionalBuildingProps = produce(
     nodeStampOptions,
     (draftState: any) => {
-      delete draftState['recipe'];
       delete draftState['machineType'];
       for (const remainingKey of Object.keys(draftState)) {
         draftState[remainingKey] = draftState[remainingKey].value;
@@ -43,8 +41,7 @@ const populateNewNodeData = (
       y: y - Math.floor(NODE_HEIGHT / 2),
     },
     id: uuidGen(),
-    recipeLabel: recipe ? translateFunction(recipe) : '',
-    recipeName: recipe ? recipe : '',
+    translateFunction,
     tier: getTier(buildingSlug),
     overclock,
     machineName: buildingSlug,
@@ -62,7 +59,7 @@ const populateNewNodeData = (
       externalInteractionManager
     ).map((props) => new EmptyEdge(props)),
     externalInteractionManager,
-    additionalData: JSON.stringify(additionalBuildingProps),
+    additionalData: additionalBuildingProps,
   });
 };
 

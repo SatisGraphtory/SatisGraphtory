@@ -6,8 +6,6 @@ import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export interface SatisGraphtoryNodeProps extends GraphObjectProps {
   id: string;
-  recipeName: string;
-  recipeLabel: string;
   overclock: number;
   inputConnections?: EdgeTemplate[];
   outputConnections?: EdgeTemplate[];
@@ -16,7 +14,8 @@ export interface SatisGraphtoryNodeProps extends GraphObjectProps {
   machineLabel: string;
   tier: number;
   position: SatisGraphtoryCoordinate;
-  additionalData: string | null;
+  additionalData?: Record<string, any>;
+  translateFunction: (inputString: string) => string;
 }
 
 export interface SatisGraphtoryEdgeProps extends GraphObjectProps {

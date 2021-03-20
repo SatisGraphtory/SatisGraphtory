@@ -8,16 +8,19 @@ const createTruncatedText = (
   style: PIXI.TextStyle,
   x: number,
   y: number,
-  align = 'left'
+  horizontalAlign = 'left',
+  verticalAlign = 'center'
 ) => {
   const baseMetrics = PIXI.TextMetrics.measureText(text, style);
   let displayedString;
 
   if (baseMetrics.lineWidths[0] < maxWidth - RECIPE_FONT_OFFSET) {
-    displayedString = baseMetrics.lines[0];
-    if (baseMetrics.lineWidths.length > 1) {
-      displayedString += '...';
-    }
+    displayedString = baseMetrics.lines.join('\n');
+    // console.log("FSDFS")
+    // displayedString = baseMetrics.lines[0];
+    // if (baseMetrics.lineWidths.length > 1) {
+    //   displayedString += '...';
+    // }
   } else {
     const newMetrics = PIXI.TextMetrics.measureText(
       `${baseMetrics.lines[0]}...`,
@@ -26,7 +29,14 @@ const createTruncatedText = (
     displayedString = `${newMetrics.lines[0]}...`;
   }
 
-  return createText(displayedString, style, x, y, align);
+  return createText(
+    displayedString,
+    style,
+    x,
+    y,
+    horizontalAlign,
+    verticalAlign
+  );
 };
 
 export default createTruncatedText;

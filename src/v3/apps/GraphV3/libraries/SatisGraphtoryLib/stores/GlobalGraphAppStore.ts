@@ -33,8 +33,8 @@ const generateNewCanvasStore = (id: string) => {
     selectedMachine: (null as unknown) as string,
     selectedRecipe: (null as unknown) as string,
     selectedEdge: (null as unknown) as string,
-    edgeStampOptions: null as Record<string, string> | null,
-    nodeStampOptions: null as Record<string, string> | null,
+    edgeStampOptions: {} as Record<string, string>,
+    nodeStampOptions: {} as Record<string, string>,
     openModals: 0,
     sourceNodeId: '',
     externalInteractionManager: new ExternalInteractionManager(

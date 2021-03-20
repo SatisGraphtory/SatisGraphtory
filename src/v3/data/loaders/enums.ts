@@ -17,7 +17,7 @@ const getEnumValuesFn = (enm: any) => {
   for (const enumMember in enm) {
     const isValueProperty = parseInt(enumMember, 10) >= 0;
     if (isValueProperty) {
-      names.push(enumMember);
+      names.push(parseInt(enumMember, 10));
     }
   }
 
@@ -35,6 +35,11 @@ const getEnumDisplayNamesFn = (enm: any, enumDisplayNameKey: any) => {
 
   return names;
 };
+
+export const getEnumValue = (enm: any, enumMap: any) => {
+  return enumMap[enm];
+};
+
 export const getEnumValues = memoize(getEnumValuesFn);
 export const getEnumNames = memoize(getEnumNamesFn);
 export const getEnumDisplayNames = memoize(getEnumDisplayNamesFn);
