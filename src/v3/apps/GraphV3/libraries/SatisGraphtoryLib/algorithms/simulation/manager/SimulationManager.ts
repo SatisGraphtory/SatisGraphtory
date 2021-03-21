@@ -86,5 +86,7 @@ export default class SimulationManager {
     for (const object of this.objectMap.values()) {
       object.reset();
     }
+
+    this.simulationTimeline.clear();
   }
 }
