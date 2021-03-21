@@ -2,6 +2,7 @@ import SimulationManager from '../manager/SimulationManager';
 import { getBuildingDefinition } from '../../../../../../../data/loaders/buildings';
 import SimulatableNode from './SimulatableNode';
 import { NodeTemplate } from '../../../canvas/objects/Node/NodeTemplate';
+import Big from 'big.js';
 
 export default class ManufacturerV2 extends SimulatableNode {
   constructor(
@@ -15,7 +16,7 @@ export default class ManufacturerV2 extends SimulatableNode {
     console.log(buildingDefinition);
   }
 
-  handleEvent(evt: any, time: number, eventData: any) {}
+  handleEvent(evt: any, time: Big, eventData: any) {}
 
   runPreSimulationActions(): void {}
 }

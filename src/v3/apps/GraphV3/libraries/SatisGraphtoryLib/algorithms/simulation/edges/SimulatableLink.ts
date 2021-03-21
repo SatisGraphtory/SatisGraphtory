@@ -3,6 +3,7 @@ import SimulatableElement from '../SimulatableElement';
 import SimulatableNode from '../nodes/SimulatableNode';
 import { getConnectionTypeForEdge } from 'v3/data/loaders/buildings';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
+import Big from 'big.js';
 
 export default abstract class SimulatableLink extends SimulatableElement {
   inputs: SimulatableNode[] = [];
@@ -34,5 +35,5 @@ export default abstract class SimulatableLink extends SimulatableElement {
     return this.outputs.map((item) => item.id);
   }
 
-  handleEvent(evt: any, time: number, eventData: any) {}
+  handleEvent(evt: any, time: Big, eventData: any) {}
 }

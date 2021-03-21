@@ -5,6 +5,8 @@ import SimulationManager, {
 import SimulatableLink from './SimulatableLink';
 import SimulatableNode from '../nodes/SimulatableNode';
 import { OutputPacket } from '../SimulatableElement';
+import { getBuildingDefinition } from '../../../../../../../data/loaders/buildings';
+import Big from 'big.js';
 
 export default class BeltV2 extends SimulatableLink {
   constructor(
@@ -14,17 +16,12 @@ export default class BeltV2 extends SimulatableLink {
   ) {
     super(id, beltSlug, simulationManager);
 
-    // const buildingDefintion = getBuildingDefinition(beltSlug)
+    const buildingDefinition = getBuildingDefinition(beltSlug);
 
-    this.cycleTime = 60 * 1000; //????
-    // / beltSpeed;
+    this.cycleTime = Big(60 * 1000).div(Big(buildingDefinition.mSpeed / 2));
   }
 
-  cycleTime: number;
-
-  inputSlots: (OutputPacket | null)[] = [];
-  outputSlots: (OutputPacket | null)[] = [];
-  anyConnectionSlots: (OutputPacket | null)[] = [];
+  cycleTime: Big;
 
   addLink(
     sourceSimulatable: SimulatableNode,
@@ -38,18 +35,17 @@ export default class BeltV2 extends SimulatableLink {
   }
 
   runPreSimulationActions(): void {
-    this.outputSlots = this.outputs.map(() => null);
-    this.inputSlots = this.inputs.map(() => null);
+    this.inputSlot = this.inputs.map(() => null);
   }
 
-  getFreeInputSlots() {
-    const freeInputSlots = this.inputSlots.filter((item) => item === null);
-    if (!freeInputSlots.length)
-      throw new Error('Not possible, no input slots!');
-    return freeInputSlots;
+  inputSlot: (OutputPacket | null)[] = [];
+  outputSlot: (OutputPacket | null)[] = [];
+
+  getIsOutputsBlocked() {
+    return this.outputSlot[0] !== null;
   }
 
-  handleEvent(evt: SimulatableAction, time: number, eventData: any) {
+  handleEvent(evt: SimulatableAction, time: Big, eventData: any) {
     if (evt === SimulatableAction.RESOURCE_AVAILABLE) {
       this.simulationManager.addTimerEvent({
         time: time,
@@ -59,10 +55,12 @@ export default class BeltV2 extends SimulatableLink {
           eventName: SimulatableAction.TRANSFER_ITEM,
           eventData: {
             connectorId: this.id,
-            freeSlotArray: this.getFreeInputSlots(),
+            freeSlotArray: this.inputSlot,
           },
         },
       });
+    } else if (SimulatableAction.RESOURCE_DEPOSITED) {
+      console.log('DEPOSITED');
     }
   }
 }

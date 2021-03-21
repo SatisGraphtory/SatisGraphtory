@@ -67,7 +67,7 @@ export default class AdvancedNode extends NodeTemplate {
   connectionsDirectionMap: Map<EdgeTemplate, EdgeType> = new Map();
   connectionsContainer: PIXI.Container = new PIXI.Container();
 
-  rateText: PIXI.Text;
+  rateText: PIXI.BitmapText;
 
   constructor(props: SatisGraphtoryNodeProps) {
     super(props);

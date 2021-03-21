@@ -6,9 +6,10 @@ import SimulationManager, {
 } from '../manager/SimulationManager';
 import SimulatableNode from './SimulatableNode';
 import { NodeTemplate } from '../../../canvas/objects/Node/NodeTemplate';
+import Big from 'big.js';
 
 export default class ResourceExtractorV2 extends SimulatableNode {
-  cycleTime: number = 0;
+  cycleTime: Big = Big(0);
   outputPacket: OutputPacket | null = null;
 
   constructor(
@@ -20,7 +21,7 @@ export default class ResourceExtractorV2 extends SimulatableNode {
     super(node, buildingSlug, simulationManager);
 
     const buildingDefinition = getBuildingDefinition(buildingSlug);
-    this.cycleTime = buildingDefinition.mExtractCycleTime * 1000;
+    this.cycleTime = Big(buildingDefinition.mExtractCycleTime).mul(Big(1000));
     if (nodeOptions.has('extractedItem')) {
       this.outputPacket = {
         slug: nodeOptions.get('extractedItem'),
@@ -36,12 +37,10 @@ export default class ResourceExtractorV2 extends SimulatableNode {
     return this.outputSlot !== null;
   }
 
-  lastDeposit = -1;
-  depositIntervals: number[] = [];
   depositTimes: number[] = [];
 
   updateDisplay(itemRate: number) {
-    this.graphic.updateDisplay(itemRate + Math.floor(Math.random() * 100));
+    this.graphic.updateDisplay(itemRate);
   }
 
   reset() {
@@ -49,31 +48,24 @@ export default class ResourceExtractorV2 extends SimulatableNode {
   }
 
   trackDepositEvent(time: number) {
-    if (this.lastDeposit === -1) {
-      this.lastDeposit = time;
-    } else {
-      if (this.depositTimes.length === 21) {
-        this.depositTimes.shift();
-        this.depositIntervals.shift();
-      }
+    if (this.depositTimes.length === 21) {
+      this.depositTimes.shift();
+    }
 
-      this.depositTimes.push(time);
-      this.depositIntervals.push(time - this.lastDeposit);
-      this.lastDeposit = time;
+    this.depositTimes.push(time);
 
-      if (this.depositTimes.length === 21) {
-        const firstTime = this.depositTimes[0];
-        const lastTime = this.depositTimes[this.depositTimes.length - 1];
-        const timeDelta = lastTime - firstTime;
-        const itemRate = (20 / (timeDelta / 1000)) * 60;
-        this.updateDisplay(itemRate);
-      }
+    if (this.depositTimes.length === 21) {
+      const firstTime = this.depositTimes[0];
+      const lastTime = this.depositTimes[this.depositTimes.length - 1];
+      const timeDelta = lastTime - firstTime;
+      const itemRate = (20 / (timeDelta / 1000)) * 60;
+      this.updateDisplay(itemRate);
     }
   }
 
-  handleEvent(evt: SimulatableAction, time: number, eventData: any) {
+  handleEvent(evt: SimulatableAction, time: Big, eventData: any) {
     if (evt === SimulatableAction.DEPOSIT_OUTPUT) {
-      this.trackDepositEvent(time);
+      this.trackDepositEvent(time.toNumber());
       if (this.getIsOutputsBlocked()) {
         console.log('BLOCKED');
         // wait until output unblocked.
@@ -121,7 +113,7 @@ export default class ResourceExtractorV2 extends SimulatableNode {
         });
         this.addDelayedSelfAction(
           SimulatableAction.DEPOSIT_OUTPUT,
-          time + this.cycleTime,
+          time.add(this.cycleTime),
           Priority.CRITICAL
         );
       }
@@ -132,8 +124,6 @@ export default class ResourceExtractorV2 extends SimulatableNode {
     if (this.outputs.length > 1)
       throw new Error('Improper resource extractor with multiple outputs');
 
-    this.lastDeposit = -1;
-    this.depositIntervals = [];
     this.depositTimes = [];
     this.outputSlot = null;
 

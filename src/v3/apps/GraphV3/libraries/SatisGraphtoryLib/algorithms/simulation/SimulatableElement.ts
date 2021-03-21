@@ -2,6 +2,7 @@ import Simulatable from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/
 import SimulationManager, {
   SimulatableAction,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/manager/SimulationManager';
+import Big from 'big.js';
 
 export type OutputPacket = {
   slug: string;
@@ -26,11 +27,11 @@ export default abstract class SimulatableElement implements Simulatable {
   //TODO: make this abstract?
   reset() {}
 
-  abstract handleEvent(evt: any, time: number, eventData: any): any;
+  abstract handleEvent(evt: any, time: Big, eventData: any): any;
 
   addDelayedSelfAction(
     action: SimulatableAction,
-    delay: number,
+    delay: Big,
     priority?: number,
     eventData?: any
   ) {

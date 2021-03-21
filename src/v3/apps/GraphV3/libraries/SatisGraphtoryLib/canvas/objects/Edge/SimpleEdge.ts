@@ -11,7 +11,10 @@ import { Dot } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/
 import Bezier from 'bezier-js';
 import createText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/TruncatedText/createText';
 import { getTierText } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/utils/tierUtils';
-import { EDGE_TIER_STYLE } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/style/textStyles';
+import {
+  EDGE_TIER_STYLE,
+  RATE_STYLE,
+} from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/style/textStyles';
 import { getTier } from 'v3/data/loaders/buildings';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
@@ -30,6 +33,8 @@ export default class SimpleEdge extends EdgeTemplate {
   private levelText: any;
 
   simulatable: SimulatableLink;
+
+  rateText: PIXI.BitmapText;
 
   constructor(props: SatisGraphtoryEdgeProps) {
     super(props);
@@ -50,6 +55,8 @@ export default class SimpleEdge extends EdgeTemplate {
     this.container.addChild(this.container.getHighLight());
     this.container.setHighLightOn(false);
 
+    const theme = this.getInteractionManager().getTheme();
+
     this.graphicsObject = new PIXI.Graphics();
     this.container.addChild(this.graphicsObject);
 
@@ -61,15 +68,31 @@ export default class SimpleEdge extends EdgeTemplate {
 
     const tier = getTier(this.connectorName);
 
-    const theme = this.getInteractionManager().getTheme();
+    const levelText = createText(
+      getTierText(tier),
+      EDGE_TIER_STYLE(theme),
+      0,
+      0,
+      'center'
+    );
 
-    this.levelText = tier
-      ? createText(getTierText(tier), EDGE_TIER_STYLE(theme), 0, 0, 'center')
-      : null;
+    const levelTextContainer = new PIXI.Container();
+    levelTextContainer.addChild(levelText);
 
-    if (this.levelText) {
-      this.container.addChild(this.levelText);
-    }
+    this.levelText = levelTextContainer;
+
+    this.rateText = createText(
+      'SAMPLETEXT',
+      RATE_STYLE(theme),
+      0,
+      60,
+      'center',
+      'center',
+      true
+    );
+
+    levelTextContainer.addChild(this.rateText);
+    this.container.addChild(levelTextContainer);
 
     this.sourceDot = inputDot;
     this.targetDot = outputDot;

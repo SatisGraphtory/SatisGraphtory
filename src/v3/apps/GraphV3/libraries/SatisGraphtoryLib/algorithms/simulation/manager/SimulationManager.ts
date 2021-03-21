@@ -1,5 +1,6 @@
 import PriorityQueue from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/datastructures/priorityqueue/PriorityQueue';
 import SimulatableElement from '../SimulatableElement';
+import Big from 'big.js';
 
 export enum Priority {
   CRITICAL = -1000000, //deposit events
@@ -12,7 +13,7 @@ export enum Priority {
 }
 
 type ScheduledTask = {
-  time: number;
+  time: Big;
   priority?: number | Priority;
   event: {
     target: string;
@@ -38,13 +39,13 @@ export default class SimulationManager {
   constructor() {
     this.simulationTimeline = new PriorityQueue<any>({
       comparator: (a, b) => {
-        if (a.time === b.time) {
+        if (a.time.eq(b.time)) {
           return (
             (a.priority === undefined ? 1000000000 : a.priority) -
             (b.priority === undefined ? 1000000000 : b.priority)
           );
         }
-        return a.time - b.time;
+        return a.time.cmp(b.time);
       },
     });
   }
@@ -59,12 +60,12 @@ export default class SimulationManager {
     });
   }
 
-  private currentTick = 0;
+  private currentTick = Big(0);
 
   tick() {
     while (true) {
       if (!this.simulationTimeline.length) break;
-      if (this.simulationTimeline.peek().time >= this.currentTick) {
+      if (this.simulationTimeline.peek().time.gte(this.currentTick)) {
         break;
       }
       const current = this.simulationTimeline.dequeue();
@@ -75,7 +76,7 @@ export default class SimulationManager {
         ?.handleEvent(eventName, current.time, eventData);
     }
 
-    this.currentTick += this.tickSpeed;
+    this.currentTick = this.currentTick.plus(this.tickSpeed);
   }
 
   addTimerEvent(evt: ScheduledTask) {
@@ -87,6 +88,7 @@ export default class SimulationManager {
       object.reset();
     }
 
+    this.currentTick = Big(0);
     this.simulationTimeline.clear();
   }
 }
