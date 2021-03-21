@@ -112,6 +112,7 @@
     "scheduler": "^0.20.0",
     "seamless-immutable": "^7.1.4",
     "semver": "^7.3.2",
+    "source-map-explorer": "^2.5.2",
     "throttle-debounce": "^2.1.0",
     "typescript": "^4.2.3",
     "uuid": "^8.3.0",
@@ -139,7 +140,8 @@
     "checkout-data-landing": "./scripts/checkout.sh DataLanding experimental",
     "checkout": "npm-run-all checkout-*",
     "lint-md": "remark . -o",
-    "serve": "serve -s build"
+    "serve": "serve -s build",
+    "analyze": "source-map-explorer 'build/static/js/*.js' --html sourceMap.html"
   },
   "browserslist": {
     "production": [

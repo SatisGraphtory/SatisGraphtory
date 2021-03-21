@@ -113,8 +113,8 @@ function SimulationFab() {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
         numTicks.current = -1;
-        setIsPlaying(false);
         simulationManager.resetAll();
+        setIsPlaying(false);
       }
     },
     [externalInteractionManager]
