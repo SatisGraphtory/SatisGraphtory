@@ -6,7 +6,6 @@ import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 
 export interface SatisGraphtoryNodeProps extends GraphObjectProps {
   id: string;
-  overclock: number;
   inputConnections?: EdgeTemplate[];
   outputConnections?: EdgeTemplate[];
   anyConnections?: EdgeTemplate[];

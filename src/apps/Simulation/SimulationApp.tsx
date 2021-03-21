@@ -8,8 +8,6 @@ import SimulationManager from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algor
 // import DebugSink from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/DebugSink";
 // import Merger from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/Merger";
 // import Splitter from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/Splitter";
-import FluidResourceExtractor from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/FluidResourceExtractor';
-import Pipe from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/edges/Pipe';
 import Chart from 'react-apexcharts';
 // import {makeStyles} from "@material-ui/core/styles";
 
@@ -29,10 +27,10 @@ function SimulationApp() {
     //
     // const resourceExtractor2 = new ResourceExtractor(usedRecipe.slug, building);
 
-    const liquidResourceExtractor = new FluidResourceExtractor(
-      'recipe-normal-liquid-oil',
-      'building-oil-pump'
-    );
+    // const liquidResourceExtractor = new FluidResourceExtractor(
+    //   'recipe-normal-liquid-oil',
+    //   'building-oil-pump'
+    // );
 
     // const belt = new Belt(600);
     // const belt2 = new Belt(600);
@@ -49,8 +47,8 @@ function SimulationApp() {
     // const merger = new Merger();
     // const splitter = new Splitter();
 
-    const pipe1 = new Pipe();
-
+    // const pipe1 = new Pipe();
+    //
     const simulationManager = new SimulationManager();
 
     // resourceExtractor.attachSimulationManager(simulationManager);
@@ -67,9 +65,9 @@ function SimulationApp() {
     // debugSink3.attachSimulationManager(simulationManager);
     // merger.attachSimulationManager(simulationManager);
     // splitter.attachSimulationManager(simulationManager);
-    liquidResourceExtractor.attachSimulationManager(simulationManager);
-    pipe1.attachSimulationManager(simulationManager);
-    simulationManager.addLink(liquidResourceExtractor, pipe1);
+    // liquidResourceExtractor.attachSimulationManager(simulationManager);
+    // pipe1.attachSimulationManager(simulationManager);
+    // simulationManager.addLink(liquidResourceExtractor, pipe1);
 
     // simulationManager.addLink(resourceExtractor, belt);
     // simulationManager.addLink(belt, manufacturer);

@@ -16,7 +16,6 @@ import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/ob
 import produce from 'immer';
 
 const populateNewNodeData = (
-  overclock: number,
   x: number,
   y: number,
   translateFunction: (arg0: string) => string,
@@ -43,7 +42,6 @@ const populateNewNodeData = (
     id: uuidGen(),
     translateFunction,
     tier: getTier(buildingSlug),
-    overclock,
     machineName: buildingSlug,
     machineLabel: getBuildingName(buildingSlug) as string,
     inputConnections: getInputsForBuilding(

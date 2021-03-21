@@ -1,14 +1,16 @@
 import { makeStyles } from '@material-ui/core/styles';
-import PauseIcon from '@material-ui/icons/Pause';
+
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
-import ReplayIcon from '@material-ui/icons/Replay';
+// import ReplayIcon from '@material-ui/icons/Replay';
 import StopIcon from '@material-ui/icons/Stop';
+import PauseIcon from '@material-ui/icons/Pause';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import SpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import { motion, useAnimation } from 'framer-motion';
 import React from 'react';
 import { isMobile } from 'react-device-detect';
-import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/react/PixiJSCanvas/PixiJsCanvasContext';
+import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
 
 const useStyles = makeStyles((theme) => ({
   fab: {
@@ -30,12 +32,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const actions = [
-  { icon: <StopIcon />, name: 'Stop' },
-  { icon: <PauseIcon />, name: 'Pause' },
-  { icon: <ReplayIcon />, name: 'Reset' },
-];
-
 function SimulationFab() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
@@ -54,7 +50,9 @@ function SimulationFab() {
 
   const controls = useAnimation();
 
-  const { canvasReady: loaded } = React.useContext(PixiJSCanvasContext);
+  const { canvasReady: loaded, externalInteractionManager } = React.useContext(
+    PixiJSCanvasContext
+  );
 
   React.useEffect(() => {
     if (loaded) {
@@ -64,6 +62,65 @@ function SimulationFab() {
       });
     }
   }, [controls, loaded]);
+
+  const numTicks = React.useRef(-1);
+  const timeoutRef = React.useRef(null);
+
+  // This is to clean up the timeout refs
+  React.useEffect(() => {
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const ref = timeoutRef.current;
+      if (ref) {
+        clearTimeout(ref);
+      }
+    };
+  }, []);
+
+  const handleSimulation = React.useCallback(
+    (e, actionName) => {
+      const simulationManager = externalInteractionManager.getSimulationManager();
+      if (actionName === 'Play') {
+        if (numTicks.current === -1) {
+          simulationManager.prepare();
+          numTicks.current = 0;
+        }
+
+        console.log('Simulation manager working!');
+
+        timeoutRef.current = setTimeout(() => {});
+
+        function tick() {
+          for (let x = 0; x < 10; x++) {
+            simulationManager.tick();
+          }
+          numTicks.current += 10;
+          if (numTicks.current < 100000) {
+            timeoutRef.current = setTimeout(tick);
+          } else {
+            timeoutRef.current = null;
+          }
+        }
+
+        timeoutRef.current = setTimeout(tick);
+
+        console.log('Simulation manager Ended!');
+      } else if (actionName === 'Pause') {
+        console.log('Paused Simulation');
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      } else if (actionName === 'Stop') {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+        numTicks.current = -1;
+        setIsPlaying(false);
+        simulationManager.resetAll();
+      }
+    },
+    [externalInteractionManager]
+  );
+
+  const [isPlaying, setIsPlaying] = React.useState(false);
 
   return (
     // <Fab
@@ -91,17 +148,30 @@ function SimulationFab() {
           onOpen={handleOpen}
           open={open}
         >
-          {actions.map((action) => (
+          <SpeedDialAction
+            icon={isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+            tooltipTitle={isPlaying ? 'Pause' : 'Play'}
+            tooltipOpen
+            tooltipPlacement="right"
+            onClick={(e) => {
+              setIsPlaying(!isPlaying);
+              handleSimulation(e, isPlaying ? 'Pause' : 'Play');
+            }}
+            title={isPlaying ? 'Pause' : 'Play'}
+          />
+          {numTicks.current < 0 ? null : (
             <SpeedDialAction
-              key={action.name}
-              icon={action.icon}
-              tooltipTitle={action.name}
+              icon={<StopIcon />}
+              disabled
+              tooltipTitle={'Stop'}
               tooltipOpen
               tooltipPlacement="right"
-              onClick={handleClose}
-              title={'Simulation Options'}
+              onClick={(e) => {
+                handleSimulation(e, 'Stop');
+              }}
+              title={'Stop'}
             />
-          ))}
+          )}
         </SpeedDial>
       </motion.div>
     </div>

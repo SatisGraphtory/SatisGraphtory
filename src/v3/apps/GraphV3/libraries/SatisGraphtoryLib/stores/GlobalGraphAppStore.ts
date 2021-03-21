@@ -13,6 +13,7 @@ import {
   addGraphChildrenFromWithinStateUpdate,
   removeAllGraphChildrenFromWithinStateUpdate,
 } from '../core/api/canvas/childrenApi';
+import SimulationManager from '../algorithms/simulation/manager/SimulationManager';
 
 export const initialGraphAppStateId = uuidGen();
 
@@ -39,7 +40,8 @@ const generateNewCanvasStore = (id: string) => {
     sourceNodeId: '',
     externalInteractionManager: new ExternalInteractionManager(
       new EventEmitter(),
-      id
+      id,
+      new SimulationManager()
     ),
     snapToGrid: false,
     autoShuffleEdge: false,
@@ -76,6 +78,8 @@ export const populateCanvasStore = (
 
     s.externalInteractionManager.setTheme(theme);
 
+    PIXI.settings.PRECISION_FRAGMENT = 'highp';
+
     let newApplication = new PIXI.Application({
       transparent: true,
       autoDensity: true,
@@ -85,6 +89,8 @@ export const populateCanvasStore = (
       resolution: sgDevicePixelRatio,
       antialias: true,
     });
+
+    newApplication.renderer.roundPixels = true;
 
     newApplication.renderer.plugins.interaction.interactionFrequency = 5;
 

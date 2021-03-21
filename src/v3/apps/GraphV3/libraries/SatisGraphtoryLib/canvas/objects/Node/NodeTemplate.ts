@@ -5,7 +5,6 @@ import {
   SatisGraphtoryCoordinate,
   SatisGraphtoryNodeProps,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/types';
-// import {sortFunction} from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/sortEdges';
 import {
   GraphObject,
   GraphObjectContainer,
@@ -17,6 +16,8 @@ import {
 import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EmptyEdge';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
+import SimulatableNode from '../../../algorithms/simulation/nodes/SimulatableNode';
+import { getSimulatableNode } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/NodeManager/getSimulatable';
 
 export class NodeContainer extends GraphObjectContainer {
   public boundCalculator: any = null;
@@ -28,7 +29,6 @@ export class NodeContainer extends GraphObjectContainer {
 
 export abstract class NodeTemplate extends GraphObject {
   id: string;
-  overclock: number;
   machineName: string;
   tier: number;
   container: NodeContainer;
@@ -42,6 +42,7 @@ export abstract class NodeTemplate extends GraphObject {
   connectionsSideMap: Map<EdgeTemplate, EdgeAttachmentSide> = new Map();
   additionalData: Map<string, any> = new Map();
   translateFunction = (arg: string) => arg;
+  simulatable: SimulatableNode;
 
   protected constructor(props: SatisGraphtoryNodeProps) {
     super(props);
@@ -52,7 +53,6 @@ export abstract class NodeTemplate extends GraphObject {
       inputConnections,
       outputConnections,
       anyConnections,
-      overclock,
       machineName,
       tier,
       additionalData,
@@ -60,7 +60,6 @@ export abstract class NodeTemplate extends GraphObject {
     } = props;
 
     this.translateFunction = translateFunction;
-    this.overclock = overclock;
     this.machineName = machineName;
     this.tier = tier;
 
@@ -76,6 +75,13 @@ export abstract class NodeTemplate extends GraphObject {
         this.additionalData.set(key, value);
       }
     }
+
+    this.simulatable = getSimulatableNode(
+      this,
+      machineName,
+      this.additionalData,
+      this.getInteractionManager().getSimulationManager()
+    );
 
     // Sorting here is mostly useless.
     // TODO: figure out if we should just kill this if we don't do any weird operations when
@@ -101,6 +107,9 @@ export abstract class NodeTemplate extends GraphObject {
       });
     }
   }
+
+  abstract updateDisplay(rateText: number): void;
+  abstract resetDisplay(): void;
 
   getAdditionalData() {
     return this.additionalData;

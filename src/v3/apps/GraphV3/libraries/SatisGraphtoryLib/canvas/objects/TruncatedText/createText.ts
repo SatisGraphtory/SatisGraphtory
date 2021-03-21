@@ -1,15 +1,22 @@
 import PIXI from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/PixiProvider';
 // import {sgDevicePixelRatio} from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/canvasUtils";
 
+type BitmapStyle = {
+  fontName: string;
+};
+
 const createText = (
   text: string,
-  style: PIXI.TextStyle,
+  style: PIXI.TextStyle | BitmapStyle,
   x: number,
   y: number,
   horizontalAlign = 'left',
-  verticalAlign = 'center'
+  verticalAlign = 'center',
+  bitmap = false
 ) => {
-  const nameStr = new PIXI.Text(text, style);
+  const nameStr = bitmap
+    ? new PIXI.BitmapText(text, style)
+    : new PIXI.Text(text, style);
 
   let alignY = -1;
   if (verticalAlign === 'top') {

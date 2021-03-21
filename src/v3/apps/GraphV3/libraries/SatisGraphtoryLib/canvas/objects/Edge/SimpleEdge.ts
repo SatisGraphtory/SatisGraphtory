@@ -15,6 +15,9 @@ import { EDGE_TIER_STYLE } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/can
 import { getTier } from 'v3/data/loaders/buildings';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
+import { getSimulatableEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/NodeManager/getSimulatable';
+import SimulatableLink from '../../../algorithms/simulation/edges/SimulatableLink';
+import { NodeTemplate } from '../Node/NodeTemplate';
 
 export default class SimpleEdge extends EdgeTemplate {
   graphicsObject: PIXI.Graphics;
@@ -26,6 +29,8 @@ export default class SimpleEdge extends EdgeTemplate {
 
   private levelText: any;
 
+  simulatable: SimulatableLink;
+
   constructor(props: SatisGraphtoryEdgeProps) {
     super(props);
 
@@ -33,6 +38,13 @@ export default class SimpleEdge extends EdgeTemplate {
       throw new Error(
         'SimpleEdge must be instantiated with a valid connector name'
       );
+
+    this.simulatable = getSimulatableEdge(
+      this.id,
+      this.connectorName,
+      new Map<string, any>(),
+      this.getInteractionManager().getSimulationManager()
+    );
 
     this.container.setHighLightObject(new PIXI.Graphics());
     this.container.addChild(this.container.getHighLight());
@@ -77,6 +89,12 @@ export default class SimpleEdge extends EdgeTemplate {
         this.biDirectional = true;
       }
 
+      this.simulatable.addLink(
+        this.sourceNode.simulatable,
+        this.targetNode.simulatable,
+        this.connectorName
+      );
+
       this.sourceNode.addEdge(
         this,
         EdgeType.OUTPUT,
@@ -90,6 +108,22 @@ export default class SimpleEdge extends EdgeTemplate {
       );
 
       this.updateWithoutHitBox();
+    }
+  }
+
+  setConnections(
+    sourceNode: NodeTemplate | null,
+    targetNode: NodeTemplate | null
+  ) {
+    this.sourceNode = sourceNode;
+    this.targetNode = targetNode;
+
+    if (sourceNode && targetNode && this.connectorName) {
+      this.simulatable.addLink(
+        sourceNode.simulatable,
+        targetNode.simulatable,
+        this.connectorName
+      );
     }
   }
 

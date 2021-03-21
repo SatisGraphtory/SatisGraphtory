@@ -44,6 +44,7 @@ export const getSchemaForVersion = (version: string) => {
     1: ['recipe', 'RecipeEnum'],
     2: ['extractedItem', 'ItemEnum'],
     3: ['nodePurity', 'uint32'],
+    4: ['overclock', 'uint32'],
   };
 
   const NodeAdditionalSettingsMessage = new Type(

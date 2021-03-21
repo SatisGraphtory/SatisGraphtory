@@ -86,13 +86,7 @@ const deserializeGraphObjects = (
     const thisUuid = uuidGen();
     nodeNumberToId.set(node.id, thisUuid);
 
-    const {
-      x,
-      y,
-      machineTypeId: buildingSlug,
-      overclock,
-      additionalData,
-    } = node;
+    const { x, y, machineTypeId: buildingSlug, additionalData } = node;
 
     const populatedNode = new AdvancedNode({
       position: {
@@ -101,7 +95,6 @@ const deserializeGraphObjects = (
       },
       id: thisUuid,
       tier: getTier(buildingSlug),
-      overclock,
       machineName: buildingSlug,
       machineLabel: getBuildingName(buildingSlug) as string,
       inputConnections: node.inputs.map((num: number) => {
@@ -141,12 +134,10 @@ const deserializeGraphObjects = (
       throw new Error(
         'Node ' + edge.id + ' has invalid sourceId ' + edge.sourceNodeId
       );
-    populatedEdge.sourceNode = edge.sourceNodeId
-      ? nodeNumberToInstance.get(edge.sourceNodeId)!
-      : null;
-    populatedEdge.targetNode = edge.targetNodeId
-      ? nodeNumberToInstance.get(edge.targetNodeId)!
-      : null;
+    populatedEdge.setConnections(
+      edge.sourceNodeId ? nodeNumberToInstance.get(edge.sourceNodeId)! : null,
+      edge.targetNodeId ? nodeNumberToInstance.get(edge.targetNodeId)! : null
+    );
 
     populatedEdge.updateWithoutHitBox();
   }

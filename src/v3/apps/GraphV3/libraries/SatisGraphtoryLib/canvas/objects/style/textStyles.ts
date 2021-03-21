@@ -6,6 +6,7 @@ import {
   NAME_FONT_SIZE,
   OVERCLOCK_STROKE_SIZE,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Texts';
+import uuidGen from '../../../../../../../utils/stringUtils';
 
 export const RECIPE_STYLE = memoize((width: number, theme) => {
   return new PIXI.TextStyle({
@@ -67,6 +68,28 @@ export const OVERCLOCK_STYLE = memoize(
       strokeThickness: OVERCLOCK_STROKE_SIZE,
     })
 );
+
+export const RATE_STYLE = memoize((theme) => {
+  const textStyle = new PIXI.TextStyle({
+    align: 'right',
+    fill: theme.overclock.fill,
+    fontSize: EFFICIENCY_FONT_SIZE,
+    fontFamily: '"Bebas Neue", sans-serif',
+    // stroke: theme.overclock.stroke,
+    // strokeThickness: OVERCLOCK_STROKE_SIZE,
+  });
+
+  const styleUuid = 'custom-font' + uuidGen();
+
+  PIXI.BitmapFont.from(styleUuid, textStyle, {
+    resolution: 10,
+    chars: PIXI.BitmapFont.ASCII,
+  });
+
+  return {
+    fontName: styleUuid,
+  };
+});
 
 // export const INPUT_STYLE = memoize(
 //   (theme) =>

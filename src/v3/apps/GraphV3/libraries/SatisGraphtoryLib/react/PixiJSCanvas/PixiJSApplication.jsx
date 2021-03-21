@@ -79,7 +79,7 @@ function PixiJSApplication(props) {
     selectedEdge = edgeStampOptions.edge;
   }
 
-  console.log(nodeStampOptions, edgeStampOptions);
+  // console.log(nodeStampOptions, edgeStampOptions);
 
   const { translate } = React.useContext(LocaleContext);
 
@@ -397,7 +397,6 @@ function PixiJSApplication(props) {
         if (!Object.keys(nodeStampOptions).length) return;
 
         const nodeData = populateNewNodeData(
-          100,
           newPos.x,
           newPos.y,
           translate,

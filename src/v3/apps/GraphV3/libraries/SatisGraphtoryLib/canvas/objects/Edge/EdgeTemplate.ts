@@ -77,6 +77,11 @@ export default abstract class EdgeTemplate extends GraphObject {
     }
   }
 
+  abstract setConnections(
+    sourceNode: NodeTemplate | null,
+    targetNode: NodeTemplate | null
+  ): void;
+
   replaceEdge(
     replacementEdge: EdgeTemplate,
     edgeType: EdgeType,

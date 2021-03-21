@@ -214,7 +214,6 @@ const serializeNode = (
 
   const baseObject = {
     id: getOrCreateId(node.id, nodeIdToNumberMap, nodeNumberId),
-    overclock: node.overclock,
     inputs: node.inputConnections.map((connection) =>
       getOrCreateId(connection.id, edgeIdToNumberMap, edgeNumberId)
     ),

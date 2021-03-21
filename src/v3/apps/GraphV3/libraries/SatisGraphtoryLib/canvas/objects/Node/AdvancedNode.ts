@@ -5,6 +5,7 @@ import {
   MACHINE_STYLE,
   NODE_TIER_STYLE,
   OVERCLOCK_STYLE,
+  RATE_STYLE,
   RECIPE_STYLE,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/style/textStyles';
 import createTruncatedText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/TruncatedText/createTruncatedText';
@@ -59,17 +60,19 @@ import {
   triggerCanvasUpdateFunction,
 } from '../../../stores/GlobalGraphAppStore';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
-import { getEnumValue } from '../../../../../../../data/loaders/enums';
+import { getEnumValue } from 'v3/data/loaders/enums';
 
 export default class AdvancedNode extends NodeTemplate {
   connectionsMap: Map<EdgeAttachmentSide, EdgeTemplate[]> = new Map();
   connectionsDirectionMap: Map<EdgeTemplate, EdgeType> = new Map();
   connectionsContainer: PIXI.Container = new PIXI.Container();
 
+  rateText: PIXI.Text;
+
   constructor(props: SatisGraphtoryNodeProps) {
     super(props);
 
-    const { tier, overclock, machineName, machineLabel } = props;
+    const { tier, machineName, machineLabel } = props;
 
     const container = this.container;
 
@@ -85,6 +88,18 @@ export default class AdvancedNode extends NodeTemplate {
     container.addChild(container.boundCalculator);
 
     const theme = this.getInteractionManager().getTheme();
+
+    this.rateText = createText(
+      '',
+      RATE_STYLE(theme),
+      NODE_WIDTH / 2,
+      NODE_HEIGHT + 60,
+      'center',
+      'center',
+      true
+    );
+
+    container.addChild(this.rateText);
 
     const machineText = createText(
       machineLabel,
@@ -153,19 +168,35 @@ export default class AdvancedNode extends NodeTemplate {
 
     container.addChild(levelText);
 
-    const efficiencyText = createText(
-      `${overclock}%`,
-      OVERCLOCK_STYLE(theme),
-      EFFICIENCY_OFFSET_X,
-      EFFICIENCY_OFFSET_Y,
-      'right'
-    );
+    if (this.additionalData.has('overclock')) {
+      const efficiencyText = createText(
+        `${this.additionalData.get('overclock')}%`,
+        OVERCLOCK_STYLE(theme),
+        EFFICIENCY_OFFSET_X,
+        EFFICIENCY_OFFSET_Y,
+        'right'
+      );
 
-    container.addChild(efficiencyText);
+      container.addChild(efficiencyText);
+    }
 
     this.recalculateConnections();
 
     container.addChild(this.connectionsContainer);
+  }
+
+  rate = -1;
+
+  updateDisplay(rateText: number) {
+    if (this.rate !== rateText) {
+      this.rate = rateText;
+      this.rateText.text = `${rateText.toFixed(2)} items/minute`;
+    }
+  }
+
+  resetDisplay() {
+    this.rate = -1;
+    this.rateText.text = '';
   }
 
   eventFunctions = new Map<string, any[]>();

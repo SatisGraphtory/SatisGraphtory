@@ -1,14 +1,25 @@
 import EventEmitter from 'eventemitter3';
+import SimulationManager from '../../../algorithms/simulation/manager/SimulationManager';
 
 class ExternalInteractionManager {
   private theme: any = {};
   private readonly eventEmitter: EventEmitter;
   private eventEmitterMap = new Map<string, boolean>();
+  private simulationManager: SimulationManager;
   private readonly canvasId: string;
 
-  constructor(eventEmitter: EventEmitter, canvasId: string) {
+  constructor(
+    eventEmitter: EventEmitter,
+    canvasId: string,
+    simulationManager: SimulationManager
+  ) {
     this.eventEmitter = eventEmitter;
     this.canvasId = canvasId;
+    this.simulationManager = simulationManager;
+  }
+
+  getSimulationManager() {
+    return this.simulationManager;
   }
 
   getCanvasId() {

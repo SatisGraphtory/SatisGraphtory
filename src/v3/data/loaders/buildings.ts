@@ -26,6 +26,10 @@ import { EResourcePurityDisplayName } from '.DataLanding/interfaces/enums/EResou
 import { getResourcesByForm } from './items';
 import { getAlternateRecipes } from './schematics';
 
+export const getUnrealClassForBuilding = (buildingSlug: string) => {
+  return (BuildingClasses as any)[buildingSlug];
+};
+
 const getAllSubclassesFn = (baseClass: string) => {
   const allClasses = new Set<string>();
   allClasses.add(baseClass);
@@ -442,6 +446,34 @@ export const getSupportedConnectionTypes = (
   );
 };
 
+export const getConnectionTypeForEdge = (
+  buildingSlug: string
+): ConnectionTypeEnum => {
+  if (!buildingSlug) throw new Error('buildingSlug not provided!');
+
+  const buildingConnections = (ConnectionsJson as any)[buildingSlug];
+
+  if (buildingConnections) {
+    const connectionTypes = Object.keys(
+      buildingConnections.connectionMap
+    ).map((item) => parseInt(item, 10));
+
+    if (connectionTypes.length === 1) {
+      return connectionTypes[0];
+    } else if (connectionTypes.length > 1) {
+      throw new Error(
+        'Building ' +
+          buildingSlug +
+          ' supports too many resourceForms, possibly not an edge'
+      );
+    }
+  }
+
+  throw new Error(
+    'Building ' + buildingSlug + ' does not support resourceForms'
+  );
+};
+
 const waterPumpSubclasses = getAllSubclasses('AFGBuildableWaterPump');
 
 export const getConfigurableOptionsByMachine = (classSlug: string) => {
@@ -501,6 +533,18 @@ export const getConfigurableOptionsByMachine = (classSlug: string) => {
     (BuildingClasses as any)[sampleMachine as string]
   );
 
+  const buildingDefinition = getBuildingDefinition(sampleMachine);
+
+  if (buildingDefinition.mCanChangePotential) {
+    baseTypes.overclock = {
+      options: [100],
+      slider: true,
+      minValue: 0,
+      maxValue: 200,
+      translations: [100],
+    };
+  }
+
   if (resourceExtractorSubclasses.has(classType)) {
     if (waterPumpSubclasses.has(classType)) {
       baseTypes.nodePurity = {
@@ -521,8 +565,6 @@ export const getConfigurableOptionsByMachine = (classSlug: string) => {
         translations: purityNames,
       };
     }
-
-    const buildingDefinition = getBuildingDefinition(sampleMachine);
 
     if (buildingDefinition.mOnlyAllowCertainResources) {
       baseTypes.extractedItem = {
