@@ -1,6 +1,15 @@
-import RecipeJson from '.DataWarehouse/main/Recipes.json';
 import memoize from 'fast-memoize';
 import { getBuildableMachinesFromClassName } from './buildings';
+
+import { unpack } from 'jsonpack';
+
+import raw from 'raw.macro';
+import { UFGRecipe } from '../../../.DataLanding/interfaces/classes';
+
+const RecipeJsonRaw = raw(
+  '../../../.DataWarehouse/main_compressed/Recipes.json'
+);
+const RecipeJson = unpack(RecipeJsonRaw) as Record<string, UFGRecipe>;
 
 const getAllRecipesFn = () => {
   return RecipeJson;

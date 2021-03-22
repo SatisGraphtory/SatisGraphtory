@@ -179,6 +179,10 @@ export abstract class NodeTemplate extends GraphObject {
       edge.delete();
     }
 
+    this.getInteractionManager()
+      .getSimulationManager()
+      .unregister(this.simulatable);
+
     this.container.destroy();
     return originalEdges;
   }

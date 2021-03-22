@@ -3,7 +3,6 @@ import SimulationManager, {
   SimulatableAction,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/manager/SimulationManager';
 import SimulatableLink from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/edges/SimulatableLink';
-import SimulatableNode from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/SimulatableNode';
 import { OutputPacket } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/SimulatableElement';
 import { getBuildingDefinition } from 'v3/data/loaders/buildings';
 import Big from 'big.js';
@@ -23,17 +22,6 @@ export default class BeltV2 extends SimulatableLink {
   }
 
   cycleTime: Big;
-
-  addLink(
-    sourceSimulatable: SimulatableNode,
-    targetSimulatable: SimulatableNode,
-    connectorName: string
-  ) {
-    sourceSimulatable.outputs.push(this);
-    this.inputs.push(sourceSimulatable);
-    targetSimulatable.inputs.push(this);
-    this.outputs.push(targetSimulatable);
-  }
 
   runPreSimulationActions(): void {
     super.runPreSimulationActions();

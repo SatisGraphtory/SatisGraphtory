@@ -11,11 +11,8 @@ import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/
 import ExternalInteractionManager from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/ExternalInteractionManager';
 import { SatisGraphtoryEdgeProps } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/types';
 
-import ItemJson from '.DataWarehouse/main/Items.json';
-import BuildingJson from '.DataWarehouse/main/Buildings.json';
 import BuildingClasses from '.DataWarehouse/main/BuildingClasses.json';
 import BuildingClassMap from '.DataWarehouse/main/BuildingClassMap.json';
-import RecipeJson from '.DataWarehouse/main/Recipes.json';
 import ConnectionsJson from '.DataWarehouse/main/Connections.json';
 import { getImageFileFromSlug } from './images';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
@@ -25,6 +22,31 @@ import { getEnumDisplayNames, getEnumValues } from './enums';
 import { EResourcePurityDisplayName } from '.DataLanding/interfaces/enums/EResourcePurity';
 import { getResourcesByForm } from './items';
 import { getAlternateRecipes } from './schematics';
+
+import { unpack } from 'jsonpack';
+
+import raw from 'raw.macro';
+import {
+  UFGBuildingDescriptor,
+  UFGItemDescriptor,
+  UFGRecipe,
+} from '../../../.DataLanding/interfaces/classes';
+
+const ItemJsonRaw = raw('../../../.DataWarehouse/main_compressed/Items.json');
+const ItemJson = unpack(ItemJsonRaw) as Record<string, UFGItemDescriptor>;
+
+const BuildingJsonRaw = raw(
+  '../../../.DataWarehouse/main_compressed/Buildings.json'
+);
+const BuildingJson = unpack(BuildingJsonRaw) as Record<
+  string,
+  UFGBuildingDescriptor
+>;
+
+const RecipeJsonRaw = raw(
+  '../../../.DataWarehouse/main_compressed/Recipes.json'
+);
+const RecipeJson = unpack(RecipeJsonRaw) as Record<string, UFGRecipe>;
 
 export const getUnrealClassForBuilding = (buildingSlug: string) => {
   return (BuildingClasses as any)[buildingSlug];
@@ -109,7 +131,7 @@ const getBuildableMachinesFnV2 = () => {
       Object.values(RecipeJson)
         .map((recipe) => recipe?.mProducedIn)
         .flat()
-        .map((producedIn) => producedIn?.slug)
+        .map((producedIn: any) => producedIn?.slug)
         .filter((item) => item)
     ),
   ];

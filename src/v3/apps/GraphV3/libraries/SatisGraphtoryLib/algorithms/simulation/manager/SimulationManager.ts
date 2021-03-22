@@ -55,6 +55,10 @@ export default class SimulationManager {
     this.objectMap.set(obj.id, obj);
   }
 
+  unregister(obj: SimulatableElement) {
+    this.objectMap.delete(obj.id);
+  }
+
   prepare() {
     Array.from(this.objectMap.values()).forEach((connection) => {
       connection.runPreSimulationActions();

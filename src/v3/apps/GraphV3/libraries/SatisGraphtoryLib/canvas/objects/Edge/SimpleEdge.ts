@@ -21,6 +21,7 @@ import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import { getSimulatableEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/NodeManager/getSimulatable';
 import SimulatableLink from '../../../algorithms/simulation/edges/SimulatableLink';
 import { NodeTemplate } from '../Node/NodeTemplate';
+import { GraphObject } from '../interfaces/GraphObject';
 
 export default class SimpleEdge extends EdgeTemplate {
   graphicsObject: PIXI.Graphics;
@@ -359,5 +360,14 @@ export default class SimpleEdge extends EdgeTemplate {
 
   addDragEvents(): any[] {
     return [];
+  }
+
+  delete(): GraphObject[] {
+    const returnValue = super.delete();
+    this.getInteractionManager()
+      .getSimulationManager()
+      .unregister(this.simulatable);
+    this.simulatable.removeLinks();
+    return returnValue;
   }
 }

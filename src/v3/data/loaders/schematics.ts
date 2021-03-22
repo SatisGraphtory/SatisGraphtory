@@ -1,7 +1,16 @@
-import Schematics from '.DataWarehouse/main/Schematics.json';
 import { ESchematicType } from '.DataLanding/interfaces/enums';
 
 import memoize from 'fast-memoize';
+
+import { unpack } from 'jsonpack';
+
+import raw from 'raw.macro';
+import { UFGSchematic } from '../../../.DataLanding/interfaces/classes';
+
+const SchematicJsonRaw = raw(
+  '../../../.DataWarehouse/main_compressed/Schematics.json'
+);
+const Schematics = unpack(SchematicJsonRaw) as Record<string, UFGSchematic>;
 
 const recipeByUnlocks = new Map();
 const unlocksByRecipe = new Map();

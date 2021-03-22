@@ -1,4 +1,3 @@
-import ItemJson from '.DataWarehouse/main/Items.json';
 import ItemClassJson from '.DataWarehouse/main/ItemClasses.json';
 import ConnectionResourceFormsJson from '.DataWarehouse/main/ConnectionResourceForms.json';
 import memoize from 'fast-memoize';
@@ -6,6 +5,14 @@ import { getBuildingImageName } from 'v3/data/loaders/buildings';
 import { getMachineCraftableRecipeDefinitionList } from 'v3/data/loaders/recipes';
 
 import { getImageFileFromSlug } from './images';
+
+import { unpack } from 'jsonpack';
+
+import raw from 'raw.macro';
+import { UFGItemDescriptor } from '../../../.DataLanding/interfaces/classes';
+
+const ItemJsonRaw = raw('../../../.DataWarehouse/main_compressed/Items.json');
+const ItemJson = unpack(ItemJsonRaw) as Record<string, UFGItemDescriptor>;
 
 export const getItemDefinition = (itemSlug: string) => {
   return (ItemJson as any)[itemSlug];

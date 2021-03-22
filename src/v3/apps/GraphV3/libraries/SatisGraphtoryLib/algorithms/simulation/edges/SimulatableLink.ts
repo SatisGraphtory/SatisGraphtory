@@ -27,11 +27,46 @@ export default abstract class SimulatableLink extends SimulatableElement {
     // const buildingDefinition = getBuildingDefinition(connectionName);
   }
 
-  abstract addLink(
-    sourceSimulatable: SimulatableElement,
-    targetSimulatable: SimulatableElement,
+  addLink(
+    sourceSimulatable: SimulatableNode,
+    targetSimulatable: SimulatableNode,
     connectorName: string
-  ): void;
+  ) {
+    sourceSimulatable.outputs.push(this);
+    this.inputs.push(sourceSimulatable);
+    targetSimulatable.inputs.push(this);
+    this.outputs.push(targetSimulatable);
+  }
+
+  removeLinks() {
+    for (const sourceSimulatable of this.inputs) {
+      const occurrences = sourceSimulatable.outputs.filter(
+        (item) => item === this
+      ).length;
+      for (let j = 0; j < occurrences; j++) {
+        for (let i = 0; i < sourceSimulatable.outputs.length; i++) {
+          if (sourceSimulatable.outputs[i] === this) {
+            sourceSimulatable.outputs.splice(i, 1);
+            break;
+          }
+        }
+      }
+    }
+
+    for (const targetSimulatable of this.outputs) {
+      const occurrences = targetSimulatable.inputs.filter(
+        (item) => item === this
+      ).length;
+      for (let j = 0; j < occurrences; j++) {
+        for (let i = 0; i < targetSimulatable.inputs.length; i++) {
+          if (targetSimulatable.inputs[i] === this) {
+            targetSimulatable.inputs.splice(i, 1);
+            break;
+          }
+        }
+      }
+    }
+  }
 
   getOutputIdsNeededForItem(itemSlug: string) {
     return this.outputs.map((item) => item.id);
