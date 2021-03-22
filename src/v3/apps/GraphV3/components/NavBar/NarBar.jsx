@@ -10,6 +10,7 @@ import HelpButton from './HelpButton';
 import SettingsButton from './SettingsButton';
 
 import ShareButton from './ShareButton';
+import SimulationButton from './SimulationButton';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -67,6 +68,7 @@ function NarBar(props) {
           />
         </Hidden>
         <div className={classes.grow} />
+        <SimulationButton id={id} />
         <ShareButton id={id} />
         <SettingsButton id={id} />
         <HelpButton id={id} />
