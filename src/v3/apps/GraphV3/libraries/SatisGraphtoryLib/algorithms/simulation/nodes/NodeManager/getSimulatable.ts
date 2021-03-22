@@ -4,6 +4,7 @@ import ManufacturerV2 from '../ManufacturerV2';
 import SimulationManager from '../../manager/SimulationManager';
 import BeltV2 from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/edges/BeltV2';
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import EdgeTemplate from '../../../../canvas/objects/Edge/EdgeTemplate';
 
 export const getSimulatableNode = (
   node: NodeTemplate,
@@ -33,7 +34,7 @@ export const getSimulatableNode = (
 };
 
 export const getSimulatableEdge = (
-  id: string,
+  edge: EdgeTemplate,
   connectionSlug: string,
   beltOptions: Map<string, any>,
   simulationManager: SimulationManager
@@ -41,7 +42,7 @@ export const getSimulatableEdge = (
   const unrealClass = getUnrealClassForBuilding(connectionSlug);
   switch (unrealClass) {
     case 'FGBuildableConveyorBelt':
-      return new BeltV2(id, connectionSlug, simulationManager);
+      return new BeltV2(edge, connectionSlug, simulationManager);
     default:
       throw new Error('Unimplemented class ' + unrealClass);
   }

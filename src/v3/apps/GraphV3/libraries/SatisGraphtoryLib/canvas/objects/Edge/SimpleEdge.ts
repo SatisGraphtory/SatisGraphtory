@@ -45,7 +45,7 @@ export default class SimpleEdge extends EdgeTemplate {
       );
 
     this.simulatable = getSimulatableEdge(
-      this.id,
+      this,
       this.connectorName,
       new Map<string, any>(),
       this.getInteractionManager().getSimulationManager()
@@ -82,7 +82,7 @@ export default class SimpleEdge extends EdgeTemplate {
     this.levelText = levelTextContainer;
 
     this.rateText = createText(
-      'SAMPLETEXT',
+      '',
       RATE_STYLE(theme),
       0,
       60,
@@ -148,6 +148,20 @@ export default class SimpleEdge extends EdgeTemplate {
         this.connectorName
       );
     }
+  }
+
+  rate = -1;
+
+  updateDisplay(rateText: number) {
+    if (this.rate !== rateText) {
+      this.rate = rateText;
+      this.rateText.text = `${rateText.toFixed(2)} items/minute`;
+    }
+  }
+
+  resetDisplay() {
+    this.rate = -1;
+    this.rateText.text = '';
   }
 
   addSelectEvents(onSelectObjects: (ids: string[]) => any): void {

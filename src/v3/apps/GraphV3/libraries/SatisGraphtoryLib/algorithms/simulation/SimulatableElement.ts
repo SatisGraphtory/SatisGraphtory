@@ -20,10 +20,6 @@ export default abstract class SimulatableElement implements Simulatable {
     simulationManager.register(this);
   }
 
-  runPreSimulationActions(): void {
-    // noop.
-  }
-
   //TODO: make this abstract?
   reset() {}
 
@@ -48,5 +44,43 @@ export default abstract class SimulatableElement implements Simulatable {
 
   abstract getOutputIdsNeededForItem(itemSlug: string): string[];
 
-  eventDispatch = new Map<SimulatableAction, any[]>();
+  depositDelta: Big[] = [];
+  lastTime = Big(-1);
+  timeSum = Big(0);
+  trackingLength = 20;
+
+  setDepositTrackingLength(length: number) {
+    this.trackingLength = length;
+  }
+
+  runPreSimulationActions(): void {
+    this.depositDelta = [];
+    this.lastTime = Big(-1);
+    this.timeSum = Big(0);
+  }
+
+  private negativeOneBig = Big(-1);
+
+  trackDepositEvent(time: Big, callback: any) {
+    if (this.lastTime.eq(this.negativeOneBig)) {
+      this.lastTime = time;
+    } else {
+      const deltaTime = time.minus(this.lastTime);
+      this.depositDelta.push(deltaTime);
+      this.timeSum = this.timeSum.add(deltaTime);
+      this.lastTime = time;
+
+      if (this.depositDelta.length === this.trackingLength + 1) {
+        this.timeSum = this.timeSum.minus(this.depositDelta.shift()!);
+        if (callback) {
+          callback(
+            Big(this.trackingLength)
+              .div(this.timeSum)
+              .mul(60 * 1000)
+              .toNumber()
+          );
+        }
+      }
+    }
+  }
 }

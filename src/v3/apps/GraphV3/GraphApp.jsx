@@ -95,12 +95,20 @@ export default function GraphApp(props) {
     } else {
       // TODO:LOADDATA
 
+      // data = {
+      //   d:
+      //     'CgAAAgCAEAQBAYEAgMQFASYBMACAOYMaAYvAIwBoAsQDJ4CQIARAJIAVAQQC4BgeAyAFSA7gH2cAYgA6SCAF+cAQBwA4gB2KAEgHBFIAFABHADgAPEAFkAFDwCEAAgDQigL0ARABcgAlQAaIivYA9AD5imwgPADREMAAMCD8ACMAUThAA===',
+      //   c: 0,
+      //   v: '0.1.0',
+      //   h: -343755566,
+      // };
+
       data = {
         d:
-          'CgAAAgCAEAQBAYEAgMQFASYBMACAOYMaAYvAIwBoAsQDJ4CQIARAJIAVAQQC4BgeAyAFSA7gH2cAYgA6SCAF+cAQBwA4gB2KAEgHBFIAFABHADgAPEAFkAFDwCEAAgDQigL0ARABcgAlQAaIivYA9AD5imwgPADREMAAMCD8ACMAUThAA===',
+          'CgBgCGAACIADAUlIBgBAkDgBOAkQRQC5IBxyACAHSBMgFkjGkgBIBAACIAaBoAHCdQDkPACAsACgGQAATxYBnABuoABgFwABQHoAApoBKLYZAAhLABMAwAAsAkAAQhIjgH4ASlgAkAoF8jCAlwB8LAApABkAggAmAIGQAOYAcpAATSwAr2wAkACuygSwAMYAlJAAtwA2kAAeLHbCzupcZeoAcFmQXjQAwcbKTJBAA===',
         c: 0,
         v: '0.1.0',
-        h: -343755566,
+        h: 1723117822,
       };
       // data = {
       //   d:

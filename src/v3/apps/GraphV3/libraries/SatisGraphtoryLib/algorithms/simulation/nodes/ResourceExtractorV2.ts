@@ -7,6 +7,7 @@ import SimulationManager, {
 import SimulatableNode from './SimulatableNode';
 import { NodeTemplate } from '../../../canvas/objects/Node/NodeTemplate';
 import Big from 'big.js';
+import { EResourcePurity } from '../../../../../../../../.DataLanding/interfaces/enums';
 
 export default class ResourceExtractorV2 extends SimulatableNode {
   cycleTime: Big = Big(0);
@@ -23,21 +24,35 @@ export default class ResourceExtractorV2 extends SimulatableNode {
     const buildingDefinition = getBuildingDefinition(buildingSlug);
     this.cycleTime = Big(buildingDefinition.mExtractCycleTime).mul(Big(1000));
     if (nodeOptions.has('extractedItem')) {
+      let purityMultiplier = 1;
+
+      if (nodeOptions.has('nodePurity')) {
+        switch (nodeOptions.get('nodePurity')) {
+          case EResourcePurity.RP_Inpure:
+            purityMultiplier = 0.5;
+            break;
+          case EResourcePurity.RP_Pure:
+            purityMultiplier = 2;
+            break;
+        }
+      }
+
       this.outputPacket = {
         slug: nodeOptions.get('extractedItem'),
-        amount: buildingDefinition.mItemsPerCycle,
+        amount: buildingDefinition.mItemsPerCycle * purityMultiplier,
       };
     }
-    //TODO: factor in overclock AND purity.
+
+    this.setDepositTrackingLength(
+      buildingDefinition?.mNumCyclesForProductivity || 20
+    );
   }
 
-  outputSlot: OutputPacket | null = null;
+  outputSlot: (OutputPacket | null)[] = [null];
 
   getIsOutputsBlocked() {
-    return this.outputSlot !== null;
+    return this.outputSlot[0] !== null;
   }
-
-  depositTimes: number[] = [];
 
   updateDisplay(itemRate: number) {
     this.graphic.updateDisplay(itemRate);
@@ -47,36 +62,32 @@ export default class ResourceExtractorV2 extends SimulatableNode {
     this.graphic.resetDisplay();
   }
 
-  trackDepositEvent(time: number) {
-    if (this.depositTimes.length === 21) {
-      this.depositTimes.shift();
-    }
+  depositCallback = false;
 
-    this.depositTimes.push(time);
-
-    if (this.depositTimes.length === 21) {
-      const firstTime = this.depositTimes[0];
-      const lastTime = this.depositTimes[this.depositTimes.length - 1];
-      const timeDelta = lastTime - firstTime;
-      const itemRate = (20 / (timeDelta / 1000)) * 60;
-      this.updateDisplay(itemRate);
-    }
-  }
-
-  handleEvent(evt: SimulatableAction, time: Big, eventData: any) {
-    if (evt === SimulatableAction.DEPOSIT_OUTPUT) {
-      this.trackDepositEvent(time.toNumber());
+  handleEvent(event: SimulatableAction, time: Big, eventData: any) {
+    if (event === SimulatableAction.DEPOSIT_OUTPUT) {
+      this.trackDepositEvent(time, (rate: number) => {
+        this.updateDisplay(rate * (this.outputPacket?.amount || 1));
+      });
       if (this.getIsOutputsBlocked()) {
-        console.log('BLOCKED');
-        // wait until output unblocked.
-        // Then, send the pull event to the consumers and
-        // INSTANTLY submit a delayed DEPOSIT_OUTPUT event.
-      } else {
-        if (!this.outputs.length) {
-          // how to handle this?
-          //TODO? Is this something we should make fill up?
-          //for now just ignore and whistle on. Don't bother doing anything
-        } else {
+        this.depositCallback = true;
+      } else if (this.outputs.length) {
+        this.notifyOutputsAndStartCycle(time);
+      }
+    } else if (event === SimulatableAction.TRANSFER_ITEM_TO_NEXT) {
+      if (this.outputSlot[0]) {
+        const { freeSlotArray, connectorId } = eventData;
+        const { slug, amount } = this.outputSlot[0];
+        if (amount > 1) {
+          freeSlotArray[0] = {
+            slug,
+            amount: 1,
+          };
+          this.outputSlot[0] = {
+            slug,
+            amount: amount - 1,
+          };
+
           if (this.outputPacket) {
             const getOutputIdsNeededForItem = this.getOutputIdsNeededForItem(
               this.outputPacket.slug
@@ -92,47 +103,67 @@ export default class ResourceExtractorV2 extends SimulatableNode {
                 },
               });
             }
-            this.outputSlot = this.outputPacket;
           }
+        } else {
+          freeSlotArray[0] = this.outputSlot[0];
+          this.outputSlot[0] = null;
         }
-        // Then, send the pull event to the consumers and BLOCK our output.
-        // Instantly submit a delayed DEPOSIT_OUTPUT event.
-      }
-    } else if (evt === SimulatableAction.TRANSFER_ITEM) {
-      if (this.outputSlot) {
-        const { freeSlotArray, connectorId } = eventData;
-        freeSlotArray[0] = this.outputSlot;
-        this.outputSlot = null;
         this.simulationManager.addTimerEvent({
           time: time,
-          priority: Priority.CRITICAL, // should this be critical?
+          priority: Priority.CRITICAL,
           event: {
             target: connectorId,
             eventName: SimulatableAction.RESOURCE_DEPOSITED,
           },
         });
-        this.addDelayedSelfAction(
-          SimulatableAction.DEPOSIT_OUTPUT,
-          time.add(this.cycleTime),
-          Priority.CRITICAL
-        );
+
+        if (!this.getIsOutputsBlocked() && this.depositCallback) {
+          this.depositCallback = false;
+          this.notifyOutputsAndStartCycle(time);
+        }
       }
+    } else {
+      throw new Error('Unhandled event: ' + event);
+    }
+  }
+
+  private notifyOutputsAndStartCycle(time: Big) {
+    if (this.outputPacket) {
+      const getOutputIdsNeededForItem = this.getOutputIdsNeededForItem(
+        this.outputPacket.slug
+      );
+
+      for (const outputId of getOutputIdsNeededForItem) {
+        this.simulationManager.addTimerEvent({
+          time: time,
+          priority: Priority.VERY_HIGH,
+          event: {
+            target: outputId,
+            eventName: SimulatableAction.RESOURCE_AVAILABLE,
+            eventData: this.id,
+          },
+        });
+      }
+
+      this.outputSlot[0] = this.outputPacket;
+
+      this.addDelayedSelfAction(
+        SimulatableAction.DEPOSIT_OUTPUT,
+        time.add(this.cycleTime),
+        Priority.CRITICAL
+      );
     }
   }
 
   runPreSimulationActions(): void {
-    if (this.outputs.length > 1)
-      throw new Error('Improper resource extractor with multiple outputs');
+    super.runPreSimulationActions();
 
-    this.depositTimes = [];
-    this.outputSlot = null;
+    this.outputSlot = [null];
 
-    if (true) {
-      this.addDelayedSelfAction(
-        SimulatableAction.DEPOSIT_OUTPUT,
-        this.cycleTime,
-        Priority.CRITICAL
-      );
-    }
+    this.addDelayedSelfAction(
+      SimulatableAction.DEPOSIT_OUTPUT,
+      this.cycleTime,
+      Priority.CRITICAL
+    );
   }
 }

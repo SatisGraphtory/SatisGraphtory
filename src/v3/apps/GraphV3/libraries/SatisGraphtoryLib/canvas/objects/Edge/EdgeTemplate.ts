@@ -77,6 +77,9 @@ export default abstract class EdgeTemplate extends GraphObject {
     }
   }
 
+  abstract updateDisplay(rateText: number): void;
+  abstract resetDisplay(): void;
+
   abstract setConnections(
     sourceNode: NodeTemplate | null,
     targetNode: NodeTemplate | null

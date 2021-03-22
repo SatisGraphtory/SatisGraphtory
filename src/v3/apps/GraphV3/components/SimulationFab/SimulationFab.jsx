@@ -98,6 +98,7 @@ function SimulationFab() {
           if (numTicks.current < 100000) {
             timeoutRef.current = setTimeout(tick);
           } else {
+            console.log('Forcibly stopped simulation by limit');
             timeoutRef.current = null;
           }
         }

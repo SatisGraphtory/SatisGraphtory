@@ -25,8 +25,9 @@ type ScheduledTask = {
 export enum SimulatableAction {
   DEPOSIT_OUTPUT,
   RESOURCE_AVAILABLE,
-  TRANSFER_ITEM,
+  TRANSFER_ITEM_TO_NEXT,
   RESOURCE_DEPOSITED,
+  INTERNAL_TRANSPOSE,
 }
 
 export default class SimulationManager {

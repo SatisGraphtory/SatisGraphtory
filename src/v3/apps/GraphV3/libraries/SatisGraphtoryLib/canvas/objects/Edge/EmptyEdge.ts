@@ -17,6 +17,14 @@ export class EmptyEdge extends EdgeTemplate {
   update(): void {}
   updateWithoutHitBox(): void {}
 
+  updateDisplay(rateText: number) {
+    throw new Error('Cannot update an empty edge');
+  }
+
+  resetDisplay() {
+    throw new Error('Cannot reset an empty edge');
+  }
+
   setConnections(
     sourceNode: NodeTemplate | null,
     targetNode: NodeTemplate | null

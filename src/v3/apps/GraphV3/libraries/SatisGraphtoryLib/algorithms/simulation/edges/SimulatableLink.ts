@@ -4,22 +4,24 @@ import SimulatableNode from '../nodes/SimulatableNode';
 import { getConnectionTypeForEdge } from 'v3/data/loaders/buildings';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import Big from 'big.js';
+import EdgeTemplate from '../../../canvas/objects/Edge/EdgeTemplate';
 
 export default abstract class SimulatableLink extends SimulatableElement {
   inputs: SimulatableNode[] = [];
   outputs: SimulatableNode[] = [];
   anyConnections: SimulatableNode[] = [];
   supportedResourceForms = new Set<number>();
+  graphic: EdgeTemplate;
 
   public readonly connectionType: ConnectionTypeEnum;
 
   protected constructor(
-    id: string,
+    edge: EdgeTemplate,
     protected connectionName: string,
     simulationManager: SimulationManager
   ) {
-    super(id, simulationManager);
-
+    super(edge.id, simulationManager);
+    this.graphic = edge;
     this.connectionType = getConnectionTypeForEdge(connectionName);
 
     // const buildingDefinition = getBuildingDefinition(connectionName);
