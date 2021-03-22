@@ -11,7 +11,7 @@ import { unpack } from 'jsonpack';
 import raw from 'raw.macro';
 import { UFGItemDescriptor } from '../../../.DataLanding/interfaces/classes';
 
-const ItemJsonRaw = raw('../../../.DataWarehouse/main_compressed/Items.json');
+const ItemJsonRaw = raw('../../../.DataWarehouse/main_compressed/Items.cjson');
 const ItemJson = unpack(ItemJsonRaw) as Record<string, UFGItemDescriptor>;
 
 export const getItemDefinition = (itemSlug: string) => {

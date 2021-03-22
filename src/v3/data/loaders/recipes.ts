@@ -7,7 +7,7 @@ import raw from 'raw.macro';
 import { UFGRecipe } from '../../../.DataLanding/interfaces/classes';
 
 const RecipeJsonRaw = raw(
-  '../../../.DataWarehouse/main_compressed/Recipes.json'
+  '../../../.DataWarehouse/main_compressed/Recipes.cjson'
 );
 const RecipeJson = unpack(RecipeJsonRaw) as Record<string, UFGRecipe>;
 

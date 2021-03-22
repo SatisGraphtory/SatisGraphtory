@@ -32,11 +32,11 @@ import {
   UFGRecipe,
 } from '../../../.DataLanding/interfaces/classes';
 
-const ItemJsonRaw = raw('../../../.DataWarehouse/main_compressed/Items.json');
+const ItemJsonRaw = raw('../../../.DataWarehouse/main_compressed/Items.cjson');
 const ItemJson = unpack(ItemJsonRaw) as Record<string, UFGItemDescriptor>;
 
 const BuildingJsonRaw = raw(
-  '../../../.DataWarehouse/main_compressed/Buildings.json'
+  '../../../.DataWarehouse/main_compressed/Buildings.cjson'
 );
 const BuildingJson = unpack(BuildingJsonRaw) as Record<
   string,
@@ -44,7 +44,7 @@ const BuildingJson = unpack(BuildingJsonRaw) as Record<
 >;
 
 const RecipeJsonRaw = raw(
-  '../../../.DataWarehouse/main_compressed/Recipes.json'
+  '../../../.DataWarehouse/main_compressed/Recipes.cjson'
 );
 const RecipeJson = unpack(RecipeJsonRaw) as Record<string, UFGRecipe>;
 

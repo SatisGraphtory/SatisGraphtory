@@ -8,7 +8,7 @@ import raw from 'raw.macro';
 import { UFGSchematic } from '../../../.DataLanding/interfaces/classes';
 
 const SchematicJsonRaw = raw(
-  '../../../.DataWarehouse/main_compressed/Schematics.json'
+  '../../../.DataWarehouse/main_compressed/Schematics.cjson'
 );
 const Schematics = unpack(SchematicJsonRaw) as Record<string, UFGSchematic>;
 
