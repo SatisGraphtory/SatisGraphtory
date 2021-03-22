@@ -74,7 +74,7 @@ export default class BeltV2 extends SimulatableLink {
           time: time,
           priority: Priority.VERY_HIGH,
           event: {
-            target: eventData,
+            target: eventData.target,
             eventName: SimulatableAction.TRANSFER_ITEM_TO_NEXT,
             eventData: {
               connectorId: this.id,
@@ -103,13 +103,21 @@ export default class BeltV2 extends SimulatableLink {
           event: {
             target: outputId,
             eventName: SimulatableAction.RESOURCE_AVAILABLE,
-            eventData: this.id,
+            eventData: {
+              target: this.id,
+              resourceName: this.outputSlot[0]?.slug,
+            },
           },
         });
       }
     } else if (evt === SimulatableAction.TRANSFER_ITEM_TO_NEXT) {
       if (this.getIsOutputsBlocked()) {
         const { freeSlotArray, connectorId } = eventData;
+        if (freeSlotArray[0] !== null) {
+          throw new Error(
+            'You dingus, you forgot about the free slot array problem'
+          );
+        }
         freeSlotArray[0] = this.outputSlot[0];
         this.outputSlot[0] = null;
         this.simulationManager.addTimerEvent({
@@ -127,7 +135,7 @@ export default class BeltV2 extends SimulatableLink {
             time: time,
             priority: Priority.VERY_HIGH,
             event: {
-              target: this.callbackData,
+              target: this.callbackData.target,
               eventName: SimulatableAction.TRANSFER_ITEM_TO_NEXT,
               eventData: {
                 connectorId: this.id,
@@ -136,8 +144,6 @@ export default class BeltV2 extends SimulatableLink {
             },
           });
         }
-      } else {
-        // console.warn("What should we do when something tells us to transfer something we don't have?")
       }
     } else {
       throw new Error('Unhandled event: ' + evt);

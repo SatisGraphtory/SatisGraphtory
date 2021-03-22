@@ -95,11 +95,14 @@ export default class ResourceExtractorV2 extends SimulatableNode {
             for (const outputId of getOutputIdsNeededForItem) {
               this.simulationManager.addTimerEvent({
                 time: time,
-                priority: Priority.VERY_HIGH,
+                priority: Priority.HIGH,
                 event: {
                   target: outputId,
                   eventName: SimulatableAction.RESOURCE_AVAILABLE,
-                  eventData: this.id,
+                  eventData: {
+                    target: this.id,
+                    resourceName: this.outputPacket.slug,
+                  },
                 },
               });
             }
@@ -140,7 +143,10 @@ export default class ResourceExtractorV2 extends SimulatableNode {
           event: {
             target: outputId,
             eventName: SimulatableAction.RESOURCE_AVAILABLE,
-            eventData: this.id,
+            eventData: {
+              target: this.id,
+              resourceName: this.outputPacket.slug,
+            },
           },
         });
       }
