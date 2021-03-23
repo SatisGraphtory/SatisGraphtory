@@ -12,13 +12,13 @@ import { ConnectionTypeEnum } from '../../../../../../../../.DataWarehouse/enums
 import { getConnectionTypeNeededForItem } from '../../../../../../../data/loaders/items';
 
 export default class ManufacturerV2 extends SimulatableNode {
-  expectedResourcesByConnectionType = new Map<
-    ConnectionTypeEnum,
-    Set<string>
-  >();
   resourcesNeededBySlug = new Map<string, number>();
-
   remainingResourcesNeedBySlug = new Map<string, number>();
+
+  resourcesProducedBySlug = new Map<string, number>();
+  remainingProducedResourcesNeedBySlug = new Map<string, number>();
+
+  tracked = false;
   constructor(
     node: NodeTemplate,
     buildingSlug: string,
@@ -31,25 +31,18 @@ export default class ManufacturerV2 extends SimulatableNode {
 
     if (nodeOptions.has('recipe')) {
       const recipe = getRecipeDefinition(nodeOptions.get('recipe')!);
-      for (const { ItemClass, Amount } of recipe.mIngredients) {
-        const connectorClassRequired = getConnectionTypeNeededForItem(
-          ItemClass.slug
-        );
-        if (
-          !this.expectedResourcesByConnectionType.has(connectorClassRequired)
-        ) {
-          this.expectedResourcesByConnectionType.set(
-            connectorClassRequired,
-            new Set()
-          );
-        }
-
-        this.resourcesNeededBySlug.set(ItemClass.slug, Amount);
-
-        this.expectedResourcesByConnectionType
-          .get(connectorClassRequired)!
-          .add(ItemClass.slug);
+      if (recipe.mIngredients.length === 2) {
+        this.tracked = true;
       }
+
+      for (const { ItemClass, Amount } of recipe.mIngredients) {
+        this.resourcesNeededBySlug.set(ItemClass.slug, Amount);
+      }
+
+      for (const { ItemClass, Amount } of recipe.mProduct) {
+        this.resourcesProducedBySlug.set(ItemClass.slug, Amount);
+      }
+
       this.cycleTime = this.cycleTime.mul(recipe.mManufactoringDuration);
 
       for (const { ItemClass, Amount } of recipe.mProduct) {
@@ -96,6 +89,7 @@ export default class ManufacturerV2 extends SimulatableNode {
 
   decreaseResourceByN(resourceSlug: string, n = 1) {
     const remaining = this.remainingResourcesNeedBySlug.get(resourceSlug);
+
     if (remaining === undefined)
       throw new Error('Manufacturer does not need ' + resourceSlug);
     if (!remaining)
@@ -152,7 +146,6 @@ export default class ManufacturerV2 extends SimulatableNode {
     } else if (evt === SimulatableAction.RESOURCE_DEPOSITED) {
       for (let i = 0; i < this.inputQueue.length; i++) {
         const item = this.inputQueue[i];
-
         if (item !== null) {
           this.decreaseResourceByN(item.slug, item.amount);
           this.inputQueue.splice(i, 1);
@@ -176,15 +169,92 @@ export default class ManufacturerV2 extends SimulatableNode {
         this.updateDisplay(rate);
       });
 
-      //TODO: IF BLOCKED, DO SHIT
-      this.resetRemainingResourcesNeeded();
+      this.resetResourcesProduced();
 
-      // this.outputSlot[0] =
-      for (const [key, callback] of this.callbackByResource) {
-        this.callbackByResource.delete(key);
+      //////// EXPERIMENTAL /////////////////
+      if (this.outputs.length) {
+        for (const resource of this.remainingProducedResourcesNeedBySlug.keys()) {
+          //TODO: make this into its own function
+          const getOutputIdsNeededForItem = this.getOutputIdsNeededForItem(
+            resource
+          );
+          for (const outputId of getOutputIdsNeededForItem) {
+            this.simulationManager.addTimerEvent({
+              time: time,
+              priority: Priority.HIGH,
+              event: {
+                target: outputId,
+                eventName: SimulatableAction.RESOURCE_AVAILABLE,
+                eventData: {
+                  target: this.id,
+                  resourceName: resource,
+                },
+              },
+            });
+          }
+        }
+      } else {
+        //TODO: IF BLOCKED, DO SHIT
+        this.resetRemainingResourcesNeeded();
 
-        callback(time);
+        //Callback to fetch more stuff?
+        for (const [key, callback] of this.callbackByResource) {
+          this.callbackByResource.delete(key);
+          callback(time);
+        }
       }
+    } else if (evt === SimulatableAction.TRANSFER_ITEM_TO_NEXT) {
+      const { freeSlotArray, connectorId, resourceName } = eventData;
+      const slug = resourceName;
+      const amount = this.remainingProducedResourcesNeedBySlug.get(slug) || 0;
+      for (let i = 0; i < freeSlotArray.length; i++) {
+        if (freeSlotArray[i] === null) {
+          freeSlotArray[i] = {
+            slug,
+            amount: 1,
+          };
+        }
+      }
+      if (amount > 1) {
+        this.remainingProducedResourcesNeedBySlug.set(slug, amount - 1);
+
+        const getOutputIdsNeededForItem = this.getOutputIdsNeededForItem(slug);
+
+        for (const outputId of getOutputIdsNeededForItem) {
+          this.simulationManager.addTimerEvent({
+            time: time,
+            priority: Priority.HIGH,
+            event: {
+              target: outputId,
+              eventName: SimulatableAction.RESOURCE_AVAILABLE,
+              eventData: {
+                target: this.id,
+                resourceName: slug,
+              },
+            },
+          });
+        }
+      } else {
+        this.remainingProducedResourcesNeedBySlug.delete(slug);
+
+        //TODO: IF BLOCKED, DO SHIT
+        this.resetRemainingResourcesNeeded();
+
+        //Callback to fetch more stuff?
+        for (const [key, callback] of this.callbackByResource) {
+          this.callbackByResource.delete(key);
+          callback(time);
+        }
+      }
+
+      this.simulationManager.addTimerEvent({
+        time: time,
+        priority: Priority.CRITICAL,
+        event: {
+          target: connectorId,
+          eventName: SimulatableAction.RESOURCE_DEPOSITED,
+        },
+      });
     } else {
       throw new Error('Unhandled event: ' + evt);
     }
@@ -199,6 +269,12 @@ export default class ManufacturerV2 extends SimulatableNode {
   resetRemainingResourcesNeeded() {
     for (const [key, entry] of this.resourcesNeededBySlug.entries()) {
       this.remainingResourcesNeedBySlug.set(key, entry);
+    }
+  }
+
+  resetResourcesProduced() {
+    for (const [key, entry] of this.resourcesProducedBySlug.entries()) {
+      this.remainingProducedResourcesNeedBySlug.set(key, entry);
     }
   }
 }

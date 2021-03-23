@@ -79,10 +79,16 @@ export default class ResourceExtractorV2 extends SimulatableNode {
         const { freeSlotArray, connectorId } = eventData;
         const { slug, amount } = this.outputSlot[0];
         if (amount > 1) {
-          freeSlotArray[0] = {
-            slug,
-            amount: 1,
-          };
+          for (let i = 0; i < freeSlotArray.length; i++) {
+            if (freeSlotArray[i] === null) {
+              //TODO: add a check to see if we didn't actually write.
+              freeSlotArray[i] = {
+                slug,
+                amount: 1,
+              };
+            }
+          }
+
           this.outputSlot[0] = {
             slug,
             amount: amount - 1,

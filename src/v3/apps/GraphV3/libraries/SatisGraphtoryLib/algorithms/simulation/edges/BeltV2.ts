@@ -67,6 +67,7 @@ export default class BeltV2 extends SimulatableLink {
             eventData: {
               connectorId: this.id,
               freeSlotArray: this.inputSlot,
+              resourceName: eventData.resourceName,
             },
           },
         });
@@ -128,6 +129,7 @@ export default class BeltV2 extends SimulatableLink {
               eventData: {
                 connectorId: this.id,
                 freeSlotArray: this.inputSlot,
+                resourceName: this.callbackData.resourceName,
               },
             },
           });
