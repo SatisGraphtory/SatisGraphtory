@@ -31,7 +31,15 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 5,
     pointerEvents: 'auto',
   },
+  simulationDisabledButtons: {
+    color: 'rgba(255, 255, 255, 0.3)',
+  },
 }));
+
+const blacklistedSimulationRunningMouseStates = new Set([
+  MouseState.ADD,
+  MouseState.LINK,
+]);
 
 function ActionBar() {
   const classes = useStyles();
@@ -42,6 +50,7 @@ function ActionBar() {
     pixiCanvasStateId,
     canvasReady: loaded,
     applicationLoaded,
+    simulationRunning,
   } = React.useContext(PixiJSCanvasContext);
 
   React.useEffect(() => {
@@ -82,6 +91,17 @@ function ActionBar() {
     [pixiCanvasStateId]
   );
 
+  React.useEffect(() => {
+    if (
+      simulationRunning &&
+      blacklistedSimulationRunningMouseStates.has(mouseState)
+    ) {
+      GlobalGraphAppStore.update((s) => {
+        s[pixiCanvasStateId].mouseState = MouseState.MOVE;
+      });
+    }
+  }, [mouseState, pixiCanvasStateId, simulationRunning]);
+
   const controls = useAnimation();
 
   React.useEffect(() => {
@@ -89,6 +109,12 @@ function ActionBar() {
       controls.start('visible');
     }
   }, [controls, loaded]);
+
+  const simulationRunningClasses = simulationRunning
+    ? {
+        wrapper: classes.simulationDisabledButtons,
+      }
+    : {};
 
   return (
     <div className={classes.root}>
@@ -120,11 +146,15 @@ function ActionBar() {
             label="Add"
             value={MouseState.ADD}
             icon={<AddIcon />}
+            classes={simulationRunningClasses}
+            disabled={simulationRunning}
           />
           <BottomNavigationAction
             label="Link"
             value={MouseState.LINK}
             icon={<LinkIcon />}
+            classes={simulationRunningClasses}
+            disabled={simulationRunning}
           />
         </BottomNavigation>
       </motion.div>

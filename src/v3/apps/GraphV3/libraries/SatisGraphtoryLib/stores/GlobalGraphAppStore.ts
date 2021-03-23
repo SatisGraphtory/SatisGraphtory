@@ -51,6 +51,7 @@ const generateNewCanvasStore = (id: string) => {
       description: 'Lizard Doggo Approved',
     },
     lastUsedSave: {},
+    simulationRunning: false,
   };
 };
 

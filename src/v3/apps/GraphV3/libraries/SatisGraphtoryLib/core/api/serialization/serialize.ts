@@ -102,8 +102,6 @@ const getSerializedGraph = (objects: GraphObject[]) => {
         NodeType
       );
 
-      console.log(serializedNode);
-
       nodes.push(serializedNode);
 
       // const buffer1 = EdgeType.encode(serializedNode).finish();

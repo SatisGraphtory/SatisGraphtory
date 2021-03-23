@@ -10,7 +10,6 @@ import Canvas from 'v3/apps/GraphV3/components/Canvas/Canvas';
 import EdgeSelectorPanel from 'v3/apps/GraphV3/components/EdgeSelectorPanel/EdgeSelectorPanel';
 
 import NavBar from 'v3/apps/GraphV3/components/NavBar/NarBar';
-import SimulationFab from 'v3/apps/GraphV3/components/SimulationFab/SimulationFab';
 import { initialGraphAppStateId } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStore';
 import { LocaleContext } from 'v3/components/LocaleProvider';
 
@@ -97,10 +96,10 @@ export default function GraphApp(props) {
 
       data = {
         d:
-          'CgAAAgCAEAQBAYEAgMQFASYBMACAOYMSAogDDECFOABgB4DEAygDgBQANAEsCAMAWgBuALwA4AjADwAqQByYYUgEkQANCQAREAAiABAHEwaMAHIAVMQBRIdgGAArgAGIigEYAdkFLwwACawBgIACQAEe0IAAyAN8A0f4ASi4ALtwyAOgAVgCqAN0AegDD3A6EMgCCOABtAK0ALQAmAMkAZHYATowAKgDLeCC0AOAAj0PozABwpCrNwGAA4QANACEA5mAg8QCRAAo2ALAAMQAPMEkALADGIEgASQBNmEA',
+          'CgAAAgCAEAQBAYEAgMQFASYBMACAOYMSAogDDECFOABgB4DEAygDgBQANAEsCAMAWgBuALwA4AjADwAqQByYYUgEkQANCQAREAAiABAHEwaMAHIAVMQBRIeADAArwAGIigEY5uIAKUBHABesbEABIACPaEAAZAG+AaJsAJRcAF24ZAHQAWwcAZEYANwBR7gBSUgBwDxgZAEEcADaAVoAWgBMAZIAyAFcAJwAFEAAJJAAngDeANeqABaD0AFwAeFIVDuAwAHCABoAQgHMwEEYAGIGACqQASIApAEUYJIAWAGNuEYAmzCA',
         c: 0,
         v: '0.1.0',
-        h: 1374909379,
+        h: -1677618805,
       };
       // data = {
       //   d:
@@ -199,7 +198,6 @@ export default function GraphApp(props) {
             <ActionBar />
             {/*<DebugFab />*/}
             <EdgeSelectorPanel />
-            <SimulationFab id={pixiCanvasStateId} />
           </Canvas>
         </div>
       ) : (

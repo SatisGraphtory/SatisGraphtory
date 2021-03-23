@@ -12,9 +12,9 @@ const useStyles = makeStyles(() =>
     canvasContainer: {
       display: 'grid',
       gridArea: 'contentArea',
-      gridTemplateAreas: `"canvasElement"`,
+      gridTemplateAreas: `"sidebar canvasElement"`,
       gridTemplateRows: 'minmax(0, 1fr)',
-      gridTemplateColumns: '1fr',
+      gridTemplateColumns: 'auto 1fr',
       minWidth: 1,
       minHeight: 1,
       position: 'relative',

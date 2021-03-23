@@ -85,8 +85,9 @@ const useStyles = makeStyles((theme) => ({
     // color: 'white',
   },
   root: {
-    gridArea: 'anotherElement',
+    gridArea: 'sidebar',
     display: 'grid',
+    // width: theme.overrides.GraphDrawer.width //TODO: DOCK
   },
 }));
 
@@ -164,8 +165,8 @@ function ObjectSettingPanel(props) {
 
   return (
     <Drawer
-      variant="persistent"
-      anchor={'right'}
+      variant="persistent" //TODO: DOCK permanent
+      anchor={'left'}
       open={mouseState === MouseState.SELECT && selectedObjects.length > 0}
       onClose={() => {}}
       classes={{
