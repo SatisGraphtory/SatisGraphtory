@@ -14,8 +14,8 @@ import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib
 
 const useStyles = makeStyles((theme) => ({
   simulationCard: {
-    top: theme.overrides.GraphAppBar.height + 32,
-    left: '2em',
+    top: `calc(2em + ${theme.overrides.GraphAppBar.height}px)`,
+    right: '2em',
     position: 'absolute',
   },
   title: {
@@ -25,11 +25,11 @@ const useStyles = makeStyles((theme) => ({
     color: '#333',
   },
   playPauseButton: {
-    minWidth: 100,
+    minWidth: 110,
   },
   stopButton: {
     marginLeft: 5,
-    minWidth: 100,
+    minWidth: 110,
   },
   cardContent: {
     minWidth: 100,
