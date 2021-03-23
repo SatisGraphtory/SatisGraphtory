@@ -75,8 +75,8 @@ export const RATE_STYLE = memoize((theme) => {
     fill: theme.overclock.fill,
     fontSize: EFFICIENCY_FONT_SIZE,
     fontFamily: '"Bebas Neue", sans-serif',
-    // stroke: theme.overclock.stroke,
-    // strokeThickness: OVERCLOCK_STROKE_SIZE,
+    stroke: theme.overclock.stroke,
+    strokeThickness: OVERCLOCK_STROKE_SIZE,
   });
 
   const styleUuid = 'custom-font' + uuidGen();
