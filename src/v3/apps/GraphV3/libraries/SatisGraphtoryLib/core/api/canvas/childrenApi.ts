@@ -98,6 +98,56 @@ export const getChildFromCanvasState = (canvasState: any, id: string): any => {
   return canvasState.childrenMap.get(id);
 };
 
+export const deleteNodes = (
+  pixiCanvasStateId: string,
+  nodes: NodeTemplate[]
+) => {
+  GlobalGraphAppStore.update((t) => {
+    const s = t[pixiCanvasStateId];
+
+    let objectsToDelete = new Set() as Set<GraphObject>;
+
+    for (const node of nodes) {
+      objectsToDelete.add(node);
+      const altDeletes = node.delete();
+      for (const item of altDeletes) {
+        objectsToDelete.add(item);
+      }
+    }
+
+    for (const obj of objectsToDelete) {
+      s.childrenMap.delete(obj.id);
+    }
+
+    s.children = s.children.filter((item: any) => !objectsToDelete.has(item));
+
+    s.selectedObjects = [];
+  });
+};
+
+export const deleteEdges = (
+  pixiCanvasStateId: string,
+  edges: EdgeTemplate[]
+) => {
+  GlobalGraphAppStore.update((t) => {
+    const s = t[pixiCanvasStateId];
+
+    let edgesToDelete = new Set(edges);
+
+    for (const edge of edges) {
+      edge.delete();
+    }
+
+    for (const obj of edgesToDelete) {
+      s.childrenMap.delete(obj.id);
+    }
+
+    s.children = s.children.filter((item: any) => !edgesToDelete.has(item));
+
+    s.selectedObjects = [];
+  });
+};
+
 //
 // export const addObjectChildren = (
 //   children: NodeTemplate[] | EdgeTemplate[],

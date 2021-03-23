@@ -1,34 +1,17 @@
-import {
-  Accordion,
-  AccordionActions,
-  AccordionDetails,
-  AccordionSummary,
-  Button,
-  ButtonGroup,
-  Divider,
-  OutlinedInput,
-  Typography,
-} from '@material-ui/core';
+// import {OutlinedInput,} from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
-import AddIcon from '@material-ui/icons/Add';
 import CategoryIcon from '@material-ui/icons/Category';
-import DeleteIcon from '@material-ui/icons/Delete';
 import DeviceHubIcon from '@material-ui/icons/DeviceHub';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import FastForwardIcon from '@material-ui/icons/FastForward';
-import FastRewindIcon from '@material-ui/icons/FastRewind';
-import RemoveIcon from '@material-ui/icons/Remove';
 import React from 'react';
-import Scrollbar from 'react-scrollbars-custom';
+import EdgeSubPanel from 'v3/apps/GraphV3/components/ObjectSettings/EdgeSubPanel';
+import NodeSubPanel from 'v3/apps/GraphV3/components/ObjectSettings/NodeSubPanel';
 import MouseState from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/enums/MouseState';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
-import { GlobalGraphAppStore } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStore';
 import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
-import SelectDropdown from '../../../../../common/react/SelectDropdown';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -91,27 +74,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const CustomOutlinedInput = ({
-  color,
-  disableElevation,
-  disableRipple,
-  disableFocusRipple,
-  ...otherProps
-}) => <OutlinedInput {...otherProps} />;
-
-const StyledInput = withStyles(() => ({
-  input: {
-    borderRadius: 0,
-    textAlign: 'center',
-    paddingLeft: 0,
-    paddingRight: 0,
-    width: 80,
-    height: '0em',
-  },
-  root: {
-    padding: 0,
-  },
-}))(CustomOutlinedInput);
+// const CustomOutlinedInput = ({
+//   color,
+//   disableElevation,
+//   disableRipple,
+//   disableFocusRipple,
+//   ...otherProps
+// }) => <OutlinedInput {...otherProps} />;
+//
+// const StyledInput = withStyles(() => ({
+//   input: {
+//     borderRadius: 0,
+//     textAlign: 'center',
+//     paddingLeft: 0,
+//     paddingRight: 0,
+//     width: 80,
+//     height: '0em',
+//   },
+//   root: {
+//     padding: 0,
+//   },
+// }))(CustomOutlinedInput);
 
 function ObjectSettingPanel(props) {
   const classes = useStyles();
@@ -121,12 +104,9 @@ function ObjectSettingPanel(props) {
     setTabValue(newValue);
   }
 
-  const {
-    mouseState,
-    selectedObjects,
-    pixiCanvasStateId,
-    applicationLoaded,
-  } = React.useContext(PixiJSCanvasContext);
+  const { mouseState, selectedObjects, applicationLoaded } = React.useContext(
+    PixiJSCanvasContext
+  );
 
   const edges = selectedObjects?.filter((item) => {
     if (item instanceof EdgeTemplate) {
@@ -165,7 +145,7 @@ function ObjectSettingPanel(props) {
 
   return (
     <Drawer
-      variant="persistent" //TODO: DOCK permanent
+      variant="permanent" //TODO: DOCK permanent
       anchor={'left'}
       open={mouseState === MouseState.SELECT && selectedObjects.length > 0}
       onClose={() => {}}
@@ -194,258 +174,8 @@ function ObjectSettingPanel(props) {
             icon={<DeviceHubIcon />}
           />
         </Tabs>
-        {tabValue === 0 && (
-          <Scrollbar>
-            <div className={classes.tabContent}>
-              <Typography variant="h5">All Node Settings</Typography>
-              <Divider className={classes.divider} />
-              <Button
-                onClick={() => {
-                  GlobalGraphAppStore.update((t) => {
-                    const s = t[pixiCanvasStateId];
-
-                    let objectsToDelete = new Set([]);
-
-                    for (const node of nodes) {
-                      objectsToDelete.add(node);
-                      const altDeletes = node.delete();
-                      for (const item of altDeletes) {
-                        objectsToDelete.add(item);
-                      }
-                    }
-
-                    for (const obj of objectsToDelete) {
-                      s.childrenMap.delete(obj.id);
-                    }
-
-                    s.children = s.children.filter(
-                      (item) => !objectsToDelete.has(item)
-                    );
-
-                    s.selectedObjects = [];
-                  });
-                }}
-                color="secondary"
-                variant="contained"
-                startIcon={<DeleteIcon />}
-              >
-                Delete ALL selected nodes
-              </Button>
-              <Divider className={classes.divider} />
-
-              <Typography variant="h6">Set ALL Node Tiers</Typography>
-              <div className={classes.tiers}>
-                {/* <Typography variant="body1"> */}
-                <ButtonGroup disableElevation fullWidth>
-                  <Button color="secondary" className={classes.iconButton}>
-                    <FastRewindIcon />
-                  </Button>
-                  <Button
-                    disableRipple
-                    disableFocusRipple
-                    disableTouchRipple
-                    className={classes.buttonText}
-                  >
-                    Mark 1
-                  </Button>
-                  <Button color="primary" className={classes.iconButton}>
-                    <FastForwardIcon />
-                  </Button>
-                </ButtonGroup>
-                {/* </Typography> */}
-              </div>
-              <Divider className={classes.divider} />
-
-              {/* <Typography variant="h6">Set ALL Overclock</Typography>
-                <TextField
-                  id="overclock-val"
-                  label="Overclock (%)"
-                  className={classes.overclockTextField}
-                  fullWidth
-                  // value={}
-                  // onChange={}
-                />
-                <Slider
-                  classes={classes.slider}
-                  // value={}
-                  min={0}
-                  max={250}
-                  step={1}
-                  // onChange={}
-                />
-                <Divider className={classes.divider}/> */}
-
-              <Typography variant="h5">By Machine Class</Typography>
-              <Accordion square>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="h6">Miners</Typography>
-                </AccordionSummary>
-                <AccordionDetails className={classes.expandPanel}>
-                  <Typography variant="body1">Recipe</Typography>
-                  <SelectDropdown fullWidth />
-                  <Divider className={classes.divider} />
-
-                  {/* <div className={classes.tiers}> */}
-                  <Typography variant="body1">Machine Level</Typography>
-                  <ButtonGroup fullWidth disableElevation>
-                    <Button color="secondary" className={classes.iconButton}>
-                      <FastRewindIcon />
-                    </Button>
-                    <Button color="secondary" className={classes.iconButton}>
-                      <RemoveIcon />
-                    </Button>
-                    <Button
-                      disableRipple
-                      disableFocusRipple
-                      disableTouchRipple
-                      className={classes.buttonText}
-                    >
-                      Mark 1
-                    </Button>
-                    <Button color="primary" className={classes.iconButton}>
-                      <AddIcon />
-                    </Button>
-                    <Button color="primary" className={classes.iconButton}>
-                      <FastForwardIcon />
-                    </Button>
-                  </ButtonGroup>
-                  {/* </div> */}
-                  <Divider className={classes.divider} />
-
-                  <Typography variant="body1">
-                    Miner Efficiency (Overclock %)
-                  </Typography>
-                  <div className={classes.overclockRow}>
-                    <ButtonGroup disableElevation fullWidth>
-                      <Button color="secondary" className={classes.iconButton}>
-                        <FastRewindIcon />
-                      </Button>
-                      <Button color="secondary" className={classes.iconButton}>
-                        <RemoveIcon />
-                      </Button>
-                      {/* <Button>
-                        <FormControl>
-                          <Input
-                            id="overclock-val"
-                            label="Overclock"
-                            className={classes.overclockTextField}
-                            variant="outlined"
-                            value={''}
-                            endAdornment={
-                              <InputAdornment position="end">%</InputAdornment>
-                            }
-                            // onChange={}
-                          />
-                          <FormHelperText id="standard-weight-helper-text">
-                            Overclock
-                          </FormHelperText>
-                        </FormControl>
-                      </Button> */}
-                      <StyledInput className={classes.overclockTextField} />
-                      <Button color="primary" className={classes.iconButton}>
-                        <AddIcon />
-                      </Button>
-                      <Button color="primary" className={classes.iconButton}>
-                        <FastForwardIcon />
-                      </Button>
-                    </ButtonGroup>
-                    {/* <Slider
-                      classes={classes.slider}
-                      // value={}
-                      min={0}
-                      max={250}
-                      step={1}
-                      // onChange={}
-                    /> */}
-                  </div>
-                </AccordionDetails>
-                <AccordionActions>
-                  <Button color="secondary" variant="contained">
-                    <DeleteIcon />
-                  </Button>
-                </AccordionActions>
-              </Accordion>
-              <Accordion square>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="h6">Constructors</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Typography variant="body1">Recipe</Typography>
-                </AccordionDetails>
-                <AccordionActions>
-                  <Button color="secondary" variant="contained">
-                    <DeleteIcon />
-                  </Button>
-                </AccordionActions>
-              </Accordion>
-              {/* <Divider className={classes.divider} /> */}
-            </div>
-          </Scrollbar>
-        )}
-        {tabValue === 1 && (
-          <Scrollbar>
-            <div className={classes.tabContent}>
-              <Typography variant="h5">All Belt Settings</Typography>
-              <Divider className={classes.divider} />
-
-              <Button
-                color="secondary"
-                variant="contained"
-                onClick={() => {
-                  GlobalGraphAppStore.update((t) => {
-                    const s = t[pixiCanvasStateId];
-
-                    let edgesToDelete = new Set(edges);
-
-                    for (const edge of edges) {
-                      edge.delete();
-                    }
-
-                    for (const obj of edgesToDelete) {
-                      s.childrenMap.delete(obj.id);
-                    }
-
-                    s.children = s.children.filter(
-                      (item) => !edgesToDelete.has(item)
-                    );
-
-                    s.selectedObjects = [];
-                  });
-                }}
-                startIcon={<DeleteIcon />}
-                // fullwidth
-              >
-                Delete ALL selected belts
-              </Button>
-              <Divider className={classes.divider} />
-
-              <Typography variant="h6">Set ALL Belt Tiers</Typography>
-              <ButtonGroup fullWidth>
-                <Button color="secondary" className={classes.iconButton}>
-                  <FastRewindIcon />
-                </Button>
-                <Button color="secondary" className={classes.iconButton}>
-                  <RemoveIcon />
-                </Button>
-                <Button
-                  disableRipple
-                  disableFocusRipple
-                  disableTouchRipple
-                  className={classes.buttonText}
-                >
-                  Mark 1
-                </Button>
-                <Button color="primary" className={classes.iconButton}>
-                  <AddIcon />
-                </Button>
-                <Button color="primary" className={classes.iconButton}>
-                  <FastForwardIcon />
-                </Button>
-              </ButtonGroup>
-              {/* <Divider className={classes.divider} /> */}
-            </div>
-          </Scrollbar>
-        )}
+        {tabValue === 0 && <NodeSubPanel classes={classes} nodes={nodes} />}
+        {tabValue === 1 && <EdgeSubPanel classes={classes} edges={edges} />}
       </div>
     </Drawer>
   );
