@@ -11,20 +11,17 @@ export default abstract class SimulatableLink extends SimulatableElement {
   outputs: SimulatableNode[] = [];
   anyConnections: SimulatableNode[] = [];
   supportedResourceForms = new Set<number>();
-  graphic: EdgeTemplate;
 
   public readonly connectionType: ConnectionTypeEnum;
 
   protected constructor(
     edge: EdgeTemplate,
     protected connectionName: string,
-    simulationManager: SimulationManager
+    simulationManager: SimulationManager,
+    edgeOptions: Map<string, any>
   ) {
-    super(edge.id, simulationManager);
-    this.graphic = edge;
+    super(edge.id, simulationManager, edge, edgeOptions);
     this.connectionType = getConnectionTypeForEdge(connectionName);
-
-    // const buildingDefinition = getBuildingDefinition(connectionName);
   }
 
   addLink(

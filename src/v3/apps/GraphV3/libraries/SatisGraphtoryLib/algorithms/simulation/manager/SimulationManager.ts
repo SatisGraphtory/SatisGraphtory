@@ -36,6 +36,7 @@ export default class SimulationManager {
 
   private simulationTimeline: PriorityQueue<ScheduledTask>;
   private objectMap = new Map<string, SimulatableElement>();
+  private currentTick = Big(0);
 
   constructor() {
     this.simulationTimeline = new PriorityQueue<any>({
@@ -64,8 +65,6 @@ export default class SimulationManager {
       connection.runPreSimulationActions();
     });
   }
-
-  private currentTick = Big(0);
 
   tick() {
     while (true) {

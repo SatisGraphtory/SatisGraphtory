@@ -9,19 +9,30 @@ import Big from 'big.js';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 
 export default class BeltV2 extends SimulatableLink {
+  cycleTime = Big(-1);
+  inputSlot: (OutputPacket | null)[] = [null];
+  outputSlot: (OutputPacket | null)[] = [null];
+  sendCallbackGet = false;
+  callbackData = null as any;
+
   constructor(
     edge: EdgeTemplate,
     beltSlug: string,
-    simulationManager: SimulationManager
+    simulationManager: SimulationManager,
+    edgeOptions: Map<string, any>
   ) {
-    super(edge, beltSlug, simulationManager);
-
-    const buildingDefinition = getBuildingDefinition(beltSlug);
-
-    this.cycleTime = Big(60 * 1000).div(Big(buildingDefinition.mSpeed / 2));
+    super(edge, beltSlug, simulationManager, edgeOptions);
+    this.generateFromOptions(new Set(edgeOptions.keys()));
   }
 
-  cycleTime: Big;
+  generateFromOptions(optionsKeys: Set<string>): void {
+    if (this.cycleTime.lt(0) || optionsKeys.has('overclock')) {
+      const buildingDefinition = getBuildingDefinition(this.connectionName);
+
+      // TODO: set the ovcerclock
+      this.cycleTime = Big(60 * 1000).div(Big(buildingDefinition.mSpeed / 2));
+    }
+  }
 
   runPreSimulationActions(): void {
     super.runPreSimulationActions();
@@ -30,9 +41,6 @@ export default class BeltV2 extends SimulatableLink {
     this.outputSlot = [null];
   }
 
-  inputSlot: (OutputPacket | null)[] = [null];
-  outputSlot: (OutputPacket | null)[] = [null];
-
   getIsOutputsBlocked() {
     return this.outputSlot[0] !== null;
   }
@@ -40,13 +48,6 @@ export default class BeltV2 extends SimulatableLink {
   updateDisplay(itemRate: number) {
     this.graphic.updateDisplay(itemRate);
   }
-
-  reset() {
-    this.graphic.resetDisplay();
-  }
-
-  sendCallbackGet = false;
-  callbackData = null as any;
 
   getIsInputsBlocked() {
     return this.inputSlot[0] !== null;

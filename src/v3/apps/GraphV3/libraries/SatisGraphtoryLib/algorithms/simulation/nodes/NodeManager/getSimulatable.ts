@@ -42,7 +42,7 @@ export const getSimulatableEdge = (
   const unrealClass = getUnrealClassForBuilding(connectionSlug);
   switch (unrealClass) {
     case 'FGBuildableConveyorBelt':
-      return new BeltV2(edge, connectionSlug, simulationManager);
+      return new BeltV2(edge, connectionSlug, simulationManager, beltOptions);
     default:
       throw new Error('Unimplemented class ' + unrealClass);
   }

@@ -17,23 +17,34 @@ export default class ManufacturerV2 extends SimulatableNode {
 
   resourcesProducedBySlug = new Map<string, number>();
   remainingProducedResourcesNeedBySlug = new Map<string, number>();
+  outputPacketByConnection: Map<ConnectionTypeEnum, OutputPacket> = new Map();
+  cycleTime: Big = Big(-1);
+  depositTimes: Big[] = [];
+  //TODO: probably make it work for multiple RF's....
+  outputSlot: (OutputPacket | null)[] = [null];
+  callbackByResource = new Map<string, any>();
+  inputQueue = [] as (OutputPacket | null)[];
 
-  tracked = false;
   constructor(
     node: NodeTemplate,
     buildingSlug: string,
     nodeOptions: Map<string, any>,
     simulationManager: SimulationManager
   ) {
-    super(node, buildingSlug, simulationManager);
-    const buildingDefinition = getBuildingDefinition(buildingSlug);
-    this.cycleTime = Big(buildingDefinition.mManufacturingSpeed * 1000);
+    super(node, buildingSlug, simulationManager, nodeOptions);
 
-    if (nodeOptions.has('recipe')) {
-      const recipe = getRecipeDefinition(nodeOptions.get('recipe')!);
-      if (recipe.mIngredients.length === 2) {
-        this.tracked = true;
-      }
+    this.generateFromOptions(new Set(nodeOptions.keys()));
+  }
+
+  generateFromOptions(optionsKeys: Set<string>): void {
+    const buildingDefinition = getBuildingDefinition(this.buildingSlug);
+
+    if (this.cycleTime.lt(0) || optionsKeys.has('overclock')) {
+      this.cycleTime = Big(buildingDefinition.mManufacturingSpeed * 1000); // TODO Overclock
+    }
+
+    if (optionsKeys.has('recipe')) {
+      const recipe = getRecipeDefinition(this.objectOptions.get('recipe')!);
 
       for (const { ItemClass, Amount } of recipe.mIngredients) {
         this.resourcesNeededBySlug.set(ItemClass.slug, Amount);
@@ -43,14 +54,18 @@ export default class ManufacturerV2 extends SimulatableNode {
         this.resourcesProducedBySlug.set(ItemClass.slug, Amount);
       }
 
-      this.cycleTime = this.cycleTime.mul(recipe.mManufactoringDuration);
+      let overclock = 1; //this.objectOptions.get('overclock'); TODO: OVERCLOCK
+
+      this.cycleTime = Big(buildingDefinition.mManufacturingSpeed * 1000)
+        .mul(recipe.mManufactoringDuration)
+        .mul(overclock);
 
       for (const { ItemClass, Amount } of recipe.mProduct) {
         const connectionType = getConnectionTypeNeededForItem(ItemClass.slug);
         if (this.outputPacketByConnection.has(connectionType)) {
           throw new Error(
             'Recipe ' +
-              nodeOptions.get('recipe')! +
+              this.objectOptions.get('recipe')! +
               ' has multiple connection types :('
           );
         }
@@ -61,22 +76,10 @@ export default class ManufacturerV2 extends SimulatableNode {
         });
       }
     }
-
-    this.runPreSimulationActions();
   }
-
-  outputPacketByConnection: Map<ConnectionTypeEnum, OutputPacket> = new Map();
-
-  cycleTime: Big;
-
-  depositTimes: Big[] = [];
 
   updateDisplay(itemRate: number) {
     this.graphic.updateDisplay(itemRate);
-  }
-
-  reset() {
-    this.graphic.resetDisplay();
   }
 
   needsResource(resourceSlug: string) {
@@ -103,44 +106,13 @@ export default class ManufacturerV2 extends SimulatableNode {
     }
   }
 
-  //TODO: probably make it work for multiple RF's....
-  outputSlot: (OutputPacket | null)[] = [null];
-
-  callbackByResource = new Map<string, any>();
-
-  inputQueue = [] as (OutputPacket | null)[];
-
   handleEvent(evt: SimulatableAction, time: Big, eventData: any) {
     if (evt === SimulatableAction.RESOURCE_AVAILABLE) {
       if (this.needsResource(eventData.resourceName)) {
-        this.inputQueue.push(null);
-        this.simulationManager.addTimerEvent({
-          time: time,
-          priority: Priority.VERY_HIGH,
-          event: {
-            target: eventData.target,
-            eventName: SimulatableAction.TRANSFER_ITEM_TO_NEXT,
-            eventData: {
-              connectorId: this.id,
-              freeSlotArray: this.inputQueue,
-            },
-          },
-        });
+        this.sendItemTransferRequest(time, eventData);
       } else {
         this.callbackByResource.set(eventData.resourceName, (time: Big) => {
-          this.inputQueue.push(null);
-          this.simulationManager.addTimerEvent({
-            time: time,
-            priority: Priority.VERY_HIGH,
-            event: {
-              target: eventData.target,
-              eventName: SimulatableAction.TRANSFER_ITEM_TO_NEXT,
-              eventData: {
-                connectorId: this.id,
-                freeSlotArray: this.inputQueue,
-              },
-            },
-          });
+          this.sendItemTransferRequest(time, eventData);
         });
       }
     } else if (evt === SimulatableAction.RESOURCE_DEPOSITED) {
@@ -247,14 +219,7 @@ export default class ManufacturerV2 extends SimulatableNode {
         }
       }
 
-      this.simulationManager.addTimerEvent({
-        time: time,
-        priority: Priority.CRITICAL,
-        event: {
-          target: connectorId,
-          eventName: SimulatableAction.RESOURCE_DEPOSITED,
-        },
-      });
+      this.notifyConnectorOfResourceDeposit(time, connectorId);
     } else {
       throw new Error('Unhandled event: ' + evt);
     }
@@ -276,5 +241,21 @@ export default class ManufacturerV2 extends SimulatableNode {
     for (const [key, entry] of this.resourcesProducedBySlug.entries()) {
       this.remainingProducedResourcesNeedBySlug.set(key, entry);
     }
+  }
+
+  private sendItemTransferRequest(time: Big, eventData: any) {
+    this.inputQueue.push(null);
+    this.simulationManager.addTimerEvent({
+      time: time,
+      priority: Priority.VERY_HIGH,
+      event: {
+        target: eventData.target,
+        eventName: SimulatableAction.TRANSFER_ITEM_TO_NEXT,
+        eventData: {
+          connectorId: this.id,
+          freeSlotArray: this.inputQueue,
+        },
+      },
+    });
   }
 }

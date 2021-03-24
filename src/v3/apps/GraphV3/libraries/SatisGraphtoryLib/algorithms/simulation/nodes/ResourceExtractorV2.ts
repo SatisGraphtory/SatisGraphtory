@@ -10,8 +10,10 @@ import Big from 'big.js';
 import { EResourcePurity } from '../../../../../../../../.DataLanding/interfaces/enums';
 
 export default class ResourceExtractorV2 extends SimulatableNode {
-  cycleTime: Big = Big(0);
+  cycleTime: Big = Big(-1);
   outputPacket: OutputPacket | null = null;
+  outputSlot: (OutputPacket | null)[] = [null];
+  depositCallback = false;
 
   constructor(
     node: NodeTemplate,
@@ -19,36 +21,44 @@ export default class ResourceExtractorV2 extends SimulatableNode {
     nodeOptions: Map<string, any>,
     simulationManager: SimulationManager
   ) {
-    super(node, buildingSlug, simulationManager);
+    super(node, buildingSlug, simulationManager, nodeOptions);
 
     const buildingDefinition = getBuildingDefinition(buildingSlug);
-    this.cycleTime = Big(buildingDefinition.mExtractCycleTime).mul(Big(1000));
-    if (nodeOptions.has('extractedItem')) {
-      let purityMultiplier = 1;
-
-      if (nodeOptions.has('nodePurity')) {
-        switch (nodeOptions.get('nodePurity')) {
-          case EResourcePurity.RP_Inpure:
-            purityMultiplier = 0.5;
-            break;
-          case EResourcePurity.RP_Pure:
-            purityMultiplier = 2;
-            break;
-        }
-      }
-
-      this.outputPacket = {
-        slug: nodeOptions.get('extractedItem'),
-        amount: buildingDefinition.mItemsPerCycle * purityMultiplier,
-      };
-    }
 
     this.setDepositTrackingLength(
       buildingDefinition?.mNumCyclesForProductivity || 20
     );
+
+    this.generateFromOptions(new Set(nodeOptions.keys()));
   }
 
-  outputSlot: (OutputPacket | null)[] = [null];
+  generateFromOptions(optionsKeys: Set<string>): void {
+    const buildingDefinition = getBuildingDefinition(this.buildingSlug);
+
+    if (this.cycleTime.lt(0) || optionsKeys.has('overclock')) {
+      this.cycleTime = Big(buildingDefinition.mExtractCycleTime).mul(Big(1000));
+    }
+
+    if (optionsKeys.has('nodePurity')) {
+      let purityMultiplier = 1;
+      switch (this.objectOptions.get('nodePurity')) {
+        case EResourcePurity.RP_Inpure:
+          purityMultiplier = 0.5;
+          break;
+        case EResourcePurity.RP_Pure:
+          purityMultiplier = 2;
+          break;
+      }
+
+      if (!optionsKeys.has('extractedItem'))
+        throw new Error('Must have extracted item!');
+
+      this.outputPacket = {
+        slug: this.objectOptions.get('extractedItem'),
+        amount: buildingDefinition.mItemsPerCycle * purityMultiplier,
+      };
+    }
+  }
 
   getIsOutputsBlocked() {
     return this.outputSlot[0] !== null;
@@ -57,12 +67,6 @@ export default class ResourceExtractorV2 extends SimulatableNode {
   updateDisplay(itemRate: number) {
     this.graphic.updateDisplay(itemRate);
   }
-
-  reset() {
-    this.graphic.resetDisplay();
-  }
-
-  depositCallback = false;
 
   handleEvent(event: SimulatableAction, time: Big, eventData: any) {
     if (event === SimulatableAction.DEPOSIT_OUTPUT) {
@@ -95,36 +99,13 @@ export default class ResourceExtractorV2 extends SimulatableNode {
           };
 
           if (this.outputPacket) {
-            const getOutputIdsNeededForItem = this.getOutputIdsNeededForItem(
-              this.outputPacket.slug
-            );
-            for (const outputId of getOutputIdsNeededForItem) {
-              this.simulationManager.addTimerEvent({
-                time: time,
-                priority: Priority.HIGH,
-                event: {
-                  target: outputId,
-                  eventName: SimulatableAction.RESOURCE_AVAILABLE,
-                  eventData: {
-                    target: this.id,
-                    resourceName: this.outputPacket.slug,
-                  },
-                },
-              });
-            }
+            this.notifyOutputsOfItem(time, this.outputPacket.slug);
           }
         } else {
           freeSlotArray[0] = this.outputSlot[0];
           this.outputSlot[0] = null;
         }
-        this.simulationManager.addTimerEvent({
-          time: time,
-          priority: Priority.CRITICAL,
-          event: {
-            target: connectorId,
-            eventName: SimulatableAction.RESOURCE_DEPOSITED,
-          },
-        });
+        this.notifyConnectorOfResourceDeposit(time, connectorId);
 
         if (!this.getIsOutputsBlocked() && this.depositCallback) {
           this.depositCallback = false;
@@ -133,37 +114,6 @@ export default class ResourceExtractorV2 extends SimulatableNode {
       }
     } else {
       throw new Error('Unhandled event: ' + event);
-    }
-  }
-
-  private notifyOutputsAndStartCycle(time: Big) {
-    if (this.outputPacket) {
-      const getOutputIdsNeededForItem = this.getOutputIdsNeededForItem(
-        this.outputPacket.slug
-      );
-
-      for (const outputId of getOutputIdsNeededForItem) {
-        this.simulationManager.addTimerEvent({
-          time: time,
-          priority: Priority.VERY_HIGH,
-          event: {
-            target: outputId,
-            eventName: SimulatableAction.RESOURCE_AVAILABLE,
-            eventData: {
-              target: this.id,
-              resourceName: this.outputPacket.slug,
-            },
-          },
-        });
-      }
-
-      this.outputSlot[0] = this.outputPacket;
-
-      this.addDelayedSelfAction(
-        SimulatableAction.DEPOSIT_OUTPUT,
-        time.add(this.cycleTime),
-        Priority.CRITICAL
-      );
     }
   }
 
@@ -177,5 +127,19 @@ export default class ResourceExtractorV2 extends SimulatableNode {
       this.cycleTime,
       Priority.CRITICAL
     );
+  }
+
+  private notifyOutputsAndStartCycle(time: Big) {
+    if (this.outputPacket) {
+      this.notifyOutputsOfItem(time, this.outputPacket.slug);
+
+      this.outputSlot[0] = this.outputPacket;
+
+      this.addDelayedSelfAction(
+        SimulatableAction.DEPOSIT_OUTPUT,
+        time.add(this.cycleTime),
+        Priority.CRITICAL
+      );
+    }
   }
 }

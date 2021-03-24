@@ -8,7 +8,15 @@ export default abstract class SimulatableNode extends SimulatableElement {
   inputs: SimulatableLink[] = [];
   outputs: SimulatableLink[] = [];
   anyConnections: SimulatableLink[] = [];
-  graphic: NodeTemplate;
+
+  protected constructor(
+    node: NodeTemplate,
+    protected buildingSlug: string,
+    simulationManager: SimulationManager,
+    nodeOptions: Map<string, any>
+  ) {
+    super(node.id, simulationManager, node, nodeOptions);
+  }
 
   getOutputIdsNeededForItem(itemSlug: string) {
     const connectionTypeNeededForItem = getConnectionTypeNeededForItem(
@@ -18,14 +26,5 @@ export default abstract class SimulatableNode extends SimulatableElement {
     return this.outputs
       .filter((output) => output.connectionType === connectionTypeNeededForItem)
       .map((item) => item.id);
-  }
-
-  protected constructor(
-    node: NodeTemplate,
-    protected buildingSlug: string,
-    simulationManager: SimulationManager
-  ) {
-    super(node.id, simulationManager);
-    this.graphic = node;
   }
 }
