@@ -8,7 +8,15 @@ import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
 import produce from 'immer';
-import { all, create, equal, isNumeric, larger, smaller } from 'mathjs';
+import {
+  all,
+  create,
+  equal,
+  isNumeric,
+  larger,
+  smaller,
+  evaluate,
+} from 'mathjs';
 import React from 'react';
 import { BrowserView, isMobile } from 'react-device-detect';
 import ModalOpenTrigger from 'v3/apps/GraphV3/components/ModalOpenTrigger/ModalOpenTrigger';
@@ -255,7 +263,7 @@ function MathExpressionSelectorComponent(props) {
   function resolveMathValue(currentValue) {
     let mathValue;
     try {
-      mathValue = mathjsFractionReader.evaluate(currentValue);
+      mathValue = evaluate(currentValue);
     } catch (e) {
       return undefined;
     }
@@ -316,9 +324,7 @@ function MathExpressionSelectorComponent(props) {
 
   const mathValue = resolveMathValue(sliderValue);
   const percentValue =
-    mathValue === undefined
-      ? '?%'
-      : ((mathValue.s * mathValue.n) / mathValue.d).toFixed(3) + '%';
+    mathValue === undefined ? '?%' : mathValue.toFixed(3) + '%';
 
   let popperText = '';
 
