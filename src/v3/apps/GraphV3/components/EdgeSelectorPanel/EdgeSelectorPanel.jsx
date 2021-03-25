@@ -16,7 +16,7 @@ import {
   getBuildableConnectionClasses,
   getBuildableConnections,
   getBuildingIcon,
-  getTiersForConnectionClass,
+  getTiersForConnectorClass,
 } from 'v3/data/loaders/buildings';
 
 const useStyles = makeStyles((theme) => {
@@ -111,7 +111,7 @@ function EdgeSelectorPanel() {
 
   const tierSelector = React.useCallback(
     (direction) => {
-      const possibleUpgrades = getTiersForConnectionClass(selectedEdgeType);
+      const possibleUpgrades = getTiersForConnectorClass(selectedEdgeType);
       const currentIndex = possibleUpgrades.indexOf(selectedEdgeTier);
       const totalIndexes = possibleUpgrades.length;
       switch (direction) {
@@ -139,7 +139,7 @@ function EdgeSelectorPanel() {
   );
 
   React.useEffect(() => {
-    const possibleUpgrades = getTiersForConnectionClass(selectedEdgeType);
+    const possibleUpgrades = getTiersForConnectorClass(selectedEdgeType);
     if (possibleUpgrades) {
       setSelectedEdgeTier(possibleUpgrades[0]);
       setShowTierSelector(true);

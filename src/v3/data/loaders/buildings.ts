@@ -207,8 +207,12 @@ export const getBuildableConnectionClasses = memoize(
   getBuildableConnectionClassesFn
 );
 
-export const getTiersForConnectionClass = (connectionClass: string) => {
-  return getBuildableConnections().machineClassMap.get(connectionClass);
+export const getTiersForConnectorClass = (connectorClass: string) => {
+  return getBuildableConnections().machineClassMap.get(connectorClass);
+};
+
+export const getTiersForMachineClass = (machineClass: string) => {
+  return getBuildableMachines().machineClassMap.get(machineClass);
 };
 
 export const getBuildableMachines = memoize(getBuildableMachinesFnV2);
@@ -563,6 +567,7 @@ export const getConfigurableOptionsByMachine = (classSlug: string) => {
       slider: true,
       minValue: 0,
       maxValue: 200,
+      defaultValue: 100,
       translations: [100],
     };
   }

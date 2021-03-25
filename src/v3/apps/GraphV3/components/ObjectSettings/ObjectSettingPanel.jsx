@@ -145,7 +145,7 @@ function ObjectSettingPanel(props) {
 
   return (
     <Drawer
-      variant="permanent" //TODO: DOCK permanent
+      variant="persistent" //TODO: DOCK permanent
       anchor={'left'}
       open={mouseState === MouseState.SELECT && selectedObjects.length > 0}
       onClose={() => {}}

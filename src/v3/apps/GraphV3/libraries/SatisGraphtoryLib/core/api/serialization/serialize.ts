@@ -148,10 +148,43 @@ const getSerializedGraph = (objects: GraphObject[]) => {
 
   const SaveData = root.lookupType('SGSave');
 
+  const whitelistedNodes = new Set(
+    objects
+      .map((object) => {
+        return object.id;
+      })
+      .filter((id) => nodeIdToNumberMap.has(id))
+      .map((id) => {
+        return nodeIdToNumberMap.get(id)!;
+      })
+  );
+
+  console.log(whitelistedNodes);
+
   const saveDataBase = {
     nodes,
-    edges,
+    edges: edges.filter((edge) => {
+      if (
+        !whitelistedNodes.has(edge.sourceNodeId) &&
+        !whitelistedNodes.has(edge.targetNodeId)
+      ) {
+        return false;
+      }
+
+      if (
+        !whitelistedNodes.has(edge.sourceNodeId) ||
+        !whitelistedNodes.has(edge.targetNodeId)
+      ) {
+        edge.connectorTypeId = undefined;
+        edge.sourceNodeId = null;
+        edge.targetNodeId = null;
+      }
+
+      return true;
+    }),
   };
+
+  console.log(nodes, edges);
 
   SaveData.verify(saveDataBase);
   // console.log(SaveData.create(saveDataBase));

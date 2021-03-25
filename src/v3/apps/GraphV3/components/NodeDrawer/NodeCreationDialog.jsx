@@ -3,8 +3,12 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import { makeStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import Tooltip from '@material-ui/core/Tooltip';
 import produce from 'immer';
+import { all, create, equal, isNumeric, larger, smaller } from 'mathjs';
 import React from 'react';
 import { BrowserView, isMobile } from 'react-device-detect';
 import ModalOpenTrigger from 'v3/apps/GraphV3/components/ModalOpenTrigger/ModalOpenTrigger';
@@ -73,16 +77,19 @@ function DropDownWrapper(props) {
   );
 }
 
-function resolveSelectedChoice(
+function resolveSelectedDropdownChoice(
+  configKey,
   configEntry,
   translate,
-  currentlySelectedOption
+  currentlySelectedOption,
+  currentNodeStampOptions
 ) {
   const valueSlugMap = new Map();
 
   let choices;
   let selectedChoice = null;
 
+  const currentStampKey = currentNodeStampOptions[configKey]?.value;
   if (configEntry.grouped) {
     choices = configEntry.options.map((entry) => {
       const allOptions = entry.options
@@ -103,6 +110,16 @@ function resolveSelectedChoice(
 
       if (filteredChoices.length) {
         selectedChoice = filteredChoices[0].value;
+      } else {
+        if (currentStampKey !== undefined) {
+          const currentFilteredChoices = allOptions.filter(
+            (item) => item.value === currentStampKey
+          );
+
+          if (currentFilteredChoices.length) {
+            selectedChoice = currentFilteredChoices[0].value;
+          }
+        }
       }
 
       return {
@@ -129,6 +146,16 @@ function resolveSelectedChoice(
 
     if (filteredChoices.length) {
       selectedChoice = filteredChoices[0].value;
+    } else {
+      if (currentStampKey !== undefined) {
+        const currentFilteredChoices = choices.filter(
+          (item) => item.value === currentStampKey
+        );
+
+        if (currentFilteredChoices.length) {
+          selectedChoice = currentFilteredChoices[0].value;
+        }
+      }
     }
   }
 
@@ -145,7 +172,12 @@ function GenericSelectorComponent(props) {
     isGrouped,
   } = props;
 
-  const choiceValue = choices.filter((option) => option.value === value);
+  let choiceValue = isGrouped
+    ? choices
+        .map((choice) => choice.options)
+        .flat()
+        .filter((option) => option.value === value)
+    : choices.filter((option) => option.value === value);
 
   const [internalChoice, setInternalChoice] = React.useState(
     choiceValue.length ? choiceValue[0] : ''
@@ -204,11 +236,137 @@ function GenericSelectorComponent(props) {
 
 const GenericSelector = React.memo(GenericSelectorComponent);
 
+const mathjsFractionReader = create(all);
+mathjsFractionReader.config({ number: 'Fraction' });
+
+function MathExpressionSelectorComponent(props) {
+  const { translate } = React.useContext(LocaleContext);
+
+  const isInitializedHackRef = React.useRef(false);
+
+  const [sliderValue, setSliderValue] = React.useState(() => {
+    const currentValue = props.currentDraft[props.configKey];
+    if (currentValue !== undefined) {
+      return currentValue;
+    }
+    return props.configEntry.defaultValue;
+  });
+
+  function resolveMathValue(currentValue) {
+    let mathValue;
+    try {
+      mathValue = mathjsFractionReader.evaluate(currentValue);
+    } catch (e) {
+      return undefined;
+    }
+
+    if (mathValue === undefined || !isNumeric(mathValue)) {
+      return undefined;
+    }
+
+    return mathValue;
+  }
+
+  function resolveAndSetMathValue(currentValue) {
+    let resolvedValue = resolveMathValue(currentValue);
+
+    if (
+      resolvedValue === undefined ||
+      !isNumeric(resolvedValue) ||
+      smaller(resolvedValue, props.configEntry.minValue) ||
+      larger(resolvedValue, props.configEntry.maxValue)
+    ) {
+      resolvedValue = undefined;
+    }
+
+    if (equal(resolvedValue, props.currentDraft[props.configKey]))
+      return resolvedValue;
+
+    if (resolvedValue === undefined) {
+      setTimeout(() => {
+        const newDraft = produce(props.currentDraft, (draftObject) => {
+          delete draftObject[props.configKey];
+        });
+        props.setDraftFunction(newDraft);
+      });
+    } else {
+      setTimeout(() => {
+        const newDraft = produce(props.currentDraft, (draftObject) => {
+          draftObject[props.configKey] = resolvedValue;
+        });
+
+        props.setDraftFunction(newDraft);
+      });
+    }
+  }
+
+  if (
+    props.currentDraft[props.configKey] === undefined &&
+    isInitializedHackRef.current === false
+  ) {
+    isInitializedHackRef.current = true;
+    setTimeout(() => {
+      const newDraft = produce(props.currentDraft, (draftObject) => {
+        draftObject[props.configKey] = sliderValue;
+      });
+
+      props.setDraftFunction(newDraft);
+    });
+  }
+
+  const mathValue = resolveMathValue(sliderValue);
+  const percentValue =
+    mathValue === undefined
+      ? '?%'
+      : ((mathValue.s * mathValue.n) / mathValue.d).toFixed(3) + '%';
+
+  let popperText = '';
+
+  if (
+    mathValue !== undefined &&
+    smaller(mathValue, props.configEntry.minValue)
+  ) {
+    popperText = 'Value must be >= ' + props.configEntry.minValue;
+  } else if (
+    mathValue !== undefined &&
+    larger(mathValue, props.configEntry.maxValue)
+  ) {
+    popperText = 'Value must be <= ' + props.configEntry.maxValue;
+  }
+
+  return (
+    <Tooltip
+      title={popperText}
+      open={popperText !== ''}
+      placement="bottom-start"
+    >
+      <TextField
+        label={translate('config-selector-' + props.configKey)}
+        fullWidth
+        error={mathValue === undefined || popperText !== ''}
+        helperText={'Math expressions is allowed (200 * 1/3).'}
+        value={sliderValue}
+        onChange={(e) => {
+          setSliderValue(e.target.value);
+          resolveAndSetMathValue(e.target.value);
+        }}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">{percentValue}</InputAdornment>
+          ),
+        }}
+      />
+    </Tooltip>
+  );
+}
+
 function NodeCreationDialog(props) {
   const { nodeClass, openDialog, setOpenDialog, closeDrawerFunction } = props;
   const classes = useStyles();
   const { translate } = React.useContext(LocaleContext);
-  const { pixiCanvasStateId } = React.useContext(PixiJSCanvasContext);
+  const { pixiCanvasStateId, nodeStampOptions } = React.useContext(
+    PixiJSCanvasContext
+  );
 
   const [draftSelection, setDraftSelection] = React.useState({});
 
@@ -221,32 +379,49 @@ function NodeCreationDialog(props) {
   const childElements = [];
 
   for (const [configKey, configEntry] of Object.entries(configurableOptions)) {
-    const { choices, selectedChoice } = resolveSelectedChoice(
-      configEntry,
-      translate,
-      draftSelection[configKey]
-    );
-
-    childElements.push(
-      <GenericSelector
-        key={configKey}
-        value={selectedChoice}
-        choices={choices}
-        configKey={configKey}
-        setDraftFunction={setDraftSelection}
-        currentDraft={draftSelection}
-        isGrouped={configEntry.grouped || false}
-      />
-    );
-    if (choices.length > 1) {
-      totalUserChoices++;
-    }
-
-    if (!choices.length) {
-      numChoicesLeft--;
-    } else {
-      if (selectedChoice !== null) {
+    if (configEntry.slider) {
+      childElements.push(
+        <MathExpressionSelectorComponent
+          key={configKey}
+          configEntry={configEntry}
+          configKey={configKey}
+          setDraftFunction={setDraftSelection}
+          currentDraft={draftSelection}
+        />
+      );
+      if (draftSelection[configKey] !== undefined) {
         numChoicesLeft--;
+      }
+    } else {
+      const { choices, selectedChoice } = resolveSelectedDropdownChoice(
+        configKey,
+        configEntry,
+        translate,
+        draftSelection[configKey],
+        nodeStampOptions
+      );
+
+      childElements.push(
+        <GenericSelector
+          key={configKey}
+          value={selectedChoice}
+          choices={choices}
+          configKey={configKey}
+          setDraftFunction={setDraftSelection}
+          currentDraft={draftSelection}
+          isGrouped={configEntry.grouped || false}
+        />
+      );
+      if (choices.length > 1) {
+        totalUserChoices++;
+      }
+
+      if (!choices.length) {
+        numChoicesLeft--;
+      } else {
+        if (selectedChoice !== null) {
+          numChoicesLeft--;
+        }
       }
     }
   }

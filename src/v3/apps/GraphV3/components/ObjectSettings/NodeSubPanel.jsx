@@ -19,11 +19,52 @@ import React from 'react';
 import Scrollbar from 'react-scrollbars-custom';
 import { deleteNodes } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/canvas/childrenApi';
 import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
+import {
+  getClassNameForBuildableMachine,
+  getTiersForMachineClass,
+} from 'v3/data/loaders/buildings';
+
+function calculateMachineMap(nodes) {
+  const machineMap = new Map();
+  for (const node of nodes) {
+    const className = getClassNameForBuildableMachine(node.machineName);
+    if (!machineMap.has(className)) {
+      machineMap.set(className, new Set());
+    }
+
+    machineMap.get(className).add(node.machineName);
+  }
+
+  const sortedMachineMap = new Map();
+
+  for (const [key, entry] of machineMap) {
+    sortedMachineMap.set(key, [...entry].sort());
+  }
+
+  return {
+    sortedMachineMap,
+    machineNames: [...machineMap.keys()].sort(),
+  };
+}
 
 function NodeSubPanel(props) {
   const { pixiCanvasStateId } = React.useContext(PixiJSCanvasContext);
 
   const { classes, nodes } = props;
+
+  const machineMap = calculateMachineMap(nodes);
+
+  // console.log(machineMap)
+
+  if (nodes.length === 1) {
+    // const derp = getTiersForMachineClass(nodes[0].);
+    const machineClass = getClassNameForBuildableMachine(nodes[0].machineName);
+    const tiers = getTiersForMachineClass(machineClass);
+    console.log(machineClass, tiers);
+  }
+
+  // Tiers: Set to Max, Set to Min
+  // Set Overclocks
 
   return (
     <Scrollbar>
@@ -40,9 +81,39 @@ function NodeSubPanel(props) {
         >
           Delete ALL selected nodes
         </Button>
+        {machineMap.machineNames.map((name) => {
+          console.log(machineMap.sortedMachineMap.get(name));
+          return null;
+        })}
         <Divider className={classes.divider} />
 
-        <Typography variant="h6">Set ALL Node Tiers</Typography>
+        {/*<QuantitySelector*/}
+        {/*  fullWidth*/}
+        {/*  readonlyInput*/}
+        {/*  setAmountFunctionFastBackward={() => {*/}
+        {/*    tierSelector(-100);*/}
+        {/*  }}*/}
+        {/*  setAmountFunctionBackward={() => {*/}
+        {/*    tierSelector(-1);*/}
+        {/*  }}*/}
+        {/*  setAmountFunctionForward={() => {*/}
+        {/*    tierSelector(1);*/}
+        {/*  }}*/}
+        {/*  setAmountFunctionFastForward={() => {*/}
+        {/*    tierSelector(100);*/}
+        {/*  }}*/}
+        {/*  amount={translate('tier-selector-' + selectedEdgeTier)}*/}
+        {/*  buttonColor={{*/}
+        {/*    fastBackwardColor: 'secondary',*/}
+        {/*    backwardColor: 'secondary',*/}
+        {/*    forwardColor: 'primary',*/}
+        {/*    fastForwardColor: 'primary',*/}
+        {/*  }}*/}
+        {/*  styledInputClass={classes.markSelectorInput}*/}
+        {/*  styledRootClass={classes.inputRoot}*/}
+        {/*  // styledInputClass={classes.styledInput}*/}
+        {/*/>*/}
+
         <Divider className={classes.divider} />
         <Typography variant="h5">By Machine Class</Typography>
         <Accordion square>

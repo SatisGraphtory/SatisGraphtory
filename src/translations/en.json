@@ -51,5 +51,6 @@
   "config-selector-nodePurity": "Node Purity",
   "config-selector-extractedItem": "Node Resource",
   "label-selector-alternate-recipes": "Alternate Recipes",
-  "label-selector-normal-recipes": "Progression Recipes"
+  "label-selector-normal-recipes": "Progression Recipes",
+  "config-selector-overclock": "Overclock"
 }
