@@ -1,10 +1,8 @@
 import uuidGen from 'v3/utils/stringUtils';
 import {
   getAnyConnectionsForBuilding,
-  getBuildingName,
   getInputsForBuilding,
   getOutputsForBuilding,
-  getTier,
 } from 'v3/data/loaders/buildings';
 import AdvancedNode from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/AdvancedNode';
 import {
@@ -27,13 +25,13 @@ const populateNewNodeData = (
   const additionalBuildingProps = produce(
     nodeStampOptions,
     (draftState: any) => {
-      delete draftState['machineType'];
       for (const remainingKey of Object.keys(draftState)) {
         draftState[remainingKey] = draftState[remainingKey].value;
       }
     }
   );
 
+  //TODO: REGENERATE BASED ON THESE THINGSSSSSSS
   return new AdvancedNode({
     position: {
       x: x - Math.floor(NODE_WIDTH / 2),
@@ -41,9 +39,7 @@ const populateNewNodeData = (
     },
     id: uuidGen(),
     translateFunction,
-    tier: getTier(buildingSlug),
     machineName: buildingSlug,
-    machineLabel: getBuildingName(buildingSlug) as string,
     inputConnections: getInputsForBuilding(
       buildingSlug,
       externalInteractionManager

@@ -1,4 +1,8 @@
-import { recipeEnums, itemEnums } from '.DataWarehouse/enums/dataEnums';
+import {
+  recipeEnums,
+  itemEnums,
+  buildingEnums,
+} from '.DataWarehouse/enums/dataEnums';
 
 const getEnumFromNumber = (
   key: number,
@@ -61,6 +65,12 @@ function translateEnums(draftState: any) {
     draftState.extractedItem = translateEnumOrString(
       draftState.extractedItem,
       itemEnums
+    );
+  }
+  if (draftState.machineType) {
+    draftState.machineType = translateEnumOrString(
+      draftState.machineType,
+      buildingEnums
     );
   }
 }

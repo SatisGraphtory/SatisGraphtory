@@ -18,6 +18,7 @@ import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import SimulatableNode from '../../../algorithms/simulation/nodes/SimulatableNode';
 import { getSimulatableNode } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/NodeManager/getSimulatable';
+import { getTier } from '../../../../../../../data/loaders/buildings';
 
 export class NodeContainer extends GraphObjectContainer {
   public boundCalculator: any = null;
@@ -54,14 +55,13 @@ export abstract class NodeTemplate extends GraphObject {
       outputConnections,
       anyConnections,
       machineName,
-      tier,
       additionalData,
       translateFunction,
     } = props;
 
     this.translateFunction = translateFunction;
     this.machineName = machineName;
-    this.tier = tier;
+    this.tier = getTier(machineName);
 
     this.container = new NodeContainer();
 

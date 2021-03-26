@@ -18,9 +18,9 @@ const useStyles = makeStyles((theme) => ({
   },
   input: {
     display: 'flex',
-    padding: 0,
+    // padding: 0,
     margin: 0,
-    height: 'auto',
+    // height: 'auto',
   },
   valueContainer: {
     display: 'flex',
@@ -125,6 +125,7 @@ function Control(props) {
   return (
     <TextField
       fullWidth
+      variant="outlined"
       label={label}
       helperText={helperText}
       value={actualValue}
@@ -259,6 +260,11 @@ function SelectDropdown(props) {
       },
     }),
     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    indicatorSeparator: (base) => ({
+      ...base,
+      marginTop: 0,
+      marginBottom: 0,
+    }),
   };
 
   const wrappedFunc = (propFunc) => {

@@ -46,6 +46,7 @@
   "building-assembler": "Assembler",
   "building-constructor": "Constructor",
   "building-manufacturer": "Manufacturer",
+  "settings": "Settings",
   "config-selector-recipe": "Recipe",
   "config-selector-machineType": "Machine Type",
   "config-selector-nodePurity": "Node Purity",

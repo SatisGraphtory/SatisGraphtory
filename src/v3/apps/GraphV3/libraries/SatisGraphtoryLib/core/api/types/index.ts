@@ -10,8 +10,6 @@ export interface SatisGraphtoryNodeProps extends GraphObjectProps {
   outputConnections?: EdgeTemplate[];
   anyConnections?: EdgeTemplate[];
   machineName: string;
-  machineLabel: string;
-  tier: number;
   position: SatisGraphtoryCoordinate;
   additionalData?: Record<string, any>;
   translateFunction: (inputString: string) => string;

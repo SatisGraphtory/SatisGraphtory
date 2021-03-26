@@ -150,6 +150,7 @@ const getSerializedGraph = (objects: GraphObject[]) => {
 
   const whitelistedNodes = new Set(
     objects
+      .filter((obj) => obj instanceof NodeTemplate)
       .map((object) => {
         return object.id;
       })
@@ -159,11 +160,19 @@ const getSerializedGraph = (objects: GraphObject[]) => {
       })
   );
 
-  console.log(whitelistedNodes);
-
   const saveDataBase = {
     nodes,
     edges: edges.filter((edge) => {
+      //TODO: can probably be simplified to just checking 0
+      if (
+        edge.targetNodeId === null ||
+        edge.targetNodeId === undefined ||
+        edge.targetNodeId === 0 ||
+        edge.sourceNodeId === 0 ||
+        edge.sourceNodeId === null ||
+        edge.sourceNodeId === undefined
+      )
+        return true;
       if (
         !whitelistedNodes.has(edge.sourceNodeId) &&
         !whitelistedNodes.has(edge.targetNodeId)
@@ -184,7 +193,7 @@ const getSerializedGraph = (objects: GraphObject[]) => {
     }),
   };
 
-  console.log(nodes, edges);
+  //
 
   SaveData.verify(saveDataBase);
   // console.log(SaveData.create(saveDataBase));
@@ -254,7 +263,6 @@ const serializeNode = (
     any: node.anyConnections.map((connection) =>
       getOrCreateId(connection.id, edgeIdToNumberMap, edgeNumberId)
     ),
-    machineTypeId: getNumberFromEnum(node.machineName, buildingEnums),
     x: node.container.x,
     y: node.container.y,
     additionalData: additionalData,

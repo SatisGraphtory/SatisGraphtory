@@ -5,7 +5,6 @@ import { str2buffer } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api
 import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EmptyEdge';
 import uuidGen from 'v3/utils/stringUtils';
 import AdvancedNode from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/AdvancedNode';
-import { getBuildingName, getTier } from 'v3/data/loaders/buildings';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import SimpleEdge from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/SimpleEdge';
 import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
@@ -86,7 +85,9 @@ const deserializeGraphObjects = (
     const thisUuid = uuidGen();
     nodeNumberToId.set(node.id, thisUuid);
 
-    const { x, y, machineTypeId: buildingSlug, additionalData } = node;
+    const { x, y, additionalData } = node;
+
+    const machineType = additionalData.machineType;
 
     const populatedNode = new AdvancedNode({
       position: {
@@ -94,9 +95,7 @@ const deserializeGraphObjects = (
         y,
       },
       id: thisUuid,
-      tier: getTier(buildingSlug),
-      machineName: buildingSlug,
-      machineLabel: getBuildingName(buildingSlug) as string,
+      machineName: machineType,
       inputConnections: node.inputs.map((num: number) => {
         if (!edgeNumberToInstance.get(num))
           throw new Error('Unresolved edge number ' + num);

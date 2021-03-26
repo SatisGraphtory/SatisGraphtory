@@ -396,6 +396,8 @@ function PixiJSApplication(props) {
 
         if (!Object.keys(nodeStampOptions).length) return;
 
+        console.log(nodeStampOptions);
+
         const nodeData = populateNewNodeData(
           newPos.x,
           newPos.y,

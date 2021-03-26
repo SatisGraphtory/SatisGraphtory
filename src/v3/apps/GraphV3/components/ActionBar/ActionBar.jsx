@@ -1,6 +1,7 @@
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
 import AddIcon from '@material-ui/icons/Add';
 import CropFreeIcon from '@material-ui/icons/CropFree';
 import LinkIcon from '@material-ui/icons/Link';
@@ -131,6 +132,8 @@ function ActionBar() {
           onChange={handleModeChange}
           className={classes.navigation}
           ref={domRef}
+          component={TooltipEnabledBottomNav}
+          disabledByRunningSimulation={simulationRunning}
         >
           <BottomNavigationAction
             label="Move"
@@ -152,7 +155,11 @@ function ActionBar() {
           <BottomNavigationAction
             label="Link"
             value={MouseState.LINK}
-            icon={<LinkIcon />}
+            icon={
+              <Tooltip title={'WAHOOO'} placement="top" arrow>
+                <LinkIcon />
+              </Tooltip>
+            }
             classes={simulationRunningClasses}
             disabled={simulationRunning}
           />
@@ -161,5 +168,25 @@ function ActionBar() {
     </div>
   );
 }
+
+function BottomNavCustomComponent({
+  innerRef,
+  disabledByRunningSimulation,
+  ...props
+}) {
+  return (
+    <Tooltip
+      arrow
+      open={disabledByRunningSimulation}
+      title={'Add and Link are disabled when simulation is running'}
+    >
+      <div ref={innerRef} {...props} />
+    </Tooltip>
+  );
+}
+
+const TooltipEnabledBottomNav = React.forwardRef((props, ref) => (
+  <BottomNavCustomComponent innerRef={ref} {...props} />
+));
 
 export default React.memo(ActionBar);

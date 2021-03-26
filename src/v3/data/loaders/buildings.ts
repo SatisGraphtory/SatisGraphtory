@@ -502,7 +502,7 @@ export const getConnectionTypeForEdge = (
 
 const waterPumpSubclasses = getAllSubclasses('AFGBuildableWaterPump');
 
-export const getConfigurableOptionsByMachine = (classSlug: string) => {
+const getConfigurableOptionsByMachineClassFn = (classSlug: string) => {
   const machineTypes = getBuildableMachinesFromClassName(classSlug)!;
   const recipes = getRecipesByMachineClass(classSlug)!;
 
@@ -551,6 +551,7 @@ export const getConfigurableOptionsByMachine = (classSlug: string) => {
     recipe: {
       options: recipesOption,
       grouped: recipesGrouped,
+      mutable: false,
     },
   } as Record<string, any>;
 
@@ -560,17 +561,6 @@ export const getConfigurableOptionsByMachine = (classSlug: string) => {
   );
 
   const buildingDefinition = getBuildingDefinition(sampleMachine);
-
-  if (buildingDefinition.mCanChangePotential) {
-    baseTypes.overclock = {
-      options: [100],
-      slider: true,
-      minValue: 0,
-      maxValue: 200,
-      defaultValue: 100,
-      translations: [100],
-    };
-  }
 
   if (resourceExtractorSubclasses.has(classType)) {
     if (waterPumpSubclasses.has(classType)) {
@@ -598,6 +588,7 @@ export const getConfigurableOptionsByMachine = (classSlug: string) => {
         options: (buildingDefinition.mAllowedResources || []).map(
           (item: any) => item.slug
         ),
+        mutable: false,
       };
     } else {
       const allowedResources = (buildingDefinition.mAllowedResourceForms || [])
@@ -607,12 +598,27 @@ export const getConfigurableOptionsByMachine = (classSlug: string) => {
         .flat();
       baseTypes.extractedItem = {
         options: allowedResources,
+        mutable: false,
       };
     }
   }
 
+  if (buildingDefinition.mCanChangePotential) {
+    baseTypes.overclock = {
+      mathExpression: true,
+      minValue: 0,
+      maxValue: 250,
+      defaultValue: 100,
+      type: 'number',
+    };
+  }
+
   return baseTypes;
 };
+
+export const getConfigurableOptionsByMachineClass = memoize(
+  getConfigurableOptionsByMachineClassFn
+);
 
 //@BROKEN
 export const getConnectionsByConnectionType = (

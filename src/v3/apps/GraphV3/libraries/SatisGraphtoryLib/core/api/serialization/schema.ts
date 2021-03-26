@@ -45,6 +45,7 @@ export const getSchemaForVersion = (version: string) => {
     2: ['extractedItem', 'ItemEnum'],
     3: ['nodePurity', 'uint32'],
     4: ['overclock', 'uint32'],
+    5: ['machineType', 'BuildingEnum'],
   };
 
   const NodeAdditionalSettingsMessage = new Type(
@@ -65,10 +66,9 @@ export const getSchemaForVersion = (version: string) => {
     3: ['inputs', 'uint32', 'repeated'],
     4: ['outputs', 'uint32', 'repeated'],
     5: ['any', 'uint32', 'repeated'],
-    6: ['machineTypeId', 'BuildingEnum'],
-    7: ['x', 'double'],
-    8: ['y', 'double'],
-    9: ['additionalData', 'NodeAdditionalSettingsMessage'],
+    6: ['x', 'double'],
+    7: ['y', 'double'],
+    8: ['additionalData', 'NodeAdditionalSettingsMessage'],
     // TODO: Group?
   };
 

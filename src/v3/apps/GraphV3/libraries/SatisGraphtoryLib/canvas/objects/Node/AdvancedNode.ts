@@ -17,7 +17,10 @@ import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas
 import { createNodeHighlight } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeHighlight';
 import { EResourcePurity } from '.DataLanding/interfaces/enums';
 
-import { getClassNameForBuildableMachine } from 'v3/data/loaders/buildings';
+import {
+  getBuildingName,
+  getClassNameForBuildableMachine,
+} from 'v3/data/loaders/buildings';
 // import { createBadge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/Badge';
 import {
   EFFICIENCY_OFFSET_X,
@@ -61,6 +64,8 @@ import {
 } from '../../../stores/GlobalGraphAppStore';
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import { getEnumValue } from 'v3/data/loaders/enums';
+import resolveMathValue from '../../../../../components/Selectors/resolveMathValue';
+import { Fraction, typeOf } from 'mathjs';
 
 export default class AdvancedNode extends NodeTemplate {
   connectionsMap: Map<EdgeAttachmentSide, EdgeTemplate[]> = new Map();
@@ -72,7 +77,9 @@ export default class AdvancedNode extends NodeTemplate {
   constructor(props: SatisGraphtoryNodeProps) {
     super(props);
 
-    const { tier, machineName, machineLabel } = props;
+    const { machineName } = props;
+
+    const machineLabel = getBuildingName(this.machineName) as string;
 
     const container = this.container;
 
@@ -160,7 +167,7 @@ export default class AdvancedNode extends NodeTemplate {
     container.addChild(machineImage);
 
     const levelText = createText(
-      getTierText(tier),
+      getTierText(this.tier),
       NODE_TIER_STYLE(theme),
       TIER_OFFSET_X,
       TIER_OFFSET_Y
@@ -169,8 +176,28 @@ export default class AdvancedNode extends NodeTemplate {
     container.addChild(levelText);
 
     if (this.additionalData.has('overclock')) {
+      const overclockValue = resolveMathValue(
+        this.additionalData.get('overclock')
+      );
+
+      if (overclockValue === undefined)
+        throw new Error('Could not resolve overclock ' + overclockValue);
+
+      let overclockTextValue;
+
+      if (typeOf(overclockValue) === 'Fraction') {
+        const overclock = overclockValue as Fraction;
+        if (overclock?.d === 1) {
+          overclockTextValue = overclock.n * overclock.s;
+        } else {
+          overclockTextValue = `${overclock.n * overclock.s}/${overclock.d}`;
+        }
+      } else {
+        throw new Error('Unknown overclock ' + overclockValue);
+      }
+
       const efficiencyText = createText(
-        `${this.additionalData.get('overclock')}%`,
+        `${overclockTextValue}%`,
         OVERCLOCK_STYLE(theme),
         EFFICIENCY_OFFSET_X,
         EFFICIENCY_OFFSET_Y,
