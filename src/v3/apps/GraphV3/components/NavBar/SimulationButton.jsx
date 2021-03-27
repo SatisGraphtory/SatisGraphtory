@@ -127,7 +127,7 @@ function SimulationCard(props) {
         <div className={classes.showAdvanced}>
           <FormControlLabel
             control={<Switch checked={checked} onChange={handleChange} />}
-            label="Show Advanced Settings"
+            label="Show Advanced"
           />
         </div>
         <Collapse in={checked}>
@@ -151,10 +151,12 @@ function SimulationCard(props) {
             </Typography>
             <div className={classes.slider}>
               <Slider
-                onChange={debounce(10, false, (event, newValue) => {
-                  simulationManager.setPingRate(newValue);
+                onChange={(event, newValue) => {
+                  debounce(10, false, () =>
+                    simulationManager.setPingRate(newValue)
+                  );
                   setPingRate(newValue);
-                })}
+                }}
                 value={pingRate}
                 step={10}
                 min={50}
@@ -167,10 +169,12 @@ function SimulationCard(props) {
             </Typography>
             <div className={classes.slider}>
               <Slider
-                onChange={debounce(10, false, (event, newValue) => {
-                  simulationManager.setMaxIdlePings(newValue);
+                onChange={(event, newValue) => {
+                  debounce(10, false, () =>
+                    simulationManager.setMaxIdlePings(newValue)
+                  );
                   setMaxIdlePings(newValue);
-                })}
+                }}
                 value={maxIdlePings}
                 defaultValue={10}
                 step={1}
