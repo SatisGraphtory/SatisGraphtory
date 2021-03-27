@@ -45,14 +45,12 @@ export default class ManufacturerV2 extends SimulatableNode {
   }
 
   generateFromOptions(optionsKeys: Set<string>): void {
+    super.generateFromOptions(optionsKeys);
     const buildingDefinition = getBuildingDefinition(this.buildingSlug);
 
-    if (this.cycleTime.lt(0) || optionsKeys.has('overclock')) {
-      this.cycleTime = Big(buildingDefinition.mManufacturingSpeed * 1000); // TODO Overclock
-    }
+    const recipe = getRecipeDefinition(this.objectOptions.get('recipe')!);
 
     if (optionsKeys.has('recipe')) {
-      const recipe = getRecipeDefinition(this.objectOptions.get('recipe')!);
       for (const { ItemClass, Amount } of recipe.mIngredients) {
         this.resourcesNeededBySlug.set(ItemClass.slug, Amount);
       }
@@ -60,17 +58,6 @@ export default class ManufacturerV2 extends SimulatableNode {
       for (const { ItemClass, Amount } of recipe.mProduct) {
         this.resourcesProducedBySlug.set(ItemClass.slug, Amount);
       }
-
-      let overclock = 100;
-
-      if (this.objectOptions.get('overclock')) {
-        overclock = this.objectOptions.get('overclock');
-      }
-
-      this.cycleTime = Big(buildingDefinition.mManufacturingSpeed * 1000)
-        .div(resolveMathValue(overclock))
-        .mul(100)
-        .mul(recipe.mManufactoringDuration);
 
       this.outputPacketByConnection.clear();
 
@@ -91,6 +78,27 @@ export default class ManufacturerV2 extends SimulatableNode {
         });
         this.itemsProducedPerCycle += Amount;
       }
+    }
+
+    if (optionsKeys.has('overclock')) {
+      let overclock = this.objectOptions.get('overclock');
+
+      const oldCycleTime = this.cycleTime;
+
+      this.cycleTime = Big(buildingDefinition.mManufacturingSpeed * 1000)
+        .div(resolveMathValue(overclock))
+        .mul(100)
+        .mul(recipe.mManufactoringDuration);
+
+      const timeChange = oldCycleTime.minus(this.cycleTime);
+
+      this.simulationManager.editEvents(
+        this.id,
+        SimulatableAction.DEPOSIT_OUTPUT,
+        timeChange
+      );
+
+      this.resetDepositTracking();
     }
   }
 
@@ -125,10 +133,17 @@ export default class ManufacturerV2 extends SimulatableNode {
   }
 
   handleEvent(evt: SimulatableAction, time: Big, eventData: any) {
-    // if (this.numTrack === 1) {
-    //   console.log(SimulatableAction[evt], time.toNumber(), eventData, "!!", this.cycleTime.toNumber())
-    // }
-    if (evt === SimulatableAction.RESOURCE_AVAILABLE) {
+    if (evt === SimulatableAction.PING) {
+      this.trackDepositEvent(
+        time,
+        (rate: number) => {
+          this.updateDisplay(rate * this.itemsProducedPerCycle);
+        },
+        true
+      );
+
+      this.sendPing(time);
+    } else if (evt === SimulatableAction.RESOURCE_AVAILABLE) {
       if (this.needsResource(eventData.resourceName)) {
         this.sendItemTransferRequest(time, eventData);
       } else {
@@ -242,13 +257,8 @@ export default class ManufacturerV2 extends SimulatableNode {
           }
         }
       } else {
-        //TODO: IF BLOCKED, DO SHIT
+        // If we don't have an output then just clear the output slots automatically
         this.remainingProducedResourcesNeedBySlug.clear();
-        //Callback to fetch more stuff?
-        // for (const [key, callback] of this.callbackByResource) {
-        //   this.callbackByResource.delete(key);
-        //   callback(time);
-        // }
       }
 
       for (const callback of this.postDepositedCallbacks) {
@@ -291,7 +301,8 @@ export default class ManufacturerV2 extends SimulatableNode {
         this.remainingProducedResourcesNeedBySlug.delete(slug);
 
         if (!this.remainingProducedResourcesNeedBySlug.size) {
-          //PROBABLY WRONG!!!!!!
+          // If we no longer have outputs, we need to unblock any process that was dependent on the output
+          //TODO: abstract this?
           for (const blockedCallback of this.outputBlockedCallbacks) {
             blockedCallback(time);
           }

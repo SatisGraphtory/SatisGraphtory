@@ -12,6 +12,8 @@ export interface QueueStrategy<T> {
   dequeue(): T;
   peek(): T;
   clear(): void;
+  getData(): T[];
+  reheapify(): void;
 }
 
 export default class PriorityQueue<T> {
@@ -25,6 +27,14 @@ export default class PriorityQueue<T> {
   public constructor(options: Options<T>) {
     this._length = options.initialValues ? options.initialValues.length : 0;
     this.strategy = new BinaryHeapStrategy(options);
+  }
+
+  public getData() {
+    return this.strategy.getData();
+  }
+
+  public reheapify() {
+    return this.strategy.reheapify();
   }
 
   public queue(value: T) {

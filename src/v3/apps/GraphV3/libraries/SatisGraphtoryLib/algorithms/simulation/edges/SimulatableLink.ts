@@ -24,6 +24,11 @@ export default abstract class SimulatableLink extends SimulatableElement {
     this.connectionType = getConnectionTypeForEdge(connectionName);
   }
 
+  generateFromOptions(optionsKeys: Set<string>): void {
+    //TODO: FIX
+    // this.buildingSlug = this.objectOptions.get('machineType');
+  }
+
   addLink(
     sourceSimulatable: SimulatableNode,
     targetSimulatable: SimulatableNode,

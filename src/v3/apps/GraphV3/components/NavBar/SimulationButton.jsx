@@ -1,14 +1,21 @@
+import Collapse from '@material-ui/core/Collapse';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import { CardContent, Typography, Slider } from '@material-ui/core';
-
+import { debounce } from 'throttle-debounce';
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import StopIcon from '@material-ui/icons/Stop';
 import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import {
+  DEFAULT_PING_RATE,
+  DEFAULT_MAX_IDLE_PINGS,
+} from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/manager/SimulationManager';
 import { GlobalGraphAppStore } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStore';
 
 import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
@@ -39,10 +46,18 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: 10,
     paddingRight: 10,
     paddingBottom: 10,
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  advancedPanel: {
+    marginTop: 10,
+  },
+  showAdvanced: {
+    marginTop: 5,
   },
 }));
 
-const marks = [
+const speedMarks = [
   {
     value: 0,
     label: '0.5x',
@@ -71,7 +86,18 @@ function SimulationCard(props) {
     stopDisabled,
     simulationSpeed,
     speedSliderCallback,
+    simulationManager,
   } = props;
+
+  const [checked, setChecked] = React.useState(false);
+  const [pingRate, setPingRate] = React.useState(DEFAULT_PING_RATE);
+  const [maxIdlePings, setMaxIdlePings] = React.useState(
+    DEFAULT_MAX_IDLE_PINGS
+  );
+
+  const handleChange = () => {
+    setChecked((prev) => !prev);
+  };
 
   return (
     <Card className={classes.simulationCard}>
@@ -79,20 +105,6 @@ function SimulationCard(props) {
         <Typography className={classes.title} gutterBottom>
           Simulation Settings
         </Typography>
-        <div className={classes.slider}>
-          <Slider
-            onChange={(event, newValue) => {
-              speedSliderCallback(newValue);
-            }}
-            value={simulationSpeed}
-            aria-labelledby="discrete-slider"
-            valueLabelDisplay="off"
-            step={1}
-            marks={marks}
-            min={0}
-            max={3}
-          />
-        </div>
         <Button
           onClick={playPauseAction}
           startIcon={isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
@@ -112,6 +124,63 @@ function SimulationCard(props) {
         >
           Stop
         </Button>
+        <div className={classes.showAdvanced}>
+          <FormControlLabel
+            control={<Switch checked={checked} onChange={handleChange} />}
+            label="Show Advanced Settings"
+          />
+        </div>
+        <Collapse in={checked}>
+          <div className={classes.advancedPanel}>
+            <Typography gutterBottom>Simulation Speed</Typography>
+            <div className={classes.slider}>
+              <Slider
+                onChange={(event, newValue) => {
+                  speedSliderCallback(newValue);
+                }}
+                value={simulationSpeed}
+                valueLabelDisplay="off"
+                step={1}
+                marks={speedMarks}
+                min={0}
+                max={3}
+              />
+            </div>
+            <Typography id="range-slider" gutterBottom>
+              Ping Rate (Seconds)
+            </Typography>
+            <div className={classes.slider}>
+              <Slider
+                onChange={debounce(10, false, (event, newValue) => {
+                  simulationManager.setPingRate(newValue);
+                  setPingRate(newValue);
+                })}
+                value={pingRate}
+                step={10}
+                min={50}
+                max={200}
+                valueLabelDisplay="auto"
+              />
+            </div>
+            <Typography id="range-slider" gutterBottom>
+              Max Idle Pings
+            </Typography>
+            <div className={classes.slider}>
+              <Slider
+                onChange={debounce(10, false, (event, newValue) => {
+                  simulationManager.setMaxIdlePings(newValue);
+                  setMaxIdlePings(newValue);
+                })}
+                value={maxIdlePings}
+                defaultValue={10}
+                step={1}
+                min={2}
+                max={20}
+                valueLabelDisplay="auto"
+              />
+            </div>
+          </div>
+        </Collapse>
       </CardContent>
     </Card>
   );
@@ -243,6 +312,7 @@ function SimulationButton(props) {
           stopDisabled={stopDisabled}
           simulationSpeed={simulationSpeed}
           speedSliderCallback={speedSliderCallback}
+          simulationManager={externalInteractionManager.getSimulationManager()}
         />
       ) : null}
       <IconButton className={classes.icon} onClick={handleOpen}>

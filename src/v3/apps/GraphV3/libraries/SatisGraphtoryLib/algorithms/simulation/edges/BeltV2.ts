@@ -29,12 +29,24 @@ export default class BeltV2 extends SimulatableLink {
   }
 
   generateFromOptions(optionsKeys: Set<string>): void {
-    if (this.cycleTime.lt(0) || optionsKeys.has('overclock')) {
-      const buildingDefinition = getBuildingDefinition(this.connectionName);
+    super.generateFromOptions(optionsKeys);
+    // We're always going to be changing the belt speed sooo let's go
+    const buildingDefinition = getBuildingDefinition(this.connectionName);
 
-      // TODO: set the ovcerclock
-      this.cycleTime = Big(60 * 1000).div(Big(buildingDefinition.mSpeed / 2));
-    }
+    const oldCycleTime = this.cycleTime;
+
+    // TODO: set the ovcerclock
+    this.cycleTime = Big(60 * 1000).div(Big(buildingDefinition.mSpeed / 2));
+
+    const timeChange = oldCycleTime.minus(this.cycleTime);
+
+    this.simulationManager.editEvents(
+      this.id,
+      SimulatableAction.DEPOSIT_OUTPUT,
+      timeChange
+    );
+
+    this.resetDepositTracking();
   }
 
   runPreSimulationActions(): void {
@@ -57,7 +69,17 @@ export default class BeltV2 extends SimulatableLink {
   }
 
   handleEvent(evt: SimulatableAction, time: Big, eventData: any) {
-    if (evt === SimulatableAction.RESOURCE_AVAILABLE) {
+    if (evt === SimulatableAction.PING) {
+      this.trackDepositEvent(
+        time,
+        (rate: number) => {
+          this.updateDisplay(rate);
+        },
+        true
+      );
+
+      this.sendPing(time);
+    } else if (evt === SimulatableAction.RESOURCE_AVAILABLE) {
       if (this.getIsInputsBlocked()) {
         this.sendCallbackGet = true;
         this.callbackData = eventData;

@@ -28,7 +28,11 @@ export enum SimulatableAction {
   TRANSFER_ITEM_TO_NEXT,
   RESOURCE_DEPOSITED,
   INTERNAL_TRANSPOSE,
+  PING,
 }
+
+export const DEFAULT_PING_RATE = 100;
+export const DEFAULT_MAX_IDLE_PINGS = 10;
 
 export default class SimulationManager {
   // The tickspeed is set based on 60/ MAX_BELT_SPEED
@@ -37,6 +41,8 @@ export default class SimulationManager {
   private simulationTimeline: PriorityQueue<ScheduledTask>;
   private objectMap = new Map<string, SimulatableElement>();
   private currentTick = Big(0);
+  pingRate = DEFAULT_PING_RATE * 1000;
+  maxIdlePings = DEFAULT_MAX_IDLE_PINGS;
 
   constructor() {
     this.simulationTimeline = new PriorityQueue<any>({
@@ -50,6 +56,26 @@ export default class SimulationManager {
         return a.time.cmp(b.time);
       },
     });
+  }
+
+  setPingRate(pingRate: number) {
+    this.pingRate = pingRate * 1000;
+    this.restartSimulation();
+  }
+
+  setMaxIdlePings(maxIdlePings: number) {
+    this.maxIdlePings = maxIdlePings;
+    this.restartSimulation();
+  }
+
+  editEvents(id: string, action: SimulatableAction, timeChange: Big) {
+    for (const event of this.simulationTimeline.getData()) {
+      if (event.event.target === id && event.event.eventName === action) {
+        event.time = event.time.minus(timeChange);
+      }
+    }
+
+    this.simulationTimeline.reheapify();
   }
 
   register(obj: SimulatableElement) {
@@ -94,5 +120,10 @@ export default class SimulationManager {
 
     this.currentTick = Big(0);
     this.simulationTimeline.clear();
+  }
+
+  restartSimulation() {
+    this.resetAll();
+    this.prepare();
   }
 }

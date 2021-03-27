@@ -117,7 +117,10 @@ function Control(props) {
     selectProps: { classes, TextFieldProps, helperText, label, value },
   } = props;
 
-  const actualValue = value && value.value ? value.value : '';
+  const actualValue =
+    value && value.value !== undefined && value.value !== null
+      ? value.value
+      : '';
   const [textValue, setTextValue] = React.useState('');
   React.useEffect(() => {
     setTextValue(actualValue);
@@ -129,7 +132,13 @@ function Control(props) {
       label={label}
       helperText={helperText}
       value={actualValue}
-      InputLabelProps={{ shrink: !!actualValue || !!textValue }}
+      InputLabelProps={{
+        shrink:
+          (actualValue !== undefined &&
+            actualValue !== null &&
+            actualValue !== '') ||
+          (textValue !== undefined && textValue !== null && textValue !== ''),
+      }}
       InputProps={{
         onChange: (e) => {
           setTextValue(e.target.value);

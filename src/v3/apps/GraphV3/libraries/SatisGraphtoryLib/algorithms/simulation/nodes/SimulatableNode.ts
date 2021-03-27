@@ -18,6 +18,10 @@ export default abstract class SimulatableNode extends SimulatableElement {
     super(node.id, simulationManager, node, nodeOptions);
   }
 
+  generateFromOptions(optionsKeys: Set<string>): void {
+    this.buildingSlug = this.objectOptions.get('machineType');
+  }
+
   getOutputIdsNeededForItem(itemSlug: string) {
     const connectionTypeNeededForItem = getConnectionTypeNeededForItem(
       itemSlug

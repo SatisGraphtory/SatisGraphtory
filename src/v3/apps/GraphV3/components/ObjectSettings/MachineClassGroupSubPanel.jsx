@@ -91,6 +91,8 @@ function MachineClassGroupSubPanel(props) {
     );
   });
 
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
+
   for (const [configKey, configEntry] of Object.entries(allOptions)) {
     if (!modifiableOptionNames.has(configKey)) continue;
     const { initialValue, choices, selectedChoice } = resolveSelectorOptions(
@@ -149,6 +151,7 @@ function MachineClassGroupSubPanel(props) {
           for (const node of nodes) {
             node.updateAdditionalData(newAdditionalData);
           }
+          forceUpdate();
         }}
         className={classes.modifyButton}
         fullWidth

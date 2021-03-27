@@ -34,22 +34,23 @@ export default class ResourceExtractorV2 extends SimulatableNode {
   }
 
   generateFromOptions(optionsKeys: Set<string>): void {
+    super.generateFromOptions(optionsKeys);
+
     const buildingDefinition = getBuildingDefinition(this.buildingSlug);
 
-    if (this.cycleTime.lt(0) || optionsKeys.has('overclock')) {
+    if (
+      this.cycleTime.lt(0) ||
+      optionsKeys.has('overclock') ||
+      optionsKeys.has('nodePurity')
+    ) {
       let overclock = 100;
 
       if (this.objectOptions.get('overclock')) {
         overclock = this.objectOptions.get('overclock');
       }
 
-      this.cycleTime = Big(buildingDefinition.mExtractCycleTime)
-        .div(resolveMathValue(overclock))
-        .mul(100)
-        .mul(Big(1000));
-    }
+      const oldCycleTime = this.cycleTime;
 
-    if (optionsKeys.has('nodePurity')) {
       let purityMultiplier = 1;
       switch (this.objectOptions.get('nodePurity')) {
         case EResourcePurity.RP_Inpure:
@@ -60,13 +61,27 @@ export default class ResourceExtractorV2 extends SimulatableNode {
           break;
       }
 
-      if (!optionsKeys.has('extractedItem')) {
-        throw new Error('Must have extracted item!');
-      }
+      this.cycleTime = Big(buildingDefinition.mExtractCycleTime)
+        .div(resolveMathValue(overclock))
+        .div(purityMultiplier)
+        .mul(100)
+        .mul(Big(1000));
 
+      const timeChange = oldCycleTime.minus(this.cycleTime);
+
+      this.simulationManager.editEvents(
+        this.id,
+        SimulatableAction.DEPOSIT_OUTPUT,
+        timeChange
+      );
+
+      this.resetDepositTracking();
+    }
+
+    if (optionsKeys.has('extractedItem')) {
       this.outputPacket = {
         slug: this.objectOptions.get('extractedItem'),
-        amount: buildingDefinition.mItemsPerCycle * purityMultiplier,
+        amount: buildingDefinition.mItemsPerCycle,
       };
     }
   }
@@ -80,7 +95,17 @@ export default class ResourceExtractorV2 extends SimulatableNode {
   }
 
   handleEvent(event: SimulatableAction, time: Big, eventData: any) {
-    if (event === SimulatableAction.DEPOSIT_OUTPUT) {
+    if (event === SimulatableAction.PING) {
+      this.trackDepositEvent(
+        time,
+        (rate: number) => {
+          this.updateDisplay(rate * (this.outputPacket?.amount || 1));
+        },
+        true
+      );
+
+      this.sendPing(time);
+    } else if (event === SimulatableAction.DEPOSIT_OUTPUT) {
       this.trackDepositEvent(time, (rate: number) => {
         this.updateDisplay(rate * (this.outputPacket?.amount || 1));
       });

@@ -7,10 +7,14 @@ export default class BinaryHeapStrategy<T> implements QueueStrategy<T> {
   constructor(options: Options<T>) {
     this.comparator = options.comparator;
     this.data = options.initialValues ? options.initialValues.slice(0) : [];
-    this._heapify();
+    this.reheapify();
   }
 
-  private _heapify() {
+  public getData() {
+    return this.data;
+  }
+
+  public reheapify() {
     if (this.data.length > 0) {
       for (let i = 0; i < this.data.length; i++) {
         this._bubbleUp(i);
