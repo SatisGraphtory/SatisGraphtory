@@ -13,7 +13,7 @@ import { getTierText } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/ap
 import createText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/TruncatedText/createText';
 
 import { createImageIcon } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/ImageIcon';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import { createNodeHighlight } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeHighlight';
 import { EResourcePurity } from '.DataLanding/interfaces/enums';
 
@@ -67,19 +67,23 @@ import { getEnumValue } from 'v3/data/loaders/enums';
 import resolveMathValue from '../../../../../components/Selectors/resolveMathValue';
 import { Fraction, typeOf } from 'mathjs';
 
-export default class AdvancedNode extends NodeTemplate {
+export default class AdvancedNode extends MachineNodeTemplate {
   connectionsMap: Map<EdgeAttachmentSide, EdgeTemplate[]> = new Map();
   connectionsDirectionMap: Map<EdgeTemplate, EdgeType> = new Map();
   connectionsContainer: PIXI.Container = new PIXI.Container();
 
   rateText: PIXI.BitmapText;
+  recipeText: PIXI.Text | undefined;
+  extractedItemText: PIXI.Text | undefined;
+  efficiencyText: PIXI.Text | undefined;
+  levelText: PIXI.Text | undefined;
+  machineText: PIXI.Text | undefined;
+  machineTexture: any | undefined;
 
   constructor(props: SatisGraphtoryNodeProps) {
     super(props);
 
     const { machineName } = props;
-
-    const machineLabel = getBuildingName(this.machineName) as string;
 
     const container = this.container;
 
@@ -108,104 +112,7 @@ export default class AdvancedNode extends NodeTemplate {
 
     container.addChild(this.rateText);
 
-    const machineText = createText(
-      machineLabel,
-      MACHINE_STYLE(theme),
-      MACHINE_NAME_OFFSET_X,
-      MACHINE_NAME_OFFSET_Y,
-      'center'
-    );
-
-    container.addChild(machineText);
-
-    if (this.additionalData.has('recipe')) {
-      const recipeText = createTruncatedText(
-        this.translateFunction(this.additionalData.get('recipe')!),
-        NODE_WIDTH,
-        RECIPE_STYLE(NODE_WIDTH, theme),
-        RECIPE_OFFSET_X,
-        RECIPE_OFFSET_Y,
-        'center',
-        'top'
-      );
-
-      container.addChild(recipeText);
-    } else if (this.additionalData.has('extractedItem')) {
-      let purity = '';
-      if (this.additionalData.has('nodePurity')) {
-        purity = this.translateFunction(
-          getEnumValue(this.additionalData.get('nodePurity'), EResourcePurity)
-        );
-      }
-
-      const item = this.translateFunction(
-        this.additionalData.get('extractedItem')!
-      );
-      const stringParts = [purity, item];
-      const recipeText = createTruncatedText(
-        stringParts.join(' '),
-        NODE_WIDTH,
-        RECIPE_STYLE(NODE_WIDTH, theme),
-        RECIPE_OFFSET_X,
-        RECIPE_OFFSET_Y,
-        'center',
-        'top'
-      );
-
-      container.addChild(recipeText);
-    }
-
-    const machineTexture = PIXI.utils.TextureCache[machineName];
-    const machineImage = createImageIcon(
-      machineTexture,
-      MACHINE_SIZE,
-      MACHINE_SIZE,
-      MACHINE_OFFSET_X,
-      MACHINE_OFFSET_Y
-    );
-
-    container.addChild(machineImage);
-
-    const levelText = createText(
-      getTierText(this.tier),
-      NODE_TIER_STYLE(theme),
-      TIER_OFFSET_X,
-      TIER_OFFSET_Y
-    );
-
-    container.addChild(levelText);
-
-    if (this.additionalData.has('overclock')) {
-      const overclockValue = resolveMathValue(
-        this.additionalData.get('overclock')
-      );
-
-      if (overclockValue === undefined)
-        throw new Error('Could not resolve overclock ' + overclockValue);
-
-      let overclockTextValue;
-
-      if (typeOf(overclockValue) === 'Fraction') {
-        const overclock = overclockValue as Fraction;
-        if (overclock?.d === 1) {
-          overclockTextValue = overclock.n * overclock.s;
-        } else {
-          overclockTextValue = `${overclock.n * overclock.s}/${overclock.d}`;
-        }
-      } else {
-        throw new Error('Unknown overclock ' + overclockValue);
-      }
-
-      const efficiencyText = createText(
-        `${overclockTextValue}%`,
-        OVERCLOCK_STYLE(theme),
-        EFFICIENCY_OFFSET_X,
-        EFFICIENCY_OFFSET_Y,
-        'right'
-      );
-
-      container.addChild(efficiencyText);
-    }
+    this.runAdditionalDataUpdateActions();
 
     this.recalculateConnections();
 
@@ -416,7 +323,7 @@ export default class AdvancedNode extends NodeTemplate {
     }
   }
   public rearrangeEdges(edges: EdgeTemplate[]) {
-    const allNodes = new Set<NodeTemplate>();
+    const allNodes = new Set<MachineNodeTemplate>();
     edges.sort((a, b) => {
       if (a.sourceNode && a.targetNode) {
         allNodes.add(a.sourceNode);
@@ -726,5 +633,143 @@ export default class AdvancedNode extends NodeTemplate {
     container.hitArea = new PIXI.Rectangle(0, 0, NODE_WIDTH, NODE_HEIGHT);
 
     return container;
+  }
+
+  runAdditionalDataUpdateActions(): void {
+    const theme = this.getInteractionManager().getTheme();
+    const container = this.container;
+
+    if (this.additionalData.has('recipe')) {
+      if (this.recipeText) {
+        this.recipeText.text = this.translateFunction(
+          this.additionalData.get('recipe')!
+        );
+      } else {
+        this.recipeText = createTruncatedText(
+          this.translateFunction(this.additionalData.get('recipe')!),
+          NODE_WIDTH,
+          RECIPE_STYLE(NODE_WIDTH, theme),
+          RECIPE_OFFSET_X,
+          RECIPE_OFFSET_Y,
+          'center',
+          'top'
+        );
+
+        container.addChild(this.recipeText);
+      }
+    } else if (this.additionalData.has('extractedItem')) {
+      let purity = '';
+      if (this.additionalData.has('nodePurity')) {
+        purity = this.translateFunction(
+          getEnumValue(this.additionalData.get('nodePurity'), EResourcePurity)
+        );
+      }
+
+      const item = this.translateFunction(
+        this.additionalData.get('extractedItem')!
+      );
+      const stringParts = [purity, item];
+      const extractedItemTextString = stringParts.join(' ');
+
+      if (!this.extractedItemText) {
+        this.extractedItemText = createTruncatedText(
+          extractedItemTextString,
+          NODE_WIDTH,
+          RECIPE_STYLE(NODE_WIDTH, theme),
+          RECIPE_OFFSET_X,
+          RECIPE_OFFSET_Y,
+          'center',
+          'top'
+        );
+
+        container.addChild(this.extractedItemText);
+      } else {
+        this.extractedItemText.text = extractedItemTextString;
+      }
+    }
+
+    if (this.additionalData.has('overclock')) {
+      const overclockValue = resolveMathValue(
+        this.additionalData.get('overclock')
+      );
+
+      if (overclockValue === undefined)
+        throw new Error('Could not resolve overclock ' + overclockValue);
+
+      let overclockTextValue;
+
+      if (typeOf(overclockValue) === 'Fraction') {
+        const overclock = overclockValue as Fraction;
+        if (overclock?.d === 1) {
+          overclockTextValue = overclock.n * overclock.s;
+        } else {
+          overclockTextValue = `${overclock.n * overclock.s}/${overclock.d}`;
+        }
+      } else {
+        throw new Error('Unknown overclock ' + overclockValue);
+      }
+
+      if (this.efficiencyText) {
+        this.efficiencyText.text = `${overclockTextValue}%`;
+      } else {
+        this.efficiencyText = createText(
+          `${overclockTextValue}%`,
+          OVERCLOCK_STYLE(theme),
+          EFFICIENCY_OFFSET_X,
+          EFFICIENCY_OFFSET_Y,
+          'right'
+        );
+
+        container.addChild(this.efficiencyText);
+      }
+    }
+
+    if (this.additionalData.has('machineType')) {
+      if (this.levelText) {
+        this.levelText.text = getTierText(this.tier);
+      } else {
+        this.levelText = createText(
+          getTierText(this.tier),
+          NODE_TIER_STYLE(theme),
+          TIER_OFFSET_X,
+          TIER_OFFSET_Y
+        );
+
+        container.addChild(this.levelText);
+      }
+
+      const machineLabel = getBuildingName(this.machineName) as string;
+
+      if (this.machineText) {
+        this.machineText.text = machineLabel;
+      } else {
+        this.machineText = createText(
+          machineLabel,
+          MACHINE_STYLE(theme),
+          MACHINE_NAME_OFFSET_X,
+          MACHINE_NAME_OFFSET_Y,
+          'center'
+        );
+
+        container.addChild(this.machineText);
+      }
+
+      const machineTextureImage = PIXI.utils.TextureCache[this.machineName];
+
+      if (this.machineTexture) {
+        const removedChild = container.removeChild(this.machineTexture);
+        if (!removedChild)
+          throw new Error('Did not remove child machine texture');
+      }
+      this.machineTexture = createImageIcon(
+        machineTextureImage,
+        MACHINE_SIZE,
+        MACHINE_SIZE,
+        MACHINE_OFFSET_X,
+        MACHINE_OFFSET_Y
+      );
+
+      container.addChild(this.machineTexture);
+    }
   }
 }

@@ -28,7 +28,7 @@ export class NodeContainer extends GraphObjectContainer {
   };
 }
 
-export abstract class NodeTemplate extends GraphObject {
+export abstract class MachineNodeTemplate extends GraphObject {
   id: string;
   machineName: string;
   tier: number;
@@ -71,9 +71,7 @@ export abstract class NodeTemplate extends GraphObject {
     this.container.id = id;
 
     if (additionalData) {
-      for (const [key, value] of Object.entries(additionalData)) {
-        this.additionalData.set(key, value);
-      }
+      this.setAdditionalData(additionalData);
     }
 
     this.simulatable = getSimulatableNode(
@@ -114,6 +112,28 @@ export abstract class NodeTemplate extends GraphObject {
   getAdditionalData() {
     return this.additionalData;
   }
+
+  setAdditionalData(additionalData: Record<string, any>) {
+    for (const [key, value] of Object.entries(additionalData)) {
+      this.additionalData.set(key, value);
+    }
+  }
+
+  updateAdditionalData(additionalData: Record<string, any>) {
+    this.setAdditionalData(additionalData);
+
+    if (this.simulatable) {
+      this.simulatable.updateObjectOptions(this.additionalData);
+    }
+
+    this.machineName = this.additionalData.get('machineType')!;
+
+    this.tier = getTier(this.machineName);
+
+    this.runAdditionalDataUpdateActions();
+  }
+
+  abstract runAdditionalDataUpdateActions(): void;
 
   setPosition(x: number, y: number) {
     this.container.setTransform(x, y);
@@ -199,7 +219,7 @@ export abstract class NodeTemplate extends GraphObject {
 
   public findClosestEmpty(
     arr: EdgeTemplate[],
-    otherNode: NodeTemplate,
+    otherNode: MachineNodeTemplate,
     edgeType: ConnectionTypeEnum
   ) {
     const otherCoordinateX = otherNode.container.position.x + NODE_WIDTH / 2;

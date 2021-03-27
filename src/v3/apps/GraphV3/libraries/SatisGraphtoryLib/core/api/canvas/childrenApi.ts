@@ -1,5 +1,5 @@
 import uuidGen from 'v3/utils/stringUtils';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { GraphObject } from '../../../canvas/objects/interfaces/GraphObject';
 import { GlobalGraphAppStore } from '../../../stores/GlobalGraphAppStore';
@@ -28,7 +28,7 @@ export const addGraphChildrenFromWithinStateUpdate = (
 };
 
 export const addGraphChildren = (
-  children: NodeTemplate[] | EdgeTemplate[],
+  children: MachineNodeTemplate[] | EdgeTemplate[],
   canvasId: string,
   unshift: boolean = false
 ) => {
@@ -100,7 +100,7 @@ export const getChildFromCanvasState = (canvasState: any, id: string): any => {
 
 export const deleteNodes = (
   pixiCanvasStateId: string,
-  nodes: NodeTemplate[]
+  nodes: MachineNodeTemplate[]
 ) => {
   GlobalGraphAppStore.update((t) => {
     const s = t[pixiCanvasStateId];

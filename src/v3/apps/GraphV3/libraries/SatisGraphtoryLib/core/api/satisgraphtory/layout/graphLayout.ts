@@ -1,5 +1,5 @@
 import { getMultiTypedChildrenFromState } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/canvas/childrenApi';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 
 export const optimizeSidesFunction = (
@@ -10,7 +10,7 @@ export const optimizeSidesFunction = (
 
   for (const child of getMultiTypedChildrenFromState(
     s,
-    [NodeTemplate],
+    [MachineNodeTemplate],
     whitelistedNodes
   )) {
     child.optimizeSides();
@@ -24,7 +24,7 @@ export const rearrangeEdgesFunction = (
   const s = sParent[pixiCanvasStateId];
   for (const child of getMultiTypedChildrenFromState(
     s,
-    [NodeTemplate],
+    [MachineNodeTemplate],
     whitelistedNodes
   )) {
     child.rearrangeEdges(child.outputConnections);

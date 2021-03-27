@@ -3,11 +3,11 @@ import ResourceExtractorV2 from '../ResourceExtractorV2';
 import ManufacturerV2 from '../ManufacturerV2';
 import SimulationManager from '../../manager/SimulationManager';
 import BeltV2 from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/edges/BeltV2';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import EdgeTemplate from '../../../../canvas/objects/Edge/EdgeTemplate';
 
 export const getSimulatableNode = (
-  node: NodeTemplate,
+  node: MachineNodeTemplate,
   buildingSlug: string,
   buildingOptions: Map<string, any>,
   simulationManager: SimulationManager

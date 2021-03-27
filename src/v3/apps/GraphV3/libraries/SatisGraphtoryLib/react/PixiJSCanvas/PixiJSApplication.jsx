@@ -7,7 +7,7 @@ import {
   GraphObject,
   GraphObjectContainer,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import { enableSelectionBox } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/SelectionBox';
 import PIXI from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/PixiProvider';
 import {
@@ -155,7 +155,7 @@ function PixiJSApplication(props) {
 
         for (const child of getMultiTypedChildrenFromState(s, [
           EdgeTemplate,
-          NodeTemplate,
+          MachineNodeTemplate,
         ])) {
           child.container.setHighLightOn(false);
         }
@@ -347,16 +347,10 @@ function PixiJSApplication(props) {
         (t) => {
           const s = t[pixiCanvasStateId];
           for (const child of getMultiTypedChildrenFromState(s, [
-            NodeTemplate,
+            MachineNodeTemplate,
             EdgeTemplate,
           ])) {
             child.addSelectEvents(onSelectObjects);
-            // if (child instanceof NodeTemplate) {
-            //   child.addSelectEvents(onSelectObjects);
-            // } else if (child instanceof EdgeTemplate) {
-            //   // child.addSelectEvents(
-            //   child.addSelectEvents(onSelectObjects);
-            // }
           }
         },
       ]);
@@ -372,10 +366,10 @@ function PixiJSApplication(props) {
         (t) => {
           const s = t[pixiCanvasStateId];
           for (const child of getMultiTypedChildrenFromState(s, [
-            NodeTemplate,
+            MachineNodeTemplate,
             EdgeTemplate,
           ])) {
-            if (child instanceof NodeTemplate) {
+            if (child instanceof MachineNodeTemplate) {
               child.getInteractionManager().enableEventEmitter(child.id);
               child.addDragEvents({ snapToGrid, autoShuffleEdge });
             } else if (child instanceof EdgeTemplate) {

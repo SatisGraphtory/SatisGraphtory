@@ -1,15 +1,15 @@
 import uuidGen from 'v3/utils/stringUtils';
 import SimpleEdge from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/SimpleEdge';
 import { getConnectionTypeNeededForItem } from 'v3/data/loaders/items';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
 
 const populateNewEdgeData = (
   items: string[] | null,
   connectionType: number | null,
   connectorName: string,
-  sourceNode: NodeTemplate,
-  targetNode: NodeTemplate,
+  sourceNode: MachineNodeTemplate,
+  targetNode: MachineNodeTemplate,
   sourceNodeAttachmentSide?: EdgeAttachmentSide,
   targetNodeAttachmentSide?: EdgeAttachmentSide
 ) => {

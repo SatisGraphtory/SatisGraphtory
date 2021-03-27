@@ -1,4 +1,4 @@
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { GraphObjectProps } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
 import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeAttachmentSide';
@@ -18,8 +18,8 @@ export interface SatisGraphtoryNodeProps extends GraphObjectProps {
 export interface SatisGraphtoryEdgeProps extends GraphObjectProps {
   id: string;
   connectionType?: ConnectionTypeEnum;
-  sourceNode?: NodeTemplate;
-  targetNode?: NodeTemplate;
+  sourceNode?: MachineNodeTemplate;
+  targetNode?: MachineNodeTemplate;
   sourceNodeAttachmentSide?: EdgeAttachmentSide;
   targetNodeAttachmentSide?: EdgeAttachmentSide;
   useProvidedAttachmentSides?: boolean;

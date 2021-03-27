@@ -5,7 +5,7 @@ import {
   getMultiTypedChildrenFromState,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/canvas/childrenApi';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import { EmptyEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EmptyEdge';
 import { getSupportedConnectionTypes } from 'v3/data/loaders/buildings';
 import populateNewEdgeData from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/satisgraphtory/populateNewEdgeData';
@@ -64,7 +64,7 @@ export const resetNodes = (pixiCanvasStateId: string) => (sParent: any) => {
 
   for (const child of getMultiTypedChildrenFromState(s, [
     EdgeTemplate,
-    NodeTemplate,
+    MachineNodeTemplate,
   ])) {
     child.container.setHighLightOn(false);
     child.container.alpha = 1;
@@ -78,13 +78,16 @@ export const onStartLink = (pixiCanvasStateId: string, selectedEdge: any) => (
   GlobalGraphAppStore.update((sParent) => {
     const s = sParent[pixiCanvasStateId];
 
-    const types = ([EdgeTemplate, NodeTemplate] as unknown) as GraphObject[];
+    const types = ([
+      EdgeTemplate,
+      MachineNodeTemplate,
+    ] as unknown) as GraphObject[];
 
     setHighLightInStateChildren(s, types, false);
 
     const retrievedNode = getChildFromCanvasState(s, startLinkId);
 
-    if (retrievedNode instanceof NodeTemplate) {
+    if (retrievedNode instanceof MachineNodeTemplate) {
       retrievedNode.container.setHighLightOn(true);
     }
 
@@ -99,7 +102,9 @@ export const onStartLink = (pixiCanvasStateId: string, selectedEdge: any) => (
 
     if (hasOutputAvailable) {
       // Business as as normal
-      for (const child of getMultiTypedChildrenFromState(s, [NodeTemplate])) {
+      for (const child of getMultiTypedChildrenFromState(s, [
+        MachineNodeTemplate,
+      ])) {
         if (child.id === startLinkId) continue;
 
         let found = hasEmptyEdgesWithSelectedResource(
@@ -116,7 +121,9 @@ export const onStartLink = (pixiCanvasStateId: string, selectedEdge: any) => (
       }
     } else {
       // Disable interaction for all other nodes, just so you can't actually click anything.
-      for (const child of getMultiTypedChildrenFromState(s, [NodeTemplate])) {
+      for (const child of getMultiTypedChildrenFromState(s, [
+        MachineNodeTemplate,
+      ])) {
         if (child.id === startLinkId) continue;
 
         child.removeInteractionEvents();
@@ -142,7 +149,7 @@ export const onEndLink = (
 
       for (const child of getMultiTypedChildrenFromState(s, [
         EdgeTemplate,
-        NodeTemplate,
+        MachineNodeTemplate,
       ])) {
         child.container.setHighLightOn(false);
         if (child.id === s.sourceNodeId) {
@@ -194,8 +201,10 @@ export const setUpLinkInitialState = (
   selectedEdge: any
 ) => (t: any) => {
   const s = t[pixiCanvasStateId];
-  for (const child of getMultiTypedChildrenFromState(s, [NodeTemplate])) {
-    if (child instanceof NodeTemplate) {
+  for (const child of getMultiTypedChildrenFromState(s, [
+    MachineNodeTemplate,
+  ])) {
+    if (child instanceof MachineNodeTemplate) {
       let selected = hasEmptyEdgesWithSelectedResource(
         [...child.outputConnections, ...child.anyConnections],
         supportedConnectionTypes

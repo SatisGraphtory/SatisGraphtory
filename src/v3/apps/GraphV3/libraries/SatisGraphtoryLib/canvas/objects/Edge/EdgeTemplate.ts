@@ -1,4 +1,4 @@
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import {
   GraphObject,
   GraphObjectContainer,
@@ -22,8 +22,8 @@ export class EdgeContainer extends GraphObjectContainer {
 
 export default abstract class EdgeTemplate extends GraphObject {
   id: string;
-  targetNode: NodeTemplate | null;
-  sourceNode: NodeTemplate | null;
+  targetNode: MachineNodeTemplate | null;
+  sourceNode: MachineNodeTemplate | null;
   connectionType: ConnectionTypeEnum =
     ConnectionTypeEnum.AFGBuildableConveyorBelt;
   container: EdgeContainer;
@@ -81,8 +81,8 @@ export default abstract class EdgeTemplate extends GraphObject {
   abstract resetDisplay(): void;
 
   abstract setConnections(
-    sourceNode: NodeTemplate | null,
-    targetNode: NodeTemplate | null
+    sourceNode: MachineNodeTemplate | null,
+    targetNode: MachineNodeTemplate | null
   ): void;
 
   replaceEdge(
@@ -102,7 +102,7 @@ export default abstract class EdgeTemplate extends GraphObject {
     return replacementEdge;
   }
 
-  getAttachmentSide(node: NodeTemplate) {
+  getAttachmentSide(node: MachineNodeTemplate) {
     if (!this.sourceNode && !this.targetNode) {
       return Infinity;
     }

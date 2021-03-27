@@ -20,7 +20,7 @@ import { EdgeAttachmentSide } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/
 import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import { getSimulatableEdge } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/nodes/NodeManager/getSimulatable';
 import SimulatableLink from '../../../algorithms/simulation/edges/SimulatableLink';
-import { NodeTemplate } from '../Node/NodeTemplate';
+import { MachineNodeTemplate } from '../Node/MachineNodeTemplate';
 import { GraphObject } from '../interfaces/GraphObject';
 
 export default class SimpleEdge extends EdgeTemplate {
@@ -136,8 +136,8 @@ export default class SimpleEdge extends EdgeTemplate {
   }
 
   setConnections(
-    sourceNode: NodeTemplate | null,
-    targetNode: NodeTemplate | null
+    sourceNode: MachineNodeTemplate | null,
+    targetNode: MachineNodeTemplate | null
   ) {
     this.sourceNode = sourceNode;
     this.targetNode = targetNode;

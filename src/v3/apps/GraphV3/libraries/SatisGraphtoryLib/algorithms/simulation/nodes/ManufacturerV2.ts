@@ -4,12 +4,13 @@ import SimulationManager, {
 } from '../manager/SimulationManager';
 import { getBuildingDefinition } from '../../../../../../../data/loaders/buildings';
 import SimulatableNode from './SimulatableNode';
-import { NodeTemplate } from '../../../canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from '../../../canvas/objects/Node/MachineNodeTemplate';
 import Big from 'big.js';
 import { OutputPacket } from '../SimulatableElement';
 import { getRecipeDefinition } from '../../../../../../../data/loaders/recipes';
 import { ConnectionTypeEnum } from '../../../../../../../../.DataWarehouse/enums/dataEnums';
 import { getConnectionTypeNeededForItem } from '../../../../../../../data/loaders/items';
+import resolveMathValue from '../../../../../components/Selectors/resolveMathValue';
 
 export default class ManufacturerV2 extends SimulatableNode {
   resourcesNeededBySlug = new Map<string, number>();
@@ -26,7 +27,7 @@ export default class ManufacturerV2 extends SimulatableNode {
   inputQueue = [] as (OutputPacket | null)[];
 
   constructor(
-    node: NodeTemplate,
+    node: MachineNodeTemplate,
     buildingSlug: string,
     nodeOptions: Map<string, any>,
     simulationManager: SimulationManager
@@ -54,11 +55,18 @@ export default class ManufacturerV2 extends SimulatableNode {
         this.resourcesProducedBySlug.set(ItemClass.slug, Amount);
       }
 
-      let overclock = 1; //this.objectOptions.get('overclock'); TODO: OVERCLOCK
+      let overclock = 100;
+
+      if (this.objectOptions.get('overclock')) {
+        overclock = this.objectOptions.get('overclock');
+      }
 
       this.cycleTime = Big(buildingDefinition.mManufacturingSpeed * 1000)
-        .mul(recipe.mManufactoringDuration)
-        .mul(overclock);
+        .div(resolveMathValue(overclock))
+        .mul(100)
+        .mul(recipe.mManufactoringDuration);
+
+      this.outputPacketByConnection.clear();
 
       for (const { ItemClass, Amount } of recipe.mProduct) {
         const connectionType = getConnectionTypeNeededForItem(ItemClass.slug);

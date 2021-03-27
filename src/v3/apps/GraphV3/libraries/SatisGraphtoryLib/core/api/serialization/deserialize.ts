@@ -7,7 +7,7 @@ import uuidGen from 'v3/utils/stringUtils';
 import AdvancedNode from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/AdvancedNode';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import SimpleEdge from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/SimpleEdge';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import { GraphObject } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
 import ExternalInteractionManager from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/ExternalInteractionManager';
 
@@ -45,14 +45,11 @@ const deserializeGraphObjects = (
   const edgeNumberToInstance = new Map<number, EdgeTemplate>();
 
   const nodeNumberToId = new Map<number, string>();
-  const nodeNumberToInstance = new Map<number, NodeTemplate>();
+  const nodeNumberToInstance = new Map<number, MachineNodeTemplate>();
 
   for (const edge of saveDataDecoded.edges) {
     const thisUuid = uuidGen();
     edgeNumberToId.set(edge.id, thisUuid);
-
-    // const targetNode = edge.targetNodeId? nodeNumberToId.get(edge.targetNodeId) : undefined;
-    // const sourceNode = edge.sourceNodeId? nodeNumberToId.get(edge.sourceNodeId) : undefined;
 
     if (!edge.connectorTypeId) {
       const emptyEdge = new EmptyEdge({

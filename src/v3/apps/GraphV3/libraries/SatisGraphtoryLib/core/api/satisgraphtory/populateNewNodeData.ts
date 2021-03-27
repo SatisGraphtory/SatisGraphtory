@@ -31,7 +31,6 @@ const populateNewNodeData = (
     }
   );
 
-  //TODO: REGENERATE BASED ON THESE THINGSSSSSSS
   return new AdvancedNode({
     position: {
       x: x - Math.floor(NODE_WIDTH / 2),

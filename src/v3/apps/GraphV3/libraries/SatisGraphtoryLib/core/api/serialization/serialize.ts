@@ -1,6 +1,6 @@
 import { GraphObject } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/interfaces/GraphObject';
 import { getSchemaForVersion } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/serialization/schema';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
 import { deflateRaw } from 'pako';
 import * as LZ from 'lz-string';
@@ -73,7 +73,7 @@ const getSerializedGraph = (objects: GraphObject[]) => {
   const edges = [];
 
   for (const obj of objects) {
-    if (obj instanceof NodeTemplate) {
+    if (obj instanceof MachineNodeTemplate) {
       for (const edge of [
         ...obj.anyConnections,
         ...obj.outputConnections,
@@ -150,7 +150,7 @@ const getSerializedGraph = (objects: GraphObject[]) => {
 
   const whitelistedNodes = new Set(
     objects
-      .filter((obj) => obj instanceof NodeTemplate)
+      .filter((obj) => obj instanceof MachineNodeTemplate)
       .map((object) => {
         return object.id;
       })
@@ -230,7 +230,7 @@ const getSerializedGraph = (objects: GraphObject[]) => {
 };
 
 const serializeNode = (
-  node: NodeTemplate,
+  node: MachineNodeTemplate,
   nodeIdToNumberMap: Map<string, number>,
   edgeIdToNumberMap: Map<string, number>,
   nodeNumberId: number[],

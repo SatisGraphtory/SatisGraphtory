@@ -2,7 +2,7 @@ import SimulationManager from '../manager/SimulationManager';
 import SimulatableElement from '../SimulatableElement';
 import SimulatableLink from '../edges/SimulatableLink';
 import { getConnectionTypeNeededForItem } from 'v3/data/loaders/items';
-import { NodeTemplate } from '../../../canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from '../../../canvas/objects/Node/MachineNodeTemplate';
 
 export default abstract class SimulatableNode extends SimulatableElement {
   inputs: SimulatableLink[] = [];
@@ -10,7 +10,7 @@ export default abstract class SimulatableNode extends SimulatableElement {
   anyConnections: SimulatableLink[] = [];
 
   protected constructor(
-    node: NodeTemplate,
+    node: MachineNodeTemplate,
     protected buildingSlug: string,
     simulationManager: SimulationManager,
     nodeOptions: Map<string, any>

@@ -500,10 +500,24 @@ export const getConnectionTypeForEdge = (
   );
 };
 
+function checkIfSameConnections(machineTypes: string[]) {
+  const allConnections = [] as any[];
+  for (const type of machineTypes) {
+    const inputs = getInputsForBuilding(type, null as any).length;
+    const outputs = getOutputsForBuilding(type, null as any).length;
+    const anys = getAnyConnectionsForBuilding(type, null as any).length;
+    allConnections.push(`${inputs},${outputs},${anys}`);
+  }
+
+  return allConnections.every((item) => item === allConnections[0]);
+}
+
 const waterPumpSubclasses = getAllSubclasses('AFGBuildableWaterPump');
 
 const getConfigurableOptionsByMachineClassFn = (classSlug: string) => {
   const machineTypes = getBuildableMachinesFromClassName(classSlug)!;
+  const machineTypeHaveSameConnections = checkIfSameConnections(machineTypes);
+
   const recipes = getRecipesByMachineClass(classSlug)!;
 
   const alternateRecipes = getAlternateRecipes();
@@ -547,6 +561,7 @@ const getConfigurableOptionsByMachineClassFn = (classSlug: string) => {
   const baseTypes = {
     machineType: {
       options: machineTypes,
+      mutable: machineTypeHaveSameConnections,
     },
     recipe: {
       options: recipesOption,

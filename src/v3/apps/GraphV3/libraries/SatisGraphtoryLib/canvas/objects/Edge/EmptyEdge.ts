@@ -1,5 +1,5 @@
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
-import { NodeTemplate } from '../Node/NodeTemplate';
+import { MachineNodeTemplate } from '../Node/MachineNodeTemplate';
 
 export class EmptyEdge extends EdgeTemplate {
   addDragEvents(): any[] {
@@ -26,8 +26,8 @@ export class EmptyEdge extends EdgeTemplate {
   }
 
   setConnections(
-    sourceNode: NodeTemplate | null,
-    targetNode: NodeTemplate | null
+    sourceNode: MachineNodeTemplate | null,
+    targetNode: MachineNodeTemplate | null
   ): void {
     if (sourceNode !== null || targetNode !== null) {
       throw new Error('Cannot set connections on an empty edge');

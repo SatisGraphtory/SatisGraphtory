@@ -46,10 +46,12 @@ export default abstract class SimulatableElement implements Simulatable {
       }
     }
 
-    this.generateFromOptions(new Set(updateMap.keys()));
+    // TODO: make this less crufty because we can pass it everything?
+    // Or only what matters maybe
+    this.generateFromOptions(new Set(newOptions.keys()));
   }
 
-  abstract generateFromOptions(optionsKeys: Set<string>): void;
+  abstract generateFromOptions(newOptions: Set<string>): void;
 
   reset() {
     this.graphic.resetDisplay();

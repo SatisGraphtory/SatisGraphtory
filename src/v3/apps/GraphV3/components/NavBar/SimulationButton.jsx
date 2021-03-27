@@ -180,7 +180,7 @@ function SimulationButton(props) {
             simulationManager.tick();
           }
           numTicks.current += 10;
-          if (numTicks.current < 100000) {
+          if (numTicks.current < 10000000) {
             timeoutRef.current = setTimeout(tick, speedRef.current);
           } else {
             timeoutRef.current = 0;

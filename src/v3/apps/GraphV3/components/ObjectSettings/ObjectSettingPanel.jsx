@@ -10,7 +10,7 @@ import EdgeSubPanel from 'v3/apps/GraphV3/components/ObjectSettings/EdgeSubPanel
 import NodeSubPanel from 'v3/apps/GraphV3/components/ObjectSettings/NodeSubPanel';
 import MouseState from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/enums/MouseState';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
-import { NodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import { PixiJSCanvasContext } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStoreProvider';
 
 const useStyles = makeStyles((theme) => ({
@@ -28,15 +28,6 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    flexGrow: 1,
-  },
-  tabContent: {
-    padding: 20,
-    pointerEvents: 'auto',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
     flexGrow: 1,
   },
   fab: {
@@ -71,6 +62,12 @@ const useStyles = makeStyles((theme) => ({
     gridArea: 'sidebar',
     display: 'grid',
     // width: theme.overrides.GraphDrawer.width //TODO: DOCK
+  },
+  tabs: {
+    // flexGrow: 1
+  },
+  tabContent: {
+    flexGrow: 1,
   },
 }));
 
@@ -111,7 +108,7 @@ function ObjectSettingPanel(props) {
   const edges = selectedObjects?.filter((item) => {
     if (item instanceof EdgeTemplate) {
       return true;
-    } else if (item instanceof NodeTemplate) {
+    } else if (item instanceof MachineNodeTemplate) {
       return false;
     }
 
@@ -121,7 +118,7 @@ function ObjectSettingPanel(props) {
   const nodes = selectedObjects?.filter((item) => {
     if (item instanceof EdgeTemplate) {
       return false;
-    } else if (item instanceof NodeTemplate) {
+    } else if (item instanceof MachineNodeTemplate) {
       return true;
     }
 
@@ -155,27 +152,31 @@ function ObjectSettingPanel(props) {
       }}
     >
       <div className={classes.drawerContent}>
-        <Tabs
-          value={tabValue}
-          onChange={handleChange}
-          variant="fullWidth"
-          centered
-          indicatorColor="primary"
-          textColor="primary"
-        >
-          <Tab
-            label="Nodes"
-            disabled={numNodes === 0}
-            icon={<CategoryIcon />}
-          />
-          <Tab
-            label="Edges"
-            disabled={numEdges === 0}
-            icon={<DeviceHubIcon />}
-          />
-        </Tabs>
-        {tabValue === 0 && <NodeSubPanel classes={classes} nodes={nodes} />}
-        {tabValue === 1 && <EdgeSubPanel classes={classes} edges={edges} />}
+        <div className={classes.tabs}>
+          <Tabs
+            value={tabValue}
+            onChange={handleChange}
+            variant="fullWidth"
+            centered
+            indicatorColor="primary"
+            textColor="primary"
+          >
+            <Tab
+              label="Nodes"
+              disabled={numNodes === 0}
+              icon={<CategoryIcon />}
+            />
+            <Tab
+              label="Edges"
+              disabled={numEdges === 0}
+              icon={<DeviceHubIcon />}
+            />
+          </Tabs>
+        </div>
+        <div className={classes.tabContent}>
+          {tabValue === 0 && <NodeSubPanel classes={classes} nodes={nodes} />}
+          {tabValue === 1 && <EdgeSubPanel classes={classes} edges={edges} />}
+        </div>
       </div>
     </Drawer>
   );

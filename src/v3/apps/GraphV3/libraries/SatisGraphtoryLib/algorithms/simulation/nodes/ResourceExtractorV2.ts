@@ -5,9 +5,10 @@ import SimulationManager, {
   SimulatableAction,
 } from '../manager/SimulationManager';
 import SimulatableNode from './SimulatableNode';
-import { NodeTemplate } from '../../../canvas/objects/Node/NodeTemplate';
+import { MachineNodeTemplate } from '../../../canvas/objects/Node/MachineNodeTemplate';
 import Big from 'big.js';
 import { EResourcePurity } from '../../../../../../../../.DataLanding/interfaces/enums';
+import resolveMathValue from '../../../../../components/Selectors/resolveMathValue';
 
 export default class ResourceExtractorV2 extends SimulatableNode {
   cycleTime: Big = Big(-1);
@@ -16,7 +17,7 @@ export default class ResourceExtractorV2 extends SimulatableNode {
   depositCallback = false;
 
   constructor(
-    node: NodeTemplate,
+    node: MachineNodeTemplate,
     buildingSlug: string,
     nodeOptions: Map<string, any>,
     simulationManager: SimulationManager
@@ -36,7 +37,16 @@ export default class ResourceExtractorV2 extends SimulatableNode {
     const buildingDefinition = getBuildingDefinition(this.buildingSlug);
 
     if (this.cycleTime.lt(0) || optionsKeys.has('overclock')) {
-      this.cycleTime = Big(buildingDefinition.mExtractCycleTime).mul(Big(1000));
+      let overclock = 100;
+
+      if (this.objectOptions.get('overclock')) {
+        overclock = this.objectOptions.get('overclock');
+      }
+
+      this.cycleTime = Big(buildingDefinition.mExtractCycleTime)
+        .div(resolveMathValue(overclock))
+        .mul(100)
+        .mul(Big(1000));
     }
 
     if (optionsKeys.has('nodePurity')) {
@@ -50,8 +60,9 @@ export default class ResourceExtractorV2 extends SimulatableNode {
           break;
       }
 
-      if (!optionsKeys.has('extractedItem'))
+      if (!optionsKeys.has('extractedItem')) {
         throw new Error('Must have extracted item!');
+      }
 
       this.outputPacket = {
         slug: this.objectOptions.get('extractedItem'),

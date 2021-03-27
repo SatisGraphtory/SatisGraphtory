@@ -1,5 +1,7 @@
-import { Typography } from '@material-ui/core';
-// import {makeStyles} from "@material-ui/core/styles";
+import { Button } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import BuildIcon from '@material-ui/icons/Build';
+import produce from 'immer';
 import React from 'react';
 import GenericSelector from 'v3/apps/GraphV3/components/Selectors/GenericSelector';
 import MathExpressionSelectorComponent from 'v3/apps/GraphV3/components/Selectors/MathExpressionSelectorComponent';
@@ -7,15 +9,23 @@ import { resolveSelectorOptions } from 'v3/apps/GraphV3/components/Selectors/res
 import { LocaleContext } from 'v3/components/LocaleProvider';
 import { getConfigurableOptionsByMachineClass } from 'v3/data/loaders/buildings';
 
-// const useStyles = makeStyles((theme) => ({
-//
-// }));
+const useStyles = makeStyles((theme) => ({
+  modifyButton: {},
+  subPanelDetail: {
+    width: '100%',
+    height: '100%',
+  },
+  resetButton: {
+    marginTop: 10,
+  },
+}));
 
-function consolidateOptions(nodes) {
+function consolidateOptions(nodes, whitelistedOptions) {
   const commonOptions = {};
   const blacklistedOptions = new Set();
   for (const options of nodes) {
     for (const [optionKey, optionValue] of options) {
+      if (!whitelistedOptions.has(optionKey)) continue;
       if (blacklistedOptions.has(optionKey)) continue;
       if (!commonOptions[optionKey] !== undefined) {
         commonOptions[optionKey] = {
@@ -32,10 +42,34 @@ function consolidateOptions(nodes) {
   return commonOptions;
 }
 
+function createInitialDraftState(
+  allOptions,
+  modifiableOptionNames,
+  consolidatedCommonOptions,
+  translate
+) {
+  const draftState = {};
+  for (const [configKey, configEntry] of Object.entries(allOptions)) {
+    if (!modifiableOptionNames.has(configKey)) continue;
+    const { initialValue } = resolveSelectorOptions(
+      configEntry,
+      consolidatedCommonOptions,
+      configKey,
+      translate,
+      {}
+    );
+    if (initialValue !== undefined && initialValue !== null) {
+      draftState[configKey] = initialValue;
+    }
+  }
+
+  return draftState;
+}
+
 function MachineClassGroupSubPanel(props) {
   const { machineClassName, nodes } = props;
   const { translate } = React.useContext(LocaleContext);
-  // const classes = useStyles();
+  const classes = useStyles();
 
   const allOptions = getConfigurableOptionsByMachineClass(machineClassName);
   const modifiableOptionNames = new Set(
@@ -43,28 +77,18 @@ function MachineClassGroupSubPanel(props) {
   );
 
   const consolidatedCommonOptions = consolidateOptions(
-    nodes.map((node) => node.getAdditionalData())
+    nodes.map((node) => node.getAdditionalData()),
+    modifiableOptionNames
   );
-
   const elements = [];
 
   const [draftSelection, setDraftSelection] = React.useState(() => {
-    const draftState = {};
-    for (const [configKey, configEntry] of Object.entries(allOptions)) {
-      if (!modifiableOptionNames.has(configKey)) continue;
-      const { initialValue } = resolveSelectorOptions(
-        configEntry,
-        consolidatedCommonOptions,
-        configKey,
-        translate,
-        {}
-      );
-      if (initialValue !== undefined && initialValue !== null) {
-        draftState[configKey] = initialValue;
-      }
-    }
-
-    return draftState;
+    return createInitialDraftState(
+      allOptions,
+      modifiableOptionNames,
+      consolidatedCommonOptions,
+      translate
+    );
   });
 
   for (const [configKey, configEntry] of Object.entries(allOptions)) {
@@ -103,23 +127,40 @@ function MachineClassGroupSubPanel(props) {
     }
   }
 
-  return (
-    <div>
-      <Typography variant="h6">{translate(machineClassName)}</Typography>
-      {elements}
-      {/*{machineMap.machineClassNames.map((machineClassName) => {*/}
-      {/*  for (const machineName of machineMap.sortedMachineMap.get(machineClassName)) {*/}
-      {/*    // const tiers = getTiersForMachineClass(machineClassName);*/}
-      {/*    const theseNodes = nodes.filter(node => node.machineName === machineName);*/}
-      {/*    const allOptions = getConfigurableOptionsByMachineClass(machineClassName);*/}
-      {/*    const modifiableOptions = Object.keys(allOptions).filter(key => allOptions[key].mutable !== false);*/}
-      {/*    console.log(modifiableOptions);*/}
-      {/*  }*/}
+  const allKeys = new Set([
+    ...Object.keys(consolidatedCommonOptions),
+    Object.keys(draftSelection),
+  ]);
 
-      {/*  return [*/}
-      {/*    <Typography key={1} variant="h5">Hello</Typography>*/}
-      {/*  ];*/}
-      {/*})}*/}
+  const isEqual = allKeys.every((key) => {
+    return consolidatedCommonOptions[key]?.value === draftSelection[key]?.value;
+  });
+
+  return (
+    <div className={classes.subPanelDetail}>
+      {elements}
+      <Button
+        onClick={() => {
+          const newAdditionalData = produce(draftSelection, (draftState) => {
+            for (const key of Object.keys(draftState)) {
+              draftState[key] = draftState[key].value;
+            }
+          });
+          for (const node of nodes) {
+            node.updateAdditionalData(newAdditionalData);
+          }
+        }}
+        className={classes.modifyButton}
+        fullWidth
+        disabled={isEqual}
+        color="primary"
+        variant="contained"
+        startIcon={<BuildIcon />}
+      >
+        {isEqual
+          ? 'No changes'
+          : `Modify ${nodes.length} Node${nodes.length === 1 ? '' : 's'}`}
+      </Button>
     </div>
   );
 }
