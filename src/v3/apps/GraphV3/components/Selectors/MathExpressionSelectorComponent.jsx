@@ -38,6 +38,8 @@ function MathExpressionSelectorComponent(props) {
       resolvedValue === undefined ||
       !isNumeric(resolvedValue) ||
       smaller(resolvedValue, configEntry.minValue) ||
+      (!configEntry.minValueInclusive &&
+        equal(resolvedValue, configEntry.minValue)) ||
       larger(resolvedValue, configEntry.maxValue)
     ) {
       resolvedValue = undefined;
@@ -70,7 +72,16 @@ function MathExpressionSelectorComponent(props) {
 
   let popperText = '';
 
-  if (mathValue !== undefined && smaller(mathValue, configEntry.minValue)) {
+  if (
+    mathValue !== undefined &&
+    !configEntry.minValueInclusive &&
+    equal(mathValue, configEntry.minValue)
+  ) {
+    popperText = 'Value must be > ' + configEntry.minValue;
+  } else if (
+    mathValue !== undefined &&
+    smaller(mathValue, configEntry.minValue)
+  ) {
     popperText = 'Value must be >= ' + configEntry.minValue;
   } else if (
     mathValue !== undefined &&

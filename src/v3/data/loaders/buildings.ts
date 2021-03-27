@@ -622,6 +622,7 @@ const getConfigurableOptionsByMachineClassFn = (classSlug: string) => {
     baseTypes.overclock = {
       mathExpression: true,
       minValue: 0,
+      minValueInclusive: false,
       maxValue: 250,
       defaultValue: 100,
       type: 'number',

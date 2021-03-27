@@ -7,6 +7,7 @@ import { OutputPacket } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algori
 import { getBuildingDefinition } from 'v3/data/loaders/buildings';
 import Big from 'big.js';
 import EdgeTemplate from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Edge/EdgeTemplate';
+let numtrack = 0;
 
 export default class BeltV2 extends SimulatableLink {
   cycleTime = Big(-1);
@@ -14,6 +15,7 @@ export default class BeltV2 extends SimulatableLink {
   outputSlot: (OutputPacket | null)[] = [null];
   sendCallbackGet = false;
   callbackData = null as any;
+  numTrack = 0;
 
   constructor(
     edge: EdgeTemplate,
@@ -22,6 +24,7 @@ export default class BeltV2 extends SimulatableLink {
     edgeOptions: Map<string, any>
   ) {
     super(edge, beltSlug, simulationManager, edgeOptions);
+    this.numTrack = numtrack++;
     this.generateFromOptions(new Set(edgeOptions.keys()));
   }
 
@@ -85,7 +88,6 @@ export default class BeltV2 extends SimulatableLink {
       });
 
       this.outputSlot[0] = this.inputSlot[0];
-      this.inputSlot[0] = null;
       for (const outputId of this.outputs.map((output) => output.id)) {
         this.simulationManager.addTimerEvent({
           time: time,
@@ -118,6 +120,9 @@ export default class BeltV2 extends SimulatableLink {
             eventName: SimulatableAction.RESOURCE_DEPOSITED,
           },
         });
+
+        this.inputSlot[0] = null;
+
         //TODO: Move this to when the thing actually gets deposited elsewhere
         if (this.sendCallbackGet) {
           this.sendCallbackGet = false;

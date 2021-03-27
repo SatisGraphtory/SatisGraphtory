@@ -12,6 +12,7 @@ import { ConnectionTypeEnum } from '../../../../../../../../.DataWarehouse/enums
 import { getConnectionTypeNeededForItem } from '../../../../../../../data/loaders/items';
 import resolveMathValue from '../../../../../components/Selectors/resolveMathValue';
 
+let numtrack = 0;
 export default class ManufacturerV2 extends SimulatableNode {
   resourcesNeededBySlug = new Map<string, number>();
   remainingResourcesNeedBySlug = new Map<string, number>();
@@ -25,6 +26,12 @@ export default class ManufacturerV2 extends SimulatableNode {
   outputSlot: (OutputPacket | null)[] = [null];
   callbackByResource = new Map<string, any>();
   inputQueue = [] as (OutputPacket | null)[];
+  itemsProducedPerCycle = 0;
+
+  numTrack = 0;
+  working = false;
+  postDepositedCallbacks = [] as any;
+  outputBlockedCallbacks = [] as any;
 
   constructor(
     node: MachineNodeTemplate,
@@ -33,7 +40,7 @@ export default class ManufacturerV2 extends SimulatableNode {
     simulationManager: SimulationManager
   ) {
     super(node, buildingSlug, simulationManager, nodeOptions);
-
+    this.numTrack = numtrack++;
     this.generateFromOptions(new Set(nodeOptions.keys()));
   }
 
@@ -46,7 +53,6 @@ export default class ManufacturerV2 extends SimulatableNode {
 
     if (optionsKeys.has('recipe')) {
       const recipe = getRecipeDefinition(this.objectOptions.get('recipe')!);
-
       for (const { ItemClass, Amount } of recipe.mIngredients) {
         this.resourcesNeededBySlug.set(ItemClass.slug, Amount);
       }
@@ -68,6 +74,7 @@ export default class ManufacturerV2 extends SimulatableNode {
 
       this.outputPacketByConnection.clear();
 
+      this.itemsProducedPerCycle = 0;
       for (const { ItemClass, Amount } of recipe.mProduct) {
         const connectionType = getConnectionTypeNeededForItem(ItemClass.slug);
         if (this.outputPacketByConnection.has(connectionType)) {
@@ -82,6 +89,7 @@ export default class ManufacturerV2 extends SimulatableNode {
           slug: ItemClass.slug,
           amount: Amount,
         });
+        this.itemsProducedPerCycle += Amount;
       }
     }
   }
@@ -92,8 +100,9 @@ export default class ManufacturerV2 extends SimulatableNode {
 
   needsResource(resourceSlug: string) {
     const remaining = this.remainingResourcesNeedBySlug.get(resourceSlug);
-    if (this.resourcesNeededBySlug.get(resourceSlug) === undefined)
+    if (this.resourcesNeededBySlug.get(resourceSlug) === undefined) {
       throw new Error('Manufacturer does not need ' + resourceSlug);
+    }
     if (remaining === undefined) return false;
     return remaining > 0;
   }
@@ -101,8 +110,9 @@ export default class ManufacturerV2 extends SimulatableNode {
   decreaseResourceByN(resourceSlug: string, n = 1) {
     const remaining = this.remainingResourcesNeedBySlug.get(resourceSlug);
 
-    if (remaining === undefined)
-      throw new Error('Manufacturer does not need ' + resourceSlug);
+    if (remaining === undefined) {
+      throw new Error('Manufacturer DID not need ' + resourceSlug);
+    }
     if (!remaining)
       throw new Error('Could not decrease resource as it was not needed');
     if (remaining - n < 0)
@@ -115,10 +125,20 @@ export default class ManufacturerV2 extends SimulatableNode {
   }
 
   handleEvent(evt: SimulatableAction, time: Big, eventData: any) {
+    // if (this.numTrack === 1) {
+    //   console.log(SimulatableAction[evt], time.toNumber(), eventData, "!!", this.cycleTime.toNumber())
+    // }
     if (evt === SimulatableAction.RESOURCE_AVAILABLE) {
       if (this.needsResource(eventData.resourceName)) {
         this.sendItemTransferRequest(time, eventData);
       } else {
+        if (this.callbackByResource.has(eventData.resourceName)) {
+          throw new Error(
+            'We should not be getting another request when this has not been processed'
+          );
+        }
+        // We should process outstanding resource callbacks when we are in the
+        // JUST_STARTED_PROCESSING stage.
         this.callbackByResource.set(eventData.resourceName, (time: Big) => {
           this.sendItemTransferRequest(time, eventData);
         });
@@ -130,24 +150,72 @@ export default class ManufacturerV2 extends SimulatableNode {
           this.decreaseResourceByN(item.slug, item.amount);
           this.inputQueue.splice(i, 1);
 
+          // Sanity Check
           if (!this.remainingResourcesNeedBySlug.size) {
             if (this.inputQueue.filter((item) => item !== null).length) {
               throw new Error('Why do we still have an inputQueue?');
             }
 
-            this.addDelayedSelfAction(
-              SimulatableAction.DEPOSIT_OUTPUT,
-              time.add(this.cycleTime),
-              Priority.CRITICAL
-            );
+            if (this.working) {
+              // We need to start a new instance once it's over
+              this.postDepositedCallbacks.push((time: Big) => {
+                this.working = true;
+
+                this.resetRemainingResourcesNeeded();
+
+                //Callback to fetch more stuff?
+                for (const [key, callback] of this.callbackByResource) {
+                  this.callbackByResource.delete(key);
+                  callback(time);
+                }
+
+                this.addDelayedSelfAction(
+                  SimulatableAction.DEPOSIT_OUTPUT,
+                  time.add(this.cycleTime),
+                  Priority.CRITICAL
+                );
+              });
+            } else {
+              this.working = true;
+
+              this.resetRemainingResourcesNeeded();
+
+              //Callback to fetch more stuff?
+              for (const [key, callback] of this.callbackByResource) {
+                this.callbackByResource.delete(key);
+                callback(time);
+              }
+
+              this.addDelayedSelfAction(
+                SimulatableAction.DEPOSIT_OUTPUT,
+                time.add(this.cycleTime),
+                Priority.CRITICAL
+              );
+            }
           }
           break;
         }
       }
     } else if (evt === SimulatableAction.DEPOSIT_OUTPUT) {
+      if (
+        this.remainingProducedResourcesNeedBySlug.size &&
+        this.outputs.length
+      ) {
+        this.outputBlockedCallbacks.push((time: Big) =>
+          this.addDelayedSelfAction(
+            SimulatableAction.DEPOSIT_OUTPUT,
+            time,
+            Priority.CRITICAL
+          )
+        );
+        return;
+      }
+
       this.trackDepositEvent(time, (rate: number) => {
-        this.updateDisplay(rate);
+        this.updateDisplay(rate * this.itemsProducedPerCycle);
       });
+
+      this.working = false;
 
       this.resetResourcesProduced();
 
@@ -175,14 +243,19 @@ export default class ManufacturerV2 extends SimulatableNode {
         }
       } else {
         //TODO: IF BLOCKED, DO SHIT
-        this.resetRemainingResourcesNeeded();
-
+        this.remainingProducedResourcesNeedBySlug.clear();
         //Callback to fetch more stuff?
-        for (const [key, callback] of this.callbackByResource) {
-          this.callbackByResource.delete(key);
-          callback(time);
-        }
+        // for (const [key, callback] of this.callbackByResource) {
+        //   this.callbackByResource.delete(key);
+        //   callback(time);
+        // }
       }
+
+      for (const callback of this.postDepositedCallbacks) {
+        callback(time);
+      }
+
+      this.postDepositedCallbacks = [];
     } else if (evt === SimulatableAction.TRANSFER_ITEM_TO_NEXT) {
       const { freeSlotArray, connectorId, resourceName } = eventData;
       const slug = resourceName;
@@ -217,13 +290,13 @@ export default class ManufacturerV2 extends SimulatableNode {
       } else {
         this.remainingProducedResourcesNeedBySlug.delete(slug);
 
-        //TODO: IF BLOCKED, DO SHIT
-        this.resetRemainingResourcesNeeded();
+        if (!this.remainingProducedResourcesNeedBySlug.size) {
+          //PROBABLY WRONG!!!!!!
+          for (const blockedCallback of this.outputBlockedCallbacks) {
+            blockedCallback(time);
+          }
 
-        //Callback to fetch more stuff?
-        for (const [key, callback] of this.callbackByResource) {
-          this.callbackByResource.delete(key);
-          callback(time);
+          this.outputBlockedCallbacks = [];
         }
       }
 
@@ -235,6 +308,14 @@ export default class ManufacturerV2 extends SimulatableNode {
 
   runPreSimulationActions(): void {
     super.runPreSimulationActions();
+
+    this.working = false;
+    this.postDepositedCallbacks = [];
+    this.outputBlockedCallbacks = [];
+    this.remainingProducedResourcesNeedBySlug.clear();
+    this.outputSlot = [];
+    this.callbackByResource.clear();
+    this.inputQueue = [];
 
     this.resetRemainingResourcesNeeded();
   }
