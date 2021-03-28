@@ -1,7 +1,6 @@
 import ItemClassJson from '.DataWarehouse/main/ItemClasses.json';
 import ConnectionResourceFormsJson from '.DataWarehouse/main/ConnectionResourceForms.json';
 import memoize from 'fast-memoize';
-import { getBuildingImageName } from 'v3/data/loaders/buildings';
 import { getMachineCraftableRecipeDefinitionList } from 'v3/data/loaders/recipes';
 
 import { getImageFileFromSlug } from './images';
@@ -47,9 +46,7 @@ const getItemListFn = () => {
 };
 
 export const getItemIcon = (itemSlug: string, size: number = 256) => {
-  const itemImageSlug = getBuildingImageName(itemSlug);
-
-  return getImageFileFromSlug(itemImageSlug, size);
+  return getImageFileFromSlug(itemSlug, size);
 };
 
 //TODO: REVISIT
@@ -69,6 +66,20 @@ const getMachineCraftableItemsFn = () => {
 
 const getAllItemsFn = () => {
   return ItemJson;
+};
+
+const getAllItemIconNamesFn = () => {
+  const existingItems = [] as string[];
+  for (const [, entry] of Object.keys(ItemJson)) {
+    const castedEntry = entry as any;
+    if (castedEntry.mPersistentBigIcon) {
+      existingItems.push(castedEntry.mPersistentBigIcon);
+    } else if (castedEntry.mSmallIcon) {
+      existingItems.push(castedEntry.mSmallIcon);
+    }
+  }
+
+  return existingItems;
 };
 
 export const getItemResourceForm = (itemSlug: string) => {
@@ -92,3 +103,4 @@ export const getMachineCraftableItems = memoize(getMachineCraftableItemsFn);
 export const getResources = memoize(getResourcesFn);
 export const getResourcesByForm = memoize(getResourcesByFormFn);
 export const getItemList = memoize(getItemListFn);
+export const getAllItemIconNames = memoize(getAllItemIconNamesFn);

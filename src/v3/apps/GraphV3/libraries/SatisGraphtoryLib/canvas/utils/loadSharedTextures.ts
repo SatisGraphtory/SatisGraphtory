@@ -3,23 +3,18 @@ import {
   getAllBuildableMachines,
   getBuildingIcon,
 } from 'v3/data/loaders/buildings';
-import { getItemIcon, getMachineCraftableItems } from 'v3/data/loaders/items';
+import { getAllItemIconNames, getItemIcon } from 'v3/data/loaders/items';
 import { sgDevicePixelRatio } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/canvasUtils';
 import {
-  // BADGE_HEIGHT,
-  // BADGE_RADIUS,
-  // BADGE_THICKNESS,
-  // BADGE_WIDTH,
   BOX_RADIUS,
   BOX_THICKNESS,
   CIRCLE_RADIUS,
   CIRCLE_THICKNESS,
-  NODE_HIGHLIGHT_THICKNESS,
   ITEM_SIZE,
   MACHINE_ICON_SIZE,
   NODE_HEIGHT,
+  NODE_HIGHLIGHT_THICKNESS,
   NODE_WIDTH,
-  // SMALL_BADGE_WIDTH,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Sizes';
 
 function createBackboard(
@@ -194,7 +189,7 @@ export const loadSharedTextures = (pixiRenderer: PIXI.Renderer, theme: any) => {
   checkOrReplaceTexture(outCircle, 'outCircle');
 
   // items and machines
-  getMachineCraftableItems().forEach((element) => {
+  getAllItemIconNames().forEach((element) => {
     const itemImg = getItemIcon(element, ITEM_SIZE);
     const itemIcon = new PIXI.BaseTexture(itemImg);
     const itemTex = new PIXI.Texture(itemIcon);
