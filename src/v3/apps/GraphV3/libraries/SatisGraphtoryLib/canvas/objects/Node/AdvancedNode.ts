@@ -31,11 +31,11 @@ import {
   MACHINE_NAME_OFFSET_Y,
   MACHINE_OFFSET_X,
   MACHINE_OFFSET_Y,
-  RECIPE_OFFSET_X,
-  RECIPE_OFFSET_Y,
-  RECIPE_ICON_SIZE,
   RECIPE_ICON_OFFSET_X,
   RECIPE_ICON_OFFSET_Y,
+  RECIPE_ICON_SIZE,
+  RECIPE_OFFSET_X,
+  RECIPE_OFFSET_Y,
   TIER_OFFSET_X,
   TIER_OFFSET_Y,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Offsets';
@@ -44,7 +44,6 @@ import {
   MACHINE_SIZE,
   NODE_HEIGHT,
   NODE_WIDTH,
-  OUTLINE_THICKNESS,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Sizes';
 import {
   calculateConnectionNodeOffset,
@@ -70,8 +69,10 @@ import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import { getEnumValue } from 'v3/data/loaders/enums';
 import resolveMathValue from '../../../../../components/Selectors/resolveMathValue';
 import { Fraction, typeOf } from 'mathjs';
-import { OutlineFilter } from '@pixi/filter-outline';
-import Colors from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Colors';
+import createOutline from '../../../algorithms/outliner';
+import smooth from '../../../algorithms/outliner/smooth';
+import Colors from '../../consts/Colors';
+import { imgMap } from '../../../../../../../data/loaders/images';
 
 export default class AdvancedNode extends MachineNodeTemplate {
   connectionsMap: Map<EdgeAttachmentSide, EdgeTemplate[]> = new Map();
@@ -81,6 +82,7 @@ export default class AdvancedNode extends MachineNodeTemplate {
   rateText: PIXI.BitmapText;
   recipeText: PIXI.Text | undefined;
   recipeTexture: any | undefined;
+  recipeShadowTexture: any | undefined;
   extractedItemText: PIXI.Text | undefined;
   efficiencyText: PIXI.Text | undefined;
   levelText: PIXI.Text | undefined;
@@ -646,6 +648,59 @@ export default class AdvancedNode extends MachineNodeTemplate {
     const theme = this.getInteractionManager().getTheme();
     const container = this.container;
 
+    if (this.additionalData.has('machineType')) {
+      const machineTextureImage = PIXI.utils.TextureCache[this.machineName];
+
+      if (this.machineTexture) {
+        const removedChild = container.removeChild(this.machineTexture);
+        if (!removedChild)
+          throw new Error('Did not remove child machine texture');
+      }
+      this.machineTexture = createImageIcon(
+        machineTextureImage,
+        MACHINE_SIZE,
+        MACHINE_SIZE,
+        MACHINE_OFFSET_X,
+        MACHINE_OFFSET_Y
+      );
+
+      container.addChild(this.machineTexture);
+
+      if (this.levelText) {
+        this.levelText.text = getTierText(this.tier);
+      } else {
+        this.levelText = createText(
+          getTierText(this.tier),
+          NODE_TIER_STYLE(theme),
+          TIER_OFFSET_X,
+          TIER_OFFSET_Y,
+          'left',
+          'center',
+          true
+        );
+
+        container.addChild(this.levelText);
+      }
+
+      const machineLabel = getBuildingName(this.machineName) as string;
+
+      if (this.machineText) {
+        this.machineText.text = machineLabel;
+      } else {
+        this.machineText = createText(
+          machineLabel,
+          MACHINE_STYLE(theme),
+          MACHINE_NAME_OFFSET_X,
+          MACHINE_NAME_OFFSET_Y,
+          'center',
+          'center',
+          true
+        );
+
+        container.addChild(this.machineText);
+      }
+    }
+
     if (this.additionalData.has('recipe')) {
       if (this.recipeText) {
         this.recipeText.text = this.translateFunction(
@@ -693,6 +748,52 @@ export default class AdvancedNode extends MachineNodeTemplate {
       } else {
         this.extractedItemText.text = extractedItemTextString;
       }
+
+      // Here's the magic.
+      const recipeTextureImage =
+        PIXI.utils.TextureCache[this.additionalData.get('extractedItem')];
+
+      const imageElement = imgMap.get(
+        this.additionalData.get('extractedItem')
+      )!;
+
+      const points = createOutline(imageElement);
+      const graphicsObject = new PIXI.Graphics();
+      graphicsObject.lineStyle(10, Colors.WHITE, 1);
+
+      const polygon = new PIXI.Polygon(smooth(smooth(points)));
+      polygon.closeStroke = true;
+      graphicsObject.drawShape(polygon);
+
+      graphicsObject.position.x = RECIPE_ICON_OFFSET_X - RECIPE_ICON_SIZE / 2;
+      graphicsObject.position.y = RECIPE_ICON_OFFSET_Y - RECIPE_ICON_SIZE / 2;
+      graphicsObject.scale.set(0.157, 0.157);
+
+      // We add in the outline
+      if (this.recipeShadowTexture) {
+        const removedChild = container.removeChild(this.recipeShadowTexture);
+        if (!removedChild)
+          throw new Error('Did not remove child recipe shadow texture');
+      }
+
+      container.addChild(graphicsObject);
+
+      // We add in the final image;
+      if (this.recipeTexture) {
+        const removedChild = container.removeChild(this.recipeTexture);
+        if (!removedChild)
+          throw new Error('Did not remove child recipe texture');
+      }
+
+      this.recipeTexture = createImageIcon(
+        recipeTextureImage,
+        RECIPE_ICON_SIZE,
+        RECIPE_ICON_SIZE,
+        RECIPE_ICON_OFFSET_X,
+        RECIPE_ICON_OFFSET_Y
+      );
+
+      container.addChild(this.recipeTexture);
     }
 
     if (this.additionalData.has('overclock')) {
@@ -731,83 +832,6 @@ export default class AdvancedNode extends MachineNodeTemplate {
 
         container.addChild(this.efficiencyText);
       }
-    }
-
-    if (this.additionalData.has('machineType')) {
-      if (this.levelText) {
-        this.levelText.text = getTierText(this.tier);
-      } else {
-        this.levelText = createText(
-          getTierText(this.tier),
-          NODE_TIER_STYLE(theme),
-          TIER_OFFSET_X,
-          TIER_OFFSET_Y,
-          'left',
-          'center',
-          true
-        );
-
-        container.addChild(this.levelText);
-      }
-
-      const machineLabel = getBuildingName(this.machineName) as string;
-
-      if (this.machineText) {
-        this.machineText.text = machineLabel;
-      } else {
-        this.machineText = createText(
-          machineLabel,
-          MACHINE_STYLE(theme),
-          MACHINE_NAME_OFFSET_X,
-          MACHINE_NAME_OFFSET_Y,
-          'center',
-          'center',
-          true
-        );
-
-        container.addChild(this.machineText);
-      }
-
-      const machineTextureImage = PIXI.utils.TextureCache[this.machineName];
-
-      if (this.machineTexture) {
-        const removedChild = container.removeChild(this.machineTexture);
-        if (!removedChild)
-          throw new Error('Did not remove child machine texture');
-      }
-      this.machineTexture = createImageIcon(
-        machineTextureImage,
-        MACHINE_SIZE,
-        MACHINE_SIZE,
-        MACHINE_OFFSET_X,
-        MACHINE_OFFSET_Y
-      );
-
-      container.addChild(this.machineTexture);
-
-      const recipeTextureImage =
-        PIXI.utils.TextureCache[this.additionalData.get('extractedItem')];
-      console.log(this.additionalData);
-      console.log(PIXI.utils.TextureCache);
-
-      if (this.recipeTexture) {
-        const removedChild = container.removeChild(this.recipeTexture);
-        if (!removedChild)
-          throw new Error('Did not remove child recipe texture');
-      }
-      this.recipeTexture = createImageIcon(
-        recipeTextureImage,
-        RECIPE_ICON_SIZE,
-        RECIPE_ICON_SIZE,
-        RECIPE_ICON_OFFSET_X,
-        RECIPE_ICON_OFFSET_Y
-      );
-
-      this.recipeTexture.filters = [
-        new OutlineFilter(OUTLINE_THICKNESS, Colors.WHITE),
-      ];
-
-      container.addChild(this.recipeTexture);
     }
   }
 }

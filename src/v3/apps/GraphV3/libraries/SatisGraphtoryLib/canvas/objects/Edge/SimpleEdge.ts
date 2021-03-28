@@ -88,7 +88,7 @@ export default class SimpleEdge extends EdgeTemplate {
       '',
       RATE_STYLE(theme),
       0,
-      0,
+      30,
       'center',
       'center',
       true

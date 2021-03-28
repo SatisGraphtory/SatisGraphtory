@@ -5924,6 +5924,11 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
+distance-to-line-segment@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/distance-to-line-segment/-/distance-to-line-segment-0.2.0.tgz#e45427bb8360eb59a86ffd9814a7578dd2c3d679"
+  integrity sha1-5FQnu4Ng61mob/2YFKdXjdLD1nk=
+
 dmg-builder@22.10.5:
   version "22.10.5"
   resolved "https://registry.yarnpkg.com/dmg-builder/-/dmg-builder-22.10.5.tgz#65a33c106ead5a350c7de8997c546559bd6e0e7c"
@@ -6879,7 +6884,7 @@ extend-shallow@^3.0.0, extend-shallow@^3.0.2:
     assign-symbols "^1.0.0"
     is-extendable "^1.0.1"
 
-extend@^3.0.0, extend@~3.0.2:
+extend@^3.0.0, extend@^3.0.2, extend@~3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.2.tgz#f8b1136b4071fbd8eb140aff858b1019ec2915fa"
   integrity sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==
@@ -9678,6 +9683,13 @@ libnpmconfig@^1.0.0:
     find-up "^3.0.0"
     ini "^1.3.5"
 
+line-simplify-rdp@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/line-simplify-rdp/-/line-simplify-rdp-0.4.0.tgz#b9632e870d2f9bc3c696b8b9de4a6259a05fa816"
+  integrity sha1-uWMuhw0vm8PGlri53kpiWaBfqBY=
+  dependencies:
+    distance-to-line-segment "^0.2.0"
+
 lines-and-columns@^1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.1.6.tgz#1c00c743b433cd0a4e80758f7b64a57440d9ff00"
@@ -10018,6 +10030,11 @@ map-visit@^1.0.0:
   integrity sha1-7Nyo8TFE5mDxtb1B8S80edmN+48=
   dependencies:
     object-visit "^1.0.0"
+
+marching-squares@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/marching-squares/-/marching-squares-0.2.0.tgz#28086170bf77d8dbd578459d997a90526cf5faf0"
+  integrity sha1-KAhhcL932NvVeEWdmXqQUmz1+vA=
 
 markdown-extensions@^1.1.0:
   version "1.1.1"
@@ -11372,6 +11389,11 @@ pixi-filters@^4.0.0:
     "@pixi/filter-tilt-shift" "4.0.0"
     "@pixi/filter-twist" "4.0.0"
     "@pixi/filter-zoom-blur" "4.0.0"
+
+pixi-heaven@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/pixi-heaven/-/pixi-heaven-0.2.3.tgz#9b364f7366eaaf41968cc15adc4517c91936f4b4"
+  integrity sha512-k4xYa5lNQMgr9pc5qwroJIvj+OsQcaw6c+AoT7fFF1g2DM5zaknz/NuhPAY4f7yU+1sqePinLtmLocy4CH1s9g==
 
 pixi-viewport@^4.12.0:
   version "4.21.1"

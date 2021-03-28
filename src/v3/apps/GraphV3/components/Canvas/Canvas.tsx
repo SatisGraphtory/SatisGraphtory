@@ -1,6 +1,7 @@
 // @refresh reset
 import React, { Suspense } from 'react';
 import AutoSizedLoadingWrapper from 'common/react/AutoSizedLoadingWrapper';
+import { loadAllImages } from '../../../../data/loaders/images';
 
 const FontFaceObserver = require('fontfaceobserver');
 
@@ -10,6 +11,7 @@ const InnerComponent = React.lazy(() => {
     new FontFaceObserver('Bebas Neue').load(),
     new FontFaceObserver('Roboto Slab').load(),
     // Here is where we would have imported all images
+    loadAllImages(),
   ])
     .catch(() => {
       // Prerenderer isn't happy about us blocking on load

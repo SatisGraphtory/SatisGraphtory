@@ -5,9 +5,12 @@ export const createImageIcon = (
   width: number,
   height: number,
   x: number,
-  y: number
+  y: number,
+  useHeaven = false
 ) => {
-  const imageSprite = new PIXI.Sprite(texture);
+  const imageSprite = useHeaven
+    ? new PIXI.heaven.Sprite(texture)
+    : new PIXI.Sprite(texture);
   imageSprite.anchor.set(0.5, 0.5);
   imageSprite.position.x = x;
   imageSprite.position.y = y;
