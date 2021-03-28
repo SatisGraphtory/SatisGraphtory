@@ -7,6 +7,6 @@ export const getImageFileFromSlug = (slug: string, size: number) => {
 
   const fullName = imageName + '_' + size;
   if (!(entries as any)[fullName])
-    throw new Error('Could not find imagge ' + fullName);
+    throw new Error('Could not find image ' + fullName);
   return (entries as any)[fullName];
 };

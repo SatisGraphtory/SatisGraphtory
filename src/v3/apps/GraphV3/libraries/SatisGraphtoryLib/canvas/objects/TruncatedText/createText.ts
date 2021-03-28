@@ -1,8 +1,12 @@
 import PIXI from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/PixiProvider';
+import { produce } from 'immer';
 // import {sgDevicePixelRatio} from "v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/canvasUtils";
 
 type BitmapStyle = {
   fontName: string;
+  maxWidth?: number;
+  fontSize?: number;
+  align?: string;
 };
 
 const createText = (
@@ -12,12 +16,18 @@ const createText = (
   y: number,
   horizontalAlign = 'left',
   verticalAlign = 'center',
-  bitmap = false,
-  maxWidth = 0
+  bitmap = false
 ) => {
+  let usedStyle = style as any;
+  if (bitmap) {
+    usedStyle = produce(style, (draftStyle) => {
+      draftStyle.align = horizontalAlign;
+    });
+  }
+
   const nameStr = bitmap
-    ? new PIXI.BitmapText(text, style)
-    : new PIXI.Text(text, style);
+    ? new PIXI.BitmapText(text, usedStyle)
+    : new PIXI.Text(text, usedStyle);
 
   let alignY = -1;
   if (verticalAlign === 'top') {
@@ -46,10 +56,12 @@ const createText = (
   //   alignX = 0.5
   // }
   //
+
   // nameStr.anchor.set(alignX, alignY);
 
   nameStr.position.x = x;
   nameStr.position.y = y;
+
   // nameStr.resolution = sgDevicePixelRatio * 2;
   return nameStr;
 };

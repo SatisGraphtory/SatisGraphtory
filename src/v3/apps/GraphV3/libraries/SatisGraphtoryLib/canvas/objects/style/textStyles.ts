@@ -73,6 +73,7 @@ export const NODE_TIER_STYLE = memoize((theme) => {
 
   return {
     fontName: styleUuid,
+    fontSize: theme.nodes.text.tier.fontSize,
   };
 });
 
@@ -86,14 +87,19 @@ export const EDGE_TIER_STYLE = memoize((theme) => {
     strokeThickness: theme.edges.text.tier.strokeThickness,
     fontWeight: 'bold',
   });
+
   const styleUuid = 'custom-font' + uuidGen();
+
   PIXI.BitmapFont.from(styleUuid, textStyle, {
-    resolution: 10,
-    chars: PIXI.BitmapFont.ASCII,
+    resolution: 9,
+    chars: PIXI.BitmapFont.ALPHA,
   });
 
   return {
-    fontName: styleUuid,
+    style: {
+      fontName: styleUuid,
+    },
+    textStyle,
   };
 });
 
