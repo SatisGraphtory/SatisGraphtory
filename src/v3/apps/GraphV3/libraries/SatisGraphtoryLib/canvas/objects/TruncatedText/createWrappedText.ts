@@ -1,5 +1,4 @@
 import PIXI from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/PixiProvider';
-import { produce } from 'immer';
 import createText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/TruncatedText/createText';
 
 type WrappedBitmapStyle = {
@@ -12,7 +11,7 @@ type WrappedBitmapStyle = {
   textStyle: PIXI.TextStyle;
 };
 
-const createTruncatedText = (
+const createWrappedText = (
   text: string,
   maxWidth: number,
   styleOptions: WrappedBitmapStyle,
@@ -27,13 +26,9 @@ const createTruncatedText = (
   );
   const displayedString = baseMetrics.lines.join('\n');
 
-  const usedStyle = produce(styleOptions.style, (draftStyle) => {
-    draftStyle.align = horizontalAlign;
-  });
-
   return createText(
     displayedString,
-    usedStyle,
+    styleOptions.style,
     x,
     y,
     horizontalAlign,
@@ -42,4 +37,4 @@ const createTruncatedText = (
   );
 };
 
-export default createTruncatedText;
+export default createWrappedText;

@@ -8,7 +8,7 @@ import {
   RATE_STYLE,
   RECIPE_STYLE,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/style/textStyles';
-import createTruncatedText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/TruncatedText/createTruncatedText';
+import createWrappedText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/TruncatedText/createWrappedText';
 import { getTierText } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/core/api/utils/tierUtils';
 import createText from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/TruncatedText/createText';
 
@@ -652,7 +652,7 @@ export default class AdvancedNode extends MachineNodeTemplate {
           this.additionalData.get('recipe')!
         );
       } else {
-        this.recipeText = createTruncatedText(
+        this.recipeText = createWrappedText(
           this.translateFunction(this.additionalData.get('recipe')!),
           NODE_WIDTH,
           RECIPE_STYLE(NODE_WIDTH, theme),
@@ -679,7 +679,7 @@ export default class AdvancedNode extends MachineNodeTemplate {
       const extractedItemTextString = stringParts.join(' ');
 
       if (!this.extractedItemText) {
-        this.extractedItemText = createTruncatedText(
+        this.extractedItemText = createWrappedText(
           extractedItemTextString,
           NODE_WIDTH,
           RECIPE_STYLE(NODE_WIDTH, theme),

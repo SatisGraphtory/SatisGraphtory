@@ -31,7 +31,7 @@ export default class SimpleEdge extends EdgeTemplate {
   private selected: boolean = false;
   private hitBoxEnabled = false;
 
-  private levelText: any;
+  private levelTextContainer: any;
 
   simulatable: SimulatableLink;
 
@@ -71,24 +71,24 @@ export default class SimpleEdge extends EdgeTemplate {
 
     const levelText = createText(
       getTierText(tier),
-      EDGE_TIER_STYLE(theme),
-      0,
-      0,
+      EDGE_TIER_STYLE(theme).textStyle,
+      -2,
+      -2,
       'center',
       'center',
-      true
+      false
     );
 
     const levelTextContainer = new PIXI.Container();
     levelTextContainer.addChild(levelText);
 
-    this.levelText = levelTextContainer;
+    this.levelTextContainer = levelTextContainer;
 
     this.rateText = createText(
       '',
       RATE_STYLE(theme),
       0,
-      60,
+      0,
       'center',
       'center',
       true
@@ -290,9 +290,9 @@ export default class SimpleEdge extends EdgeTemplate {
 
     const { x: midpointX, y: midpointY } = curve.get(0.5);
 
-    if (this.levelText) {
-      this.levelText.position.x = midpointX;
-      this.levelText.position.y = midpointY;
+    if (this.levelTextContainer) {
+      this.levelTextContainer.position.x = midpointX;
+      this.levelTextContainer.position.y = midpointY;
     }
 
     const points = curve.getLUT(100);
