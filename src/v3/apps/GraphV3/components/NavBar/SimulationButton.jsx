@@ -310,8 +310,6 @@ function SimulationButton(props) {
 
   const stopDisabled = numTicks.current < 0;
 
-  console.log(open);
-
   return (
     <React.Fragment>
       <AnimatePresence>

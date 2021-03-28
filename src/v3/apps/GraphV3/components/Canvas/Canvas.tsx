@@ -6,9 +6,9 @@ const FontFaceObserver = require('fontfaceobserver');
 
 const InnerComponent = React.lazy(() => {
   return Promise.all([
-    new FontFaceObserver('Roboto Condensed', { weight: 400 }).load(),
-    new FontFaceObserver('Bebas Neue', { weight: 400 }).load(),
-    new FontFaceObserver('Roboto Slab', { weight: 400 }).load(),
+    new FontFaceObserver('Roboto Condensed').load(),
+    new FontFaceObserver('Bebas Neue').load(),
+    new FontFaceObserver('Roboto Slab').load(),
     // Here is where we would have imported all images
   ])
     .catch(() => {
@@ -17,12 +17,11 @@ const InnerComponent = React.lazy(() => {
         'v3/apps/GraphV3/libraries/SatisGraphtoryLib/react/PixiJSCanvas/PixiJSCanvasContainer'
       );
     })
-    .then(
-      () =>
-        import(
-          'v3/apps/GraphV3/libraries/SatisGraphtoryLib/react/PixiJSCanvas/PixiJSCanvasContainer'
-        )
-    );
+    .then(() => {
+      return import(
+        'v3/apps/GraphV3/libraries/SatisGraphtoryLib/react/PixiJSCanvas/PixiJSCanvasContainer'
+      );
+    });
 });
 
 type CanvasProps = {
