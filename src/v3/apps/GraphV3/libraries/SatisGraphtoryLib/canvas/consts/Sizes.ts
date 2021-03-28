@@ -18,3 +18,4 @@ export const SMALL_BADGE_WIDTH = 30;
 export const NODE_HIGHLIGHT_THICKNESS = 22;
 export const LINE_THICKNESS = 4;
 export const LINE_HIGHLIGHT_THICKNESS = 13;
+export const OUTLINE_THICKNESS = 3;

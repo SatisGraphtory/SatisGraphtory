@@ -33,6 +33,9 @@ import {
   MACHINE_OFFSET_Y,
   RECIPE_OFFSET_X,
   RECIPE_OFFSET_Y,
+  RECIPE_ICON_SIZE,
+  RECIPE_ICON_OFFSET_X,
+  RECIPE_ICON_OFFSET_Y,
   TIER_OFFSET_X,
   TIER_OFFSET_Y,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Offsets';
@@ -41,6 +44,7 @@ import {
   MACHINE_SIZE,
   NODE_HEIGHT,
   NODE_WIDTH,
+  OUTLINE_THICKNESS,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Sizes';
 import {
   calculateConnectionNodeOffset,
@@ -66,6 +70,8 @@ import { ConnectionTypeEnum } from '.DataWarehouse/enums/dataEnums';
 import { getEnumValue } from 'v3/data/loaders/enums';
 import resolveMathValue from '../../../../../components/Selectors/resolveMathValue';
 import { Fraction, typeOf } from 'mathjs';
+import { OutlineFilter } from '@pixi/filter-outline';
+import Colors from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/consts/Colors';
 
 export default class AdvancedNode extends MachineNodeTemplate {
   connectionsMap: Map<EdgeAttachmentSide, EdgeTemplate[]> = new Map();
@@ -74,6 +80,7 @@ export default class AdvancedNode extends MachineNodeTemplate {
 
   rateText: PIXI.BitmapText;
   recipeText: PIXI.Text | undefined;
+  recipeTexture: any | undefined;
   extractedItemText: PIXI.Text | undefined;
   efficiencyText: PIXI.Text | undefined;
   levelText: PIXI.Text | undefined;
@@ -777,6 +784,30 @@ export default class AdvancedNode extends MachineNodeTemplate {
       );
 
       container.addChild(this.machineTexture);
+
+      const recipeTextureImage =
+        PIXI.utils.TextureCache[this.additionalData.get('extractedItem')];
+      console.log(this.additionalData);
+      console.log(PIXI.utils.TextureCache);
+
+      if (this.recipeTexture) {
+        const removedChild = container.removeChild(this.recipeTexture);
+        if (!removedChild)
+          throw new Error('Did not remove child recipe texture');
+      }
+      this.recipeTexture = createImageIcon(
+        recipeTextureImage,
+        RECIPE_ICON_SIZE,
+        RECIPE_ICON_SIZE,
+        RECIPE_ICON_OFFSET_X,
+        RECIPE_ICON_OFFSET_Y
+      );
+
+      this.recipeTexture.filters = [
+        new OutlineFilter(OUTLINE_THICKNESS, Colors.WHITE),
+      ];
+
+      container.addChild(this.recipeTexture);
     }
   }
 }
