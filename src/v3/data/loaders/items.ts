@@ -68,14 +68,22 @@ const getAllItemsFn = () => {
   return ItemJson;
 };
 
-const getAllItemIconNamesFn = () => {
+const itemToImageNameMap = new Map<string, string>();
+
+export const getImageSlugForItem = (slug: string) => {
+  return itemToImageNameMap.get(slug)!;
+};
+
+const getAllItemSlugsWithIconsFn = () => {
   const existingItems = [] as string[];
-  for (const [, entry] of Object.keys(ItemJson)) {
+  for (const [key, entry] of Object.entries(ItemJson)) {
     const castedEntry = entry as any;
-    if (castedEntry.mPersistentBigIcon) {
-      existingItems.push(castedEntry.mPersistentBigIcon);
-    } else if (castedEntry.mSmallIcon) {
-      existingItems.push(castedEntry.mSmallIcon);
+    if (castedEntry.mPersistentBigIcon?.slug) {
+      itemToImageNameMap.set(key, castedEntry.mPersistentBigIcon.slug);
+      existingItems.push(key);
+    } else if (castedEntry.mSmallIcon?.slug) {
+      itemToImageNameMap.set(key, castedEntry.mSmallIcon.slug);
+      existingItems.push(key);
     }
   }
 
@@ -103,4 +111,4 @@ export const getMachineCraftableItems = memoize(getMachineCraftableItemsFn);
 export const getResources = memoize(getResourcesFn);
 export const getResourcesByForm = memoize(getResourcesByFormFn);
 export const getItemList = memoize(getItemListFn);
-export const getAllItemIconNames = memoize(getAllItemIconNamesFn);
+export const getAllItemSlugsWithIcons = memoize(getAllItemSlugsWithIconsFn);

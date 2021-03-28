@@ -3,7 +3,11 @@ import {
   getAllBuildableMachines,
   getBuildingIcon,
 } from 'v3/data/loaders/buildings';
-import { getAllItemIconNames, getItemIcon } from 'v3/data/loaders/items';
+import {
+  getAllItemSlugsWithIcons,
+  getImageSlugForItem,
+  getItemIcon,
+} from 'v3/data/loaders/items';
 import { sgDevicePixelRatio } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/canvasUtils';
 import {
   BOX_RADIUS,
@@ -189,11 +193,12 @@ export const loadSharedTextures = (pixiRenderer: PIXI.Renderer, theme: any) => {
   checkOrReplaceTexture(outCircle, 'outCircle');
 
   // items and machines
-  getAllItemIconNames().forEach((element) => {
-    const itemImg = getItemIcon(element, ITEM_SIZE);
+  getAllItemSlugsWithIcons().forEach((itemSlug: string) => {
+    const itemImageSlug = getImageSlugForItem(itemSlug);
+    const itemImg = getItemIcon(itemImageSlug, ITEM_SIZE);
     const itemIcon = new PIXI.BaseTexture(itemImg);
     const itemTex = new PIXI.Texture(itemIcon);
-    checkOrReplaceTexture(itemTex, element);
+    checkOrReplaceTexture(itemTex, itemSlug);
   });
 
   getAllBuildableMachines().forEach((element) => {
