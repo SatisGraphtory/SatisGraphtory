@@ -1,20 +1,21 @@
+import { CardContent, Slider, Typography } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
 import Collapse from '@material-ui/core/Collapse';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import { CardContent, Typography, Slider } from '@material-ui/core';
-import { debounce } from 'throttle-debounce';
-import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
-import StopIcon from '@material-ui/icons/Stop';
+import { makeStyles } from '@material-ui/core/styles';
+import Switch from '@material-ui/core/Switch';
 import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
+import StopIcon from '@material-ui/icons/Stop';
+import { AnimatePresence, motion } from 'framer-motion';
+import React from 'react';
+import { debounce } from 'throttle-debounce';
 import {
-  DEFAULT_PING_RATE,
   DEFAULT_MAX_IDLE_PINGS,
+  DEFAULT_PING_RATE,
 } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/manager/SimulationManager';
 import { GlobalGraphAppStore } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/stores/GlobalGraphAppStore';
 
@@ -25,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
     top: `calc(2em + ${theme.overrides.GraphAppBar.height}px)`,
     right: '2em',
     position: 'absolute',
+    width: 257,
   },
   title: {
     fontSize: 18,
@@ -194,6 +196,8 @@ function SimulationButton(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
 
+  const { canvasReady: loaded } = React.useContext(PixiJSCanvasContext);
+
   const handleOpen = () => {
     setOpen(!open);
   };
@@ -306,20 +310,35 @@ function SimulationButton(props) {
 
   const stopDisabled = numTicks.current < 0;
 
+  console.log(open);
+
   return (
     <React.Fragment>
-      {open ? (
-        <SimulationCard
-          playPauseAction={playPauseAction}
-          isPlaying={isPlaying}
-          stopAction={stopAction}
-          stopDisabled={stopDisabled}
-          simulationSpeed={simulationSpeed}
-          speedSliderCallback={speedSliderCallback}
-          simulationManager={externalInteractionManager.getSimulationManager()}
-        />
-      ) : null}
-      <IconButton className={classes.icon} onClick={handleOpen}>
+      <AnimatePresence>
+        {open && loaded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <SimulationCard
+              playPauseAction={playPauseAction}
+              isPlaying={isPlaying}
+              stopAction={stopAction}
+              stopDisabled={stopDisabled}
+              simulationSpeed={simulationSpeed}
+              speedSliderCallback={speedSliderCallback}
+              simulationManager={externalInteractionManager.getSimulationManager()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <IconButton
+        disabled={!loaded}
+        className={classes.icon}
+        onClick={handleOpen}
+      >
         <PlayCircleFilledIcon />
       </IconButton>
     </React.Fragment>
