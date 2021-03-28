@@ -717,7 +717,9 @@ export default class AdvancedNode extends MachineNodeTemplate {
           OVERCLOCK_STYLE(theme),
           EFFICIENCY_OFFSET_X,
           EFFICIENCY_OFFSET_Y,
-          'right'
+          'right',
+          'center',
+          true
         );
 
         container.addChild(this.efficiencyText);
@@ -732,7 +734,10 @@ export default class AdvancedNode extends MachineNodeTemplate {
           getTierText(this.tier),
           NODE_TIER_STYLE(theme),
           TIER_OFFSET_X,
-          TIER_OFFSET_Y
+          TIER_OFFSET_Y,
+          'left',
+          'center',
+          true
         );
 
         container.addChild(this.levelText);
@@ -748,7 +753,9 @@ export default class AdvancedNode extends MachineNodeTemplate {
           MACHINE_STYLE(theme),
           MACHINE_NAME_OFFSET_X,
           MACHINE_NAME_OFFSET_Y,
-          'center'
+          'center',
+          'center',
+          true
         );
 
         container.addChild(this.machineText);

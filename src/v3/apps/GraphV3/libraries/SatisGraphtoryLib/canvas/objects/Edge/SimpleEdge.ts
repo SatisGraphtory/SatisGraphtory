@@ -74,7 +74,9 @@ export default class SimpleEdge extends EdgeTemplate {
       EDGE_TIER_STYLE(theme),
       0,
       0,
-      'center'
+      'center',
+      'center',
+      true
     );
 
     const levelTextContainer = new PIXI.Container();

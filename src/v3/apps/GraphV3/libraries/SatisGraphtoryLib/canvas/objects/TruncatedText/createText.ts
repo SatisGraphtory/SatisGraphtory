@@ -12,7 +12,8 @@ const createText = (
   y: number,
   horizontalAlign = 'left',
   verticalAlign = 'center',
-  bitmap = false
+  bitmap = false,
+  maxWidth = 0
 ) => {
   const nameStr = bitmap
     ? new PIXI.BitmapText(text, style)

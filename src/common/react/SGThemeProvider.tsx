@@ -50,6 +50,8 @@ const graphTheme = {
     text: {
       name: {
         fontSize: 24,
+        strokeThickness: 2,
+        stroke: Colors.DARK_GREY,
       },
       tier: {
         fontSize: 24,
@@ -81,6 +83,10 @@ const graphTheme = {
   overclock: {
     stroke: Colors.DARK_GREY,
     fill: Colors.WHITE,
+  },
+  rate: {
+    fill: Colors.ORANGE,
+    stroke: Colors.DARK_GREY,
   },
   nodeName: {
     fill: Colors.WHITE,
