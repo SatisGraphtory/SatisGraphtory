@@ -1,6 +1,7 @@
 import PIXI from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/utils/PixiProvider';
 import { imgMap } from '../../../../../../../data/loaders/images';
 import createOutline from '../../../algorithms/outliner';
+import uuidGen from '../../../../../../../utils/stringUtils';
 
 type CreateImageAdditionalOptions = {
   outline?: {
@@ -51,3 +52,12 @@ export const createImageIconFromSlug = (
   container.addChild(imageSprite);
   return container;
 };
+
+//TODO: figure out how to use this
+export class MultiOutlineControllerContainer extends PIXI.Container {
+  id: string = uuidGen();
+
+  addChild(child: any) {
+    super.addChild(child);
+  }
+}
