@@ -1,27 +1,35 @@
 import getImageOutline from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/outliner/getImageOutline ';
+import smooth from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/outliner/smooth';
 
-function createOutline(imageElement, options) {
+const outlineCache = new Map();
+
+export default function createOutline(imageElement) {
+  if (outlineCache.has(imageElement)) {
+    return outlineCache.get(imageElement);
+  }
   if (!imageElement.complete || !imageElement.naturalWidth) {
     throw new Error('getImageOutline: imageElement must be loaded.');
   }
 
-  var width = imageElement.naturalWidth,
+  const width = imageElement.naturalWidth,
     height = imageElement.naturalHeight;
 
-  var canvas = document.createElement('canvas');
+  const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
 
-  var ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
   ctx.drawImage(imageElement, 0, 0);
 
-  var imageData = ctx.getImageData(0, 0, width, height).data;
+  const imageData = ctx.getImageData(0, 0, width, height).data;
 
-  var getPixel = function (x, y, channel) {
+  const getPixel = function (x, y, channel) {
     return imageData[x * 4 + y * 4 * width + channel];
   };
 
-  return getImageOutline(width, height, getPixel, options);
-}
+  const output = smooth(smooth(getImageOutline(width, height, getPixel)));
 
-export default createOutline;
+  outlineCache.set(imageElement, output);
+
+  return output;
+}

@@ -23,6 +23,7 @@ const allItemSlugs = getAllItemSlugsWithIcons();
 export const imgMap = new Map<string, any>();
 
 const allImagePromises = [] as Promise<any>[];
+
 for (const item of allItemSlugs) {
   const itemImageSlug = getImageSlugForItem(item);
   const itemImg = getItemIcon(itemImageSlug, ITEM_SIZE);

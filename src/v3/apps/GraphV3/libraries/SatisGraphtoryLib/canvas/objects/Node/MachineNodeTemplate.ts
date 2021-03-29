@@ -203,7 +203,9 @@ export abstract class MachineNodeTemplate extends GraphObject {
       .getSimulationManager()
       .unregister(this.simulatable);
 
-    this.container.destroy();
+    this.container.destroy({
+      children: true,
+    });
     return originalEdges;
   }
 

@@ -272,6 +272,10 @@ export const getBuildingIcon = (slug: string, size: number) => {
   return getImageFileFromSlug(itemImageSlug, size);
 };
 
+export const getBuildingIconSlug = (buildingSlug: string) => {
+  return buildingSlug.replace(/^building/g, 'item');
+};
+
 export const getBuildingDefinition = (buildingSlug: string) => {
   return (BuildingJson as any)[buildingSlug];
 };
