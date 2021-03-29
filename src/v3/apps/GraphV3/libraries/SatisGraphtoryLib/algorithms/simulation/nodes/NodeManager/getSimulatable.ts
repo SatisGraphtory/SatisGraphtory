@@ -5,6 +5,7 @@ import SimulationManager from '../../manager/SimulationManager';
 import BeltV2 from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/algorithms/simulation/edges/BeltV2';
 import { MachineNodeTemplate } from 'v3/apps/GraphV3/libraries/SatisGraphtoryLib/canvas/objects/Node/MachineNodeTemplate';
 import EdgeTemplate from '../../../../canvas/objects/Edge/EdgeTemplate';
+import DebugNode from '../DebugNode';
 
 export const getSimulatableNode = (
   node: MachineNodeTemplate,
@@ -29,6 +30,16 @@ export const getSimulatableNode = (
         simulationManager
       );
     default:
+      const urlParams = new URLSearchParams(window.location.search);
+
+      if (urlParams.get('useDebugNode')) {
+        return new DebugNode(
+          node,
+          buildingSlug,
+          buildingOptions,
+          simulationManager
+        );
+      }
       throw new Error('Unimplemented class ' + unrealClass);
   }
 };
