@@ -72,7 +72,7 @@ export default class SimpleEdge extends EdgeTemplate {
     const levelText = createText(
       getTierText(tier),
       EDGE_TIER_STYLE(theme).textStyle,
-      -2,
+      2,
       -2,
       'center',
       'center',
