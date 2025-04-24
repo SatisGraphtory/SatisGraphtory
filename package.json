@@ -95,7 +95,7 @@
     "react-modal": "^3.11.1",
     "react-redux": "^7.1.3",
     "react-resize-detector": "^5.0.7",
-    "react-router": "^5.1.2",
+    "react-router": "^7.5.2",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^4.0.3",
     "react-scroll-horizontal": "^1.6.4",
