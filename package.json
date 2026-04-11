@@ -66,7 +66,7 @@
     "lodash": "^4.17.15",
     "lz-string": "^1.4.4",
     "lzutf8": "^0.5.5",
-    "mathjs": "^7.0.1",
+    "mathjs": "^15.2.0",
     "multi-metagen": "^4.0.3",
     "node-sass": "^4.13.1",
     "normalize-wheel": "^1.0.1",
